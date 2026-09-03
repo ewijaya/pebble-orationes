@@ -110,6 +110,14 @@ static void fast_scroll_release_handler(ClickRecognizerRef recognizer,
   stop_fast_scrolling();
 }
 
+static void exit_app_multi_click_handler(ClickRecognizerRef recognizer,
+                                         void *context) {
+  (void)recognizer;
+  (void)context;
+  stop_fast_scrolling();
+  window_stack_pop_all(false);
+}
+
 static void prayer_click_config_provider(void *context) {
   (void)context;
 
@@ -126,6 +134,9 @@ static void prayer_click_config_provider(void *context) {
                               fast_scroll_down_handler,
                               fast_scroll_release_handler);
   window_set_click_context(BUTTON_ID_DOWN, s_scroll_layer);
+
+  window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, 0, true,
+                               exit_app_multi_click_handler);
 }
 
 static void window_load(Window *window) {
