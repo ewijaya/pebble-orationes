@@ -1,5 +1,6 @@
 #include <pebble.h>
 
+#include "placeholder_screen.h"
 #include "prayer_screen.h"
 #include "prayers.h"
 
@@ -20,7 +21,14 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   const Prayer *prayer = prayers_get(cell_index->row);
-  prayer_screen_show(prayer->name);
+  const PrayerTranslation *translation =
+      prayer_get_translation(prayer, PRAYER_LANGUAGE_ENGLISH);
+
+  if (translation) {
+    prayer_screen_show(prayer->name, translation->text);
+  } else {
+    placeholder_screen_show(prayer->name);
+  }
 }
 
 static void menu_window_load(Window *window) {
@@ -44,6 +52,7 @@ static void menu_window_unload(Window *window) {
 
 static void init(void) {
   prayer_screen_init();
+  placeholder_screen_init();
 
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){
@@ -57,6 +66,7 @@ static void deinit(void) {
   window_destroy(s_menu_window);
   s_menu_window = NULL;
 
+  placeholder_screen_deinit();
   prayer_screen_deinit();
 }
 
