@@ -12,8 +12,14 @@ typedef struct {
   const char *text;
 } PrayerTranslation;
 
+typedef enum {
+  PRAYER_DESTINATION_TEXT,
+  PRAYER_DESTINATION_ROSARY,
+} PrayerDestination;
+
 typedef struct {
   const char *name;
+  PrayerDestination destination;
   PrayerLanguage default_language;
   const PrayerTranslation *translations;
   uint8_t translation_count;

@@ -156,6 +156,7 @@ static const PrayerTranslation s_preces_translations[] = {
 static const Prayer s_prayers[] = {
     {
         .name = "Angelus",
+        .destination = PRAYER_DESTINATION_TEXT,
         .default_language = PRAYER_LANGUAGE_ENGLISH,
         .translations = s_angelus_translations,
         .translation_count =
@@ -164,6 +165,7 @@ static const Prayer s_prayers[] = {
     },
     {
         .name = "Regina Caeli",
+        .destination = PRAYER_DESTINATION_TEXT,
         .default_language = PRAYER_LANGUAGE_ENGLISH,
         .translations = s_regina_caeli_translations,
         .translation_count =
@@ -172,12 +174,14 @@ static const Prayer s_prayers[] = {
     },
     {
         .name = "Holy Rosary",
+        .destination = PRAYER_DESTINATION_ROSARY,
         .default_language = PRAYER_LANGUAGE_ENGLISH,
         .translations = NULL,
         .translation_count = 0,
     },
     {
         .name = "Preces",
+        .destination = PRAYER_DESTINATION_TEXT,
         .default_language = PRAYER_LANGUAGE_LATIN,
         .translations = s_preces_translations,
         .translation_count =

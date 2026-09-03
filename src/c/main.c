@@ -3,6 +3,7 @@
 #include "placeholder_screen.h"
 #include "prayer_screen.h"
 #include "prayers.h"
+#include "rosary_menu.h"
 
 static Window *s_menu_window;
 static MenuLayer *s_menu_layer;
@@ -21,6 +22,12 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   const Prayer *prayer = prayers_get(cell_index->row);
+
+  if (prayer->destination == PRAYER_DESTINATION_ROSARY) {
+    rosary_menu_show();
+    return;
+  }
+
   const PrayerTranslation *translation =
       prayer_get_translation(prayer, prayer->default_language);
 
@@ -53,6 +60,7 @@ static void menu_window_unload(Window *window) {
 static void init(void) {
   prayer_screen_init();
   placeholder_screen_init();
+  rosary_menu_init();
 
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){
@@ -66,6 +74,7 @@ static void deinit(void) {
   window_destroy(s_menu_window);
   s_menu_window = NULL;
 
+  rosary_menu_deinit();
   placeholder_screen_deinit();
   prayer_screen_deinit();
 }
