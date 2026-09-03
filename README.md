@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/store/banner-720x320.png" alt="Orationes — Catholic prayers for Pebble Time 2. Large print, high contrast, offline." width="640">
+</p>
+
 # Orationes
 
 [![Latest release](https://img.shields.io/github/v/release/ewijaya/pebble-orationes?display_name=tag)](https://github.com/ewijaya/pebble-orationes/releases/latest)
