@@ -14,6 +14,7 @@ typedef struct {
 
 typedef struct {
   const char *name;
+  PrayerLanguage default_language;
   const PrayerTranslation *translations;
   uint8_t translation_count;
 } Prayer;

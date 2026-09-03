@@ -8,7 +8,7 @@ enum {
   TITLE_HEIGHT = 38,
   BODY_TOP_MARGIN = 8,
   BOTTOM_MARGIN = 18,
-  BODY_LAYOUT_HEIGHT = 6000,
+  BODY_LAYOUT_HEIGHT = 16000,
 };
 
 static Window *s_window;

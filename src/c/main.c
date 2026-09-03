@@ -22,7 +22,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   const Prayer *prayer = prayers_get(cell_index->row);
   const PrayerTranslation *translation =
-      prayer_get_translation(prayer, PRAYER_LANGUAGE_ENGLISH);
+      prayer_get_translation(prayer, prayer->default_language);
 
   if (translation) {
     prayer_screen_show(prayer->name, translation->text);
