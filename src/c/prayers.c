@@ -155,13 +155,20 @@ static const PrayerTranslation s_preces_translations[] = {
 
 static const Prayer s_prayers[] = {
     {
-        .name = "Angelus",
+        .name = "Preces",
         .destination = PRAYER_DESTINATION_TEXT,
-        .default_language = PRAYER_LANGUAGE_ENGLISH,
-        .translations = s_angelus_translations,
+        .default_language = PRAYER_LANGUAGE_LATIN,
+        .translations = s_preces_translations,
         .translation_count =
-            (uint8_t)(sizeof(s_angelus_translations) /
-                      sizeof(s_angelus_translations[0])),
+            (uint8_t)(sizeof(s_preces_translations) /
+                      sizeof(s_preces_translations[0])),
+    },
+    {
+        .name = "Holy Rosary",
+        .destination = PRAYER_DESTINATION_ROSARY,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = NULL,
+        .translation_count = 0,
     },
     {
         .name = "Regina Caeli",
@@ -173,20 +180,13 @@ static const Prayer s_prayers[] = {
                       sizeof(s_regina_caeli_translations[0])),
     },
     {
-        .name = "Holy Rosary",
-        .destination = PRAYER_DESTINATION_ROSARY,
-        .default_language = PRAYER_LANGUAGE_ENGLISH,
-        .translations = NULL,
-        .translation_count = 0,
-    },
-    {
-        .name = "Preces",
+        .name = "Angelus",
         .destination = PRAYER_DESTINATION_TEXT,
-        .default_language = PRAYER_LANGUAGE_LATIN,
-        .translations = s_preces_translations,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_angelus_translations,
         .translation_count =
-            (uint8_t)(sizeof(s_preces_translations) /
-                      sizeof(s_preces_translations[0])),
+            (uint8_t)(sizeof(s_angelus_translations) /
+                      sizeof(s_angelus_translations[0])),
     },
 };
 

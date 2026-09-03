@@ -3,12 +3,12 @@
 #include <pebble.h>
 
 enum {
-  HORIZONTAL_MARGIN = 12,
+  HORIZONTAL_MARGIN = 8,
   TITLE_TOP_MARGIN = 8,
   TITLE_HEIGHT = 38,
   BODY_TOP_MARGIN = 8,
   BOTTOM_MARGIN = 18,
-  BODY_LAYOUT_HEIGHT = 16000,
+  BODY_LAYOUT_HEIGHT = 30000,
 };
 
 static Window *s_window;
@@ -44,7 +44,7 @@ static void window_load(Window *window) {
   text_layer_set_background_color(s_body_layer, GColorClear);
   text_layer_set_text_color(s_body_layer, GColorBlack);
   text_layer_set_font(s_body_layer,
-                      fonts_get_system_font(FONT_KEY_GOTHIC_24));
+                      fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_body_layer, GTextAlignmentLeft);
   text_layer_set_overflow_mode(s_body_layer, GTextOverflowModeWordWrap);
   text_layer_set_text(s_body_layer, s_text);

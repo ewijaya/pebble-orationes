@@ -1,7 +1,7 @@
 {
   "name": "orationes",
   "author": "ewijaya",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "keywords": [
     "pebble-app"
   ],
@@ -18,7 +18,14 @@
       "watchface": false
     },
     "resources": {
-      "media": []
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "MENU_ICON",
+          "file": "images/orationes-menu-icon.png",
+          "menuIcon": true
+        }
+      ]
     }
   }
 }

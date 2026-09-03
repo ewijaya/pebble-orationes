@@ -1,5 +1,6 @@
 #include <pebble.h>
 
+#include "accessible_menu.h"
 #include "placeholder_screen.h"
 #include "prayer_screen.h"
 #include "prayers.h"
@@ -16,7 +17,7 @@ static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
   const Prayer *prayer = prayers_get(cell_index->row);
-  menu_cell_basic_draw(ctx, cell_layer, prayer->name, NULL, NULL);
+  accessible_menu_draw_row(ctx, cell_layer, prayer->name);
 }
 
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
@@ -45,9 +46,11 @@ static void menu_window_load(Window *window) {
   s_menu_layer = menu_layer_create(bounds);
   menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
       .get_num_rows = menu_get_num_rows,
+      .get_cell_height = accessible_menu_get_cell_height,
       .draw_row = menu_draw_row,
       .select_click = menu_select_click,
   });
+  accessible_menu_apply_colors(s_menu_layer);
   menu_layer_set_click_config_onto_window(s_menu_layer, window);
   layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }

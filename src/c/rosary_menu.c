@@ -3,6 +3,7 @@
 #include <pebble.h>
 #include <stdio.h>
 
+#include "accessible_menu.h"
 #include "litany.h"
 #include "prayer_screen.h"
 #include "rosary_data.h"
@@ -12,7 +13,6 @@ enum {
   ROSARY_MENU_ITEM_ALL,
   ROSARY_MENU_ITEM_LITANY,
   ROSARY_MENU_ITEM_COUNT,
-  MENU_HEADER_HEIGHT = 34,
   MYSTERY_TITLE_BUFFER_SIZE = 32,
   MYSTERY_BODY_BUFFER_SIZE = 256,
 };
@@ -23,16 +23,6 @@ static Window *s_all_mysteries_window;
 static MenuLayer *s_all_mysteries_menu_layer;
 static char s_mystery_title[MYSTERY_TITLE_BUFFER_SIZE];
 static char s_mystery_body[MYSTERY_BODY_BUFFER_SIZE];
-
-static int16_t menu_get_header_height(MenuLayer *menu_layer,
-                                      uint16_t section_index, void *context) {
-  return MENU_HEADER_HEIGHT;
-}
-
-static void menu_draw_header(GContext *ctx, const Layer *cell_layer,
-                             uint16_t section_index, void *context) {
-  menu_cell_basic_header_draw(ctx, cell_layer, (const char *)context);
-}
 
 static void show_mystery_set(const RosaryMysterySet *set, bool for_today,
                              const char *weekday_label) {
@@ -75,7 +65,7 @@ static void rosary_menu_draw_row(GContext *ctx, const Layer *cell_layer,
       "All Mysteries",
       "Litany of Loreto",
   };
-  menu_cell_basic_draw(ctx, cell_layer, labels[cell_index->row], NULL, NULL);
+  accessible_menu_draw_row(ctx, cell_layer, labels[cell_index->row]);
 }
 
 static void rosary_menu_select_click(MenuLayer *menu_layer,
@@ -112,7 +102,7 @@ static void all_mysteries_draw_row(GContext *ctx, const Layer *cell_layer,
   char row_label[MYSTERY_TITLE_BUFFER_SIZE];
   snprintf(row_label, sizeof(row_label), "%s · %s", set->name,
            set->weekday_label);
-  menu_cell_basic_draw(ctx, cell_layer, row_label, NULL, NULL);
+  accessible_menu_draw_row(ctx, cell_layer, row_label);
 }
 
 static void all_mysteries_select_click(MenuLayer *menu_layer,
@@ -130,11 +120,13 @@ static void menu_window_load(Window *window, MenuLayer **menu_layer,
   *menu_layer = menu_layer_create(layer_get_bounds(window_layer));
   menu_layer_set_callbacks(*menu_layer, (void *)header, (MenuLayerCallbacks){
       .get_num_rows = get_rows,
-      .get_header_height = menu_get_header_height,
+      .get_cell_height = accessible_menu_get_cell_height,
+      .get_header_height = accessible_menu_get_header_height,
       .draw_row = draw_row,
-      .draw_header = menu_draw_header,
+      .draw_header = accessible_menu_draw_header,
       .select_click = select_click,
   });
+  accessible_menu_apply_colors(*menu_layer);
   menu_layer_set_click_config_onto_window(*menu_layer, window);
   layer_add_child(window_layer, menu_layer_get_layer(*menu_layer));
 }
