@@ -9,6 +9,9 @@ enum {
   BODY_TOP_MARGIN = 8,
   BOTTOM_MARGIN = 18,
   BODY_LAYOUT_HEIGHT = 30000,
+  FAST_SCROLL_PERCENT = 80,
+  FAST_SCROLL_LONG_CLICK_MS = 500,
+  FAST_SCROLL_REPEAT_MS = 325,
 };
 
 static Window *s_window;
@@ -17,6 +20,113 @@ static TextLayer *s_title_layer;
 static TextLayer *s_body_layer;
 static const char *s_title;
 static const char *s_text;
+static AppTimer *s_fast_scroll_timer;
+static int8_t s_fast_scroll_direction;
+
+static void stop_fast_scrolling(void) {
+  s_fast_scroll_direction = 0;
+
+  if (s_fast_scroll_timer) {
+    app_timer_cancel(s_fast_scroll_timer);
+    s_fast_scroll_timer = NULL;
+  }
+}
+
+static bool fast_scroll_by_screen(void) {
+  if (!s_scroll_layer || s_fast_scroll_direction == 0) {
+    return false;
+  }
+
+  const int16_t viewport_height =
+      layer_get_bounds(scroll_layer_get_layer(s_scroll_layer)).size.h;
+  const int16_t content_height =
+      scroll_layer_get_content_size(s_scroll_layer).h;
+  const int16_t minimum_offset =
+      content_height > viewport_height ? viewport_height - content_height : 0;
+  const int16_t current_offset =
+      scroll_layer_get_content_offset(s_scroll_layer).y;
+  const int16_t jump =
+      (viewport_height * FAST_SCROLL_PERCENT) / 100;
+
+  int32_t target_offset =
+      current_offset + (s_fast_scroll_direction * jump);
+  if (target_offset > 0) {
+    target_offset = 0;
+  } else if (target_offset < minimum_offset) {
+    target_offset = minimum_offset;
+  }
+
+  if (target_offset == current_offset) {
+    return false;
+  }
+
+  scroll_layer_set_content_offset(
+      s_scroll_layer, GPoint(0, (int16_t)target_offset), false);
+  return true;
+}
+
+static void fast_scroll_timer_handler(void *context) {
+  (void)context;
+  s_fast_scroll_timer = NULL;
+
+  if (fast_scroll_by_screen()) {
+    s_fast_scroll_timer = app_timer_register(
+        FAST_SCROLL_REPEAT_MS, fast_scroll_timer_handler, NULL);
+  } else {
+    s_fast_scroll_direction = 0;
+  }
+}
+
+static void start_fast_scrolling(int8_t direction) {
+  stop_fast_scrolling();
+  s_fast_scroll_direction = direction;
+
+  if (fast_scroll_by_screen()) {
+    s_fast_scroll_timer = app_timer_register(
+        FAST_SCROLL_REPEAT_MS, fast_scroll_timer_handler, NULL);
+  } else {
+    s_fast_scroll_direction = 0;
+  }
+}
+
+static void fast_scroll_up_handler(ClickRecognizerRef recognizer,
+                                   void *context) {
+  (void)recognizer;
+  (void)context;
+  start_fast_scrolling(1);
+}
+
+static void fast_scroll_down_handler(ClickRecognizerRef recognizer,
+                                     void *context) {
+  (void)recognizer;
+  (void)context;
+  start_fast_scrolling(-1);
+}
+
+static void fast_scroll_release_handler(ClickRecognizerRef recognizer,
+                                        void *context) {
+  (void)recognizer;
+  (void)context;
+  stop_fast_scrolling();
+}
+
+static void prayer_click_config_provider(void *context) {
+  (void)context;
+
+  window_single_click_subscribe(BUTTON_ID_UP,
+                                scroll_layer_scroll_up_click_handler);
+  window_long_click_subscribe(BUTTON_ID_UP, FAST_SCROLL_LONG_CLICK_MS,
+                              fast_scroll_up_handler,
+                              fast_scroll_release_handler);
+  window_set_click_context(BUTTON_ID_UP, s_scroll_layer);
+
+  window_single_click_subscribe(BUTTON_ID_DOWN,
+                                scroll_layer_scroll_down_click_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, FAST_SCROLL_LONG_CLICK_MS,
+                              fast_scroll_down_handler,
+                              fast_scroll_release_handler);
+  window_set_click_context(BUTTON_ID_DOWN, s_scroll_layer);
+}
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
@@ -25,6 +135,9 @@ static void window_load(Window *window) {
   const int16_t body_y = TITLE_TOP_MARGIN + TITLE_HEIGHT + BODY_TOP_MARGIN;
 
   s_scroll_layer = scroll_layer_create(bounds);
+  scroll_layer_set_callbacks(s_scroll_layer, (ScrollLayerCallbacks){
+      .click_config_provider = prayer_click_config_provider,
+  });
   scroll_layer_set_click_config_onto_window(s_scroll_layer, window);
   layer_add_child(window_layer, scroll_layer_get_layer(s_scroll_layer));
 
@@ -62,6 +175,8 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
+  stop_fast_scrolling();
+
   text_layer_destroy(s_body_layer);
   s_body_layer = NULL;
 
