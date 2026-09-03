@@ -4,7 +4,11 @@
 
 A large-print, high-contrast Catholic prayer app for Pebble Time 2.
 
+**[Install from the Pebble App Store](https://apps.repebble.com/9882f741750c43eb8309777e)**
+
 Orationes is a personal native Pebble C app built specifically for Pebble Time 2 (`emery`). It is designed around readability on a small watch display: large bold text, strong black-and-white contrast, and hardware-button navigation throughout. The app works fully offline.
+
+Created and maintained by Edward.
 
 <p align="center">
   <img src="docs/images/framed/main-menu.png" alt="Orationes main menu on a Pebble Time 2-style frame" width="31%">
@@ -46,14 +50,28 @@ Orationes deliberately favors readability over text density. Prayer screens use 
 
 ## Install
 
-Normal users do not need to build Orationes from source:
+### Pebble App Store — recommended
+
+Orationes is available directly from the Pebble App Store:
+
+**[Install Orationes](https://apps.repebble.com/9882f741750c43eb8309777e)**
+
+1. Open the Orationes listing.
+2. Add it to your apps.
+3. Install or sync it to your Pebble Time 2.
+
+This end-to-end installation path has been tested on a physical Pebble Time 2.
+
+### Manual installation
+
+For users who prefer to install the PBW directly:
 
 1. Open the [GitHub Releases page](https://github.com/ewijaya/pebble-orationes/releases).
 2. Choose the latest release.
 3. Download `pebble-orationes.pbw`.
 4. Install the bundle using the Pebble/RePebble app workflow.
 
-The current release targets Pebble Time 2 (`emery`) and is fully offline once installed.
+The current public release, v0.2.0, targets Pebble Time 2 (`emery`). Orationes works fully offline once installed.
 
 ## Build from source
 
@@ -120,6 +138,7 @@ The script copies source captures to `docs/images/raw/` and writes consistent PT
 - Rosary mysteries and Litany of Loreto
 - Angelus and Regina Caeli
 - Tested on a physical Pebble Time 2
+- Published on the Pebble App Store
 
 ### v0.1.0
 
@@ -127,7 +146,7 @@ The script copies source captures to `docs/images/raw/` and writes consistent PT
 
 ## Status
 
-Orationes is usable today and actively maintained as a personal project.
+Orationes is publicly available on the Pebble App Store and is tested on a physical Pebble Time 2. It is maintained as a personal project.
 
 ## Disclaimer
 
