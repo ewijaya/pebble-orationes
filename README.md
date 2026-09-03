@@ -38,6 +38,12 @@ Orationes deliberately favors readability over text density. Prayer screens use 
 | :---: | :---: |
 | <img src="docs/images/framed/launcher.png" alt="Orationes launcher icon on a Pebble Time 2-style frame" width="280"> | <img src="docs/images/framed/preces.png" alt="Latin Preces on a Pebble Time 2-style frame" width="280"> |
 
+### On a physical Pebble Time 2
+
+<p align="center">
+  <img src="docs/images/physical/orationes-on-physical-pt2.jpg" alt="Orationes launcher, main menu, and Preces running on a physical Pebble Time 2" width="680">
+</p>
+
 ## Install
 
 Normal users do not need to build Orationes from source:
