@@ -61,6 +61,10 @@ static void menu_window_unload(Window *window) {
 }
 
 static void init(void) {
+#if defined(PBL_TOUCH)
+  app_touch_navigation_enable(true);
+#endif
+
   prayer_screen_init();
   placeholder_screen_init();
   rosary_menu_init();
