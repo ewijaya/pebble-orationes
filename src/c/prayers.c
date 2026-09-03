@@ -31,6 +31,28 @@ static const PrayerTranslation s_angelus_translations[] = {
     },
 };
 
+static const char s_regina_caeli_english[] =
+    "V. Queen of heaven, rejoice, alleluia.\n"
+    "R. For he whom you did merit to bear, alleluia.\n\n"
+    "V. Has risen, as he said, alleluia.\n"
+    "R. Pray for us to God, alleluia.\n\n"
+    "V. Rejoice and be glad, O Virgin Mary, alleluia.\n"
+    "R. For the Lord has truly risen, alleluia.\n\n"
+    "Let us pray.\n\n"
+    "O God, who gave joy to the world through the resurrection\n"
+    "of your Son, our Lord Jesus Christ, grant, we beseech you,\n"
+    "that through the intercession of the Virgin Mary, his Mother,\n"
+    "we may obtain the joys of everlasting life.\n"
+    "Through the same Christ our Lord.\n\n"
+    "R. Amen.";
+
+static const PrayerTranslation s_regina_caeli_translations[] = {
+    {
+        .language = PRAYER_LANGUAGE_ENGLISH,
+        .text = s_regina_caeli_english,
+    },
+};
+
 static const Prayer s_prayers[] = {
     {
         .name = "Angelus",
@@ -41,8 +63,10 @@ static const Prayer s_prayers[] = {
     },
     {
         .name = "Regina Caeli",
-        .translations = NULL,
-        .translation_count = 0,
+        .translations = s_regina_caeli_translations,
+        .translation_count =
+            (uint8_t)(sizeof(s_regina_caeli_translations) /
+                      sizeof(s_regina_caeli_translations[0])),
     },
     {
         .name = "Holy Rosary",
