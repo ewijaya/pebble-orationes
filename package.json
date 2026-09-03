@@ -1,0 +1,24 @@
+{
+  "name": "orationes",
+  "author": "ewijaya",
+  "version": "0.1.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Orationes",
+    "uuid": "9f17d477-cef1-4512-8536-f01d50bb07a3",
+    "sdkVersion": "3",
+    "targetPlatforms": [
+      "emery"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "resources": {
+      "media": []
+    }
+  }
+}
