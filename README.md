@@ -29,3 +29,16 @@ pebble install --emulator emery
 
 The app is intentionally C-only and requires no PebbleKit JS, phone
 companion, account, or network connection.
+
+## Updating screenshots
+
+Install [Pillow](https://pypi.org/project/pillow/) with
+`python3 -m pip install Pillow`, place Emery captures in
+`build/emulator-screenshots/`, then run:
+
+```sh
+python3 scripts/frame_screenshots.py
+```
+
+Raw copies are written to `docs/images/raw/`; consistently framed showcase
+images are written to `docs/images/framed/`.
