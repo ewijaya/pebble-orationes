@@ -70,9 +70,10 @@ static bool save_schedule_record(WakeupId wakeup_id, time_t timestamp) {
 }
 
 static void cancel_scheduled_wakeup(void) {
-  if (s_wakeup_id >= 0 && wakeup_query(s_wakeup_id, NULL)) {
-    wakeup_cancel(s_wakeup_id);
-  }
+  // Persistence can be cleared by an uninstall while firmware retains the
+  // scheduled event. Noon prayer is Orationes' only wakeup, so cancel every
+  // wakeup owned by the app to recover safely from an orphaned schedule.
+  wakeup_cancel_all();
   clear_schedule_record();
 }
 

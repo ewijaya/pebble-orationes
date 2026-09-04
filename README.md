@@ -41,7 +41,7 @@ The default menu stays focused on the five core entries. On the watch or in the 
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.5.0, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The current release, v0.5.1, targets `emery`.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
