@@ -8,7 +8,8 @@
 enum {
   HORIZONTAL_MARGIN = 8,
   TITLE_TOP_MARGIN = 0,
-  TITLE_HEIGHT = 44,
+  TITLE_MIN_HEIGHT = 44,
+  TITLE_LAYOUT_HEIGHT = 100,
   BODY_TOP_MARGIN = 8,
   BOTTOM_MARGIN = 18,
   BODY_LAYOUT_HEIGHT = 30000,
@@ -23,6 +24,7 @@ static TextLayer *s_title_layer;
 static TextLayer *s_body_layer;
 static const char *s_title;
 static const char *s_text;
+static int16_t s_title_height;
 static AppTimer *s_fast_scroll_timer;
 static int8_t s_fast_scroll_direction;
 static GFont s_custom_body_font;
@@ -162,7 +164,6 @@ static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   const GRect bounds = layer_get_bounds(window_layer);
   const int16_t text_width = bounds.size.w - (2 * HORIZONTAL_MARGIN);
-  const int16_t body_y = TITLE_TOP_MARGIN + TITLE_HEIGHT + BODY_TOP_MARGIN;
 
   window_set_background_color(window, app_theme_background_color());
 
@@ -174,7 +175,7 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, scroll_layer_get_layer(s_scroll_layer));
 
   s_title_layer = text_layer_create(
-      GRect(0, TITLE_TOP_MARGIN, bounds.size.w, TITLE_HEIGHT));
+      GRect(0, TITLE_TOP_MARGIN, bounds.size.w, TITLE_LAYOUT_HEIGHT));
   text_layer_set_background_color(s_title_layer,
                                   app_theme_title_background_color());
   text_layer_set_text_color(s_title_layer,
@@ -183,9 +184,18 @@ static void window_load(Window *window) {
       s_title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_title_layer, GTextAlignmentCenter);
   text_layer_set_text(s_title_layer, s_title);
+  const GSize title_size = text_layer_get_content_size(s_title_layer);
+  s_title_height = title_size.h > TITLE_MIN_HEIGHT
+                       ? title_size.h
+                       : TITLE_MIN_HEIGHT;
+  layer_set_frame(text_layer_get_layer(s_title_layer),
+                  GRect(0, TITLE_TOP_MARGIN, bounds.size.w,
+                        s_title_height));
   scroll_layer_add_child(s_scroll_layer,
                          text_layer_get_layer(s_title_layer));
 
+  const int16_t body_y =
+      TITLE_TOP_MARGIN + s_title_height + BODY_TOP_MARGIN;
   s_body_layer = text_layer_create(
       GRect(HORIZONTAL_MARGIN, body_y, text_width, BODY_LAYOUT_HEIGHT));
   text_layer_set_background_color(s_body_layer, GColorClear);
@@ -257,7 +267,8 @@ void prayer_screen_refresh(void) {
   const GRect viewport =
       layer_get_bounds(scroll_layer_get_layer(s_scroll_layer));
   const int16_t text_width = viewport.size.w - (2 * HORIZONTAL_MARGIN);
-  const int16_t body_y = TITLE_TOP_MARGIN + TITLE_HEIGHT + BODY_TOP_MARGIN;
+  const int16_t body_y =
+      TITLE_TOP_MARGIN + s_title_height + BODY_TOP_MARGIN;
   const int16_t old_offset =
       scroll_layer_get_content_offset(s_scroll_layer).y;
   const GFont body_font = get_body_font();

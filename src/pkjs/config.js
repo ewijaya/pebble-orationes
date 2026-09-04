@@ -18,7 +18,13 @@ function mainMenuOptions() {
     { label: 'Examination', value: '13' },
     { label: 'Act of Contrition', value: '14' },
     { label: 'Before Confession', value: '15' },
-    { label: 'After Confession', value: '16' }
+    { label: 'After Confession', value: '16' },
+    { label: 'Psalm 50 (51)', value: '17' },
+    { label: 'Acceptance of Death', value: '18' },
+    { label: 'Prayer for Vocations', value: '19' },
+    { label: 'Blessed Be Your Purity', value: '20' },
+    { label: 'Canticle of the Three Children', value: '21' },
+    { label: 'Psalm 2', value: '22' }
   ];
 }
 

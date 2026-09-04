@@ -13,6 +13,7 @@ enum {
   PERSIST_KEY_CONFESSION_ENABLED = 7,
   PERSIST_KEY_MAIN_PRAYER_VISIBLE_BASE = 20,
   PERSIST_KEY_MAIN_MENU_SLOT_BASE = 30,
+  LEGACY_MAIN_PRAYER_COUNT = PRAYER_ID_MEMORARE + 1,
 };
 
 static AppTextSize s_text_size = APP_TEXT_SIZE_LARGE;
@@ -21,7 +22,7 @@ static AppAppearance s_appearance = APP_APPEARANCE_LIGHT;
 static bool s_noon_reminder_enabled;
 static bool s_daily_prayers_enabled;
 static bool s_confession_enabled;
-static bool s_legacy_main_prayer_visible[PRAYER_ID_COUNT];
+static bool s_legacy_main_prayer_visible[LEGACY_MAIN_PRAYER_COUNT];
 static MainMenuEntryId s_main_menu_slots[APP_MAIN_MENU_SLOT_COUNT];
 static const MainMenuEntryId
     s_default_main_menu_slots[APP_MAIN_MENU_SLOT_COUNT] = {
@@ -89,7 +90,7 @@ static bool main_menu_slots_are_valid(
 }
 
 static void migrate_legacy_main_menu_settings(void) {
-  static const MainMenuEntryId core_entries[PRAYER_ID_COUNT] = {
+  static const MainMenuEntryId core_entries[LEGACY_MAIN_PRAYER_COUNT] = {
       MAIN_MENU_ENTRY_PRECES,
       MAIN_MENU_ENTRY_HOLY_ROSARY,
       MAIN_MENU_ENTRY_REGINA_CAELI,
@@ -98,7 +99,8 @@ static void migrate_legacy_main_menu_settings(void) {
   };
   uint8_t next_slot = 0;
   for (PrayerId prayer_id = PRAYER_ID_PRECES;
-       prayer_id < PRAYER_ID_COUNT && next_slot < APP_MAIN_MENU_SLOT_COUNT;
+       prayer_id <= PRAYER_ID_MEMORARE &&
+       next_slot < APP_MAIN_MENU_SLOT_COUNT;
        ++prayer_id) {
     if (s_legacy_main_prayer_visible[prayer_id]) {
       s_main_menu_slots[next_slot++] = core_entries[prayer_id];
@@ -150,7 +152,7 @@ void app_settings_init(void) {
   s_confession_enabled = false;
   s_noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
   for (PrayerId prayer_id = PRAYER_ID_PRECES;
-       prayer_id < PRAYER_ID_COUNT; ++prayer_id) {
+       prayer_id <= PRAYER_ID_MEMORARE; ++prayer_id) {
     s_legacy_main_prayer_visible[prayer_id] = true;
   }
 
@@ -200,7 +202,7 @@ void app_settings_init(void) {
   }
 
   for (PrayerId prayer_id = PRAYER_ID_PRECES;
-       prayer_id < PRAYER_ID_COUNT; ++prayer_id) {
+       prayer_id <= PRAYER_ID_MEMORARE; ++prayer_id) {
     const uint32_t persist_key = main_prayer_persist_key(prayer_id);
     if (persist_exists(persist_key)) {
       s_legacy_main_prayer_visible[prayer_id] =
