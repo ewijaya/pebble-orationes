@@ -27,6 +27,10 @@ enum {
   NOON_REMINDER_OPTION_DURATION_OFFSET,
 };
 
+enum {
+  MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS = 100,
+};
+
 static Window *s_settings_window;
 static MenuLayer *s_settings_menu_layer;
 static Window *s_text_size_window;
@@ -144,6 +148,68 @@ static void main_menu_entry_select_click(MenuLayer *menu_layer,
     phone_settings_send_current();
     window_stack_pop(true);
   }
+}
+
+static void main_menu_entry_move_selection(bool up) {
+  if (!s_main_menu_entry_menu_layer) {
+    return;
+  }
+
+  const uint16_t row_count = main_menu_catalog_count();
+  if (row_count == 0) {
+    return;
+  }
+
+  const MenuIndex selected =
+      menu_layer_get_selected_index(s_main_menu_entry_menu_layer);
+  const bool should_wrap =
+      (up && selected.row == 0) ||
+      (!up && selected.row == row_count - 1);
+  if (should_wrap) {
+    menu_layer_set_selected_index(
+        s_main_menu_entry_menu_layer,
+        MenuIndex(0, up ? row_count - 1 : 0),
+        up ? MenuRowAlignBottom : MenuRowAlignTop, true);
+    return;
+  }
+
+  menu_layer_set_selected_next(s_main_menu_entry_menu_layer, up,
+                               MenuRowAlignCenter, true);
+}
+
+static void main_menu_entry_up_click_handler(ClickRecognizerRef recognizer,
+                                             void *context) {
+  (void)recognizer;
+  (void)context;
+  main_menu_entry_move_selection(true);
+}
+
+static void main_menu_entry_down_click_handler(ClickRecognizerRef recognizer,
+                                               void *context) {
+  (void)recognizer;
+  (void)context;
+  main_menu_entry_move_selection(false);
+}
+
+static void main_menu_entry_select_click_handler(
+    ClickRecognizerRef recognizer, void *context) {
+  (void)recognizer;
+  (void)context;
+  MenuIndex selected =
+      menu_layer_get_selected_index(s_main_menu_entry_menu_layer);
+  main_menu_entry_select_click(s_main_menu_entry_menu_layer, &selected, NULL);
+}
+
+static void main_menu_entry_click_config_provider(void *context) {
+  (void)context;
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_UP, MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS,
+      main_menu_entry_up_click_handler);
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_DOWN, MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS,
+      main_menu_entry_down_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT,
+                                main_menu_entry_select_click_handler);
 }
 
 static uint16_t appearance_get_num_rows(MenuLayer *menu_layer,
@@ -349,6 +415,8 @@ static void main_menu_entry_window_load(Window *window) {
   s_main_menu_entry_menu_layer = create_menu(
       window, "Choose Entry", main_menu_entry_get_num_rows,
       main_menu_entry_draw_row, main_menu_entry_select_click);
+  window_set_click_config_provider(window,
+                                   main_menu_entry_click_config_provider);
   menu_layer_set_selected_index(
       s_main_menu_entry_menu_layer,
       MenuIndex(0, app_settings_get_main_menu_slot(s_editing_slot_index)),
