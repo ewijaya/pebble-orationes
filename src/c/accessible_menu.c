@@ -4,6 +4,7 @@
 
 enum {
   ROW_HORIZONTAL_MARGIN = 8,
+  ROW_VALUE_GAP = 6,
   TEXT_VERTICAL_ADJUSTMENT = -1,
   HEADER_DIVIDER_HEIGHT = 2,
 };
@@ -73,4 +74,46 @@ void accessible_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                               : app_theme_background_color(),
                      selected ? app_theme_selected_foreground_color()
                               : app_theme_foreground_color());
+}
+
+void accessible_menu_draw_row_with_value(GContext *ctx,
+                                         const Layer *cell_layer,
+                                         const char *text,
+                                         const char *value) {
+  const bool selected = menu_cell_layer_is_highlighted(cell_layer);
+  const GColor background =
+      selected ? app_theme_selected_background_color()
+               : app_theme_background_color();
+  const GColor foreground =
+      selected ? app_theme_selected_foreground_color()
+               : app_theme_foreground_color();
+  const GRect bounds = layer_get_bounds(cell_layer);
+  const GFont label_font =
+      fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+  const GFont value_font =
+      fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
+  const GSize value_size = graphics_text_layout_get_content_size(
+      value, value_font, GRect(0, 0, bounds.size.w, bounds.size.h),
+      GTextOverflowModeTrailingEllipsis, GTextAlignmentRight);
+  const int16_t value_width = value_size.w;
+  const int16_t label_width =
+      bounds.size.w - (2 * ROW_HORIZONTAL_MARGIN) - ROW_VALUE_GAP -
+      value_width;
+  const int16_t label_y =
+      ((bounds.size.h - 34) / 2) + TEXT_VERTICAL_ADJUSTMENT;
+  const int16_t value_y =
+      ((bounds.size.h - value_size.h) / 2) + TEXT_VERTICAL_ADJUSTMENT;
+
+  graphics_context_set_fill_color(ctx, background);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  graphics_context_set_text_color(ctx, foreground);
+  graphics_draw_text(
+      ctx, text, label_font,
+      GRect(ROW_HORIZONTAL_MARGIN, label_y, label_width, 34),
+      GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+  graphics_draw_text(
+      ctx, value, value_font,
+      GRect(bounds.size.w - ROW_HORIZONTAL_MARGIN - value_width, value_y,
+            value_width, value_size.h),
+      GTextOverflowModeTrailingEllipsis, GTextAlignmentRight, NULL);
 }

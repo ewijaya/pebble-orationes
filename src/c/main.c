@@ -4,6 +4,7 @@
 #include "app_settings.h"
 #include "noon_reminder.h"
 #include "placeholder_screen.h"
+#include "prayer_collection_menu.h"
 #include "prayer_screen.h"
 #include "prayers.h"
 #include "rosary_menu.h"
@@ -11,49 +12,147 @@
 
 enum {
   MAIN_MENU_ITEM_SETTINGS_OFFSET = 1,
+  MAIN_MENU_REPEAT_INTERVAL_MS = 100,
 };
 
 static Window *s_menu_window;
 static MenuLayer *s_menu_layer;
 
+static uint16_t optional_collection_count(void) {
+  return (app_settings_get_daily_prayers_enabled() ? 1 : 0) +
+         (app_settings_get_confession_enabled() ? 1 : 0);
+}
+
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
                                   void *context) {
-  return prayers_count() + MAIN_MENU_ITEM_SETTINGS_OFFSET;
+  return prayers_count() + optional_collection_count() +
+         MAIN_MENU_ITEM_SETTINGS_OFFSET;
 }
 
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
-  if (cell_index->row == prayers_count()) {
-    accessible_menu_draw_row(ctx, cell_layer, "Settings");
+  uint16_t row = cell_index->row;
+  if (row < prayers_count()) {
+    const Prayer *prayer = prayers_get(row);
+    accessible_menu_draw_row(ctx, cell_layer, prayer->name);
     return;
   }
 
-  const Prayer *prayer = prayers_get(cell_index->row);
-  accessible_menu_draw_row(ctx, cell_layer, prayer->name);
+  row -= prayers_count();
+  if (app_settings_get_daily_prayers_enabled()) {
+    if (row == 0) {
+      accessible_menu_draw_row(ctx, cell_layer, "More Prayers");
+      return;
+    }
+    --row;
+  }
+
+  if (app_settings_get_confession_enabled()) {
+    if (row == 0) {
+      accessible_menu_draw_row(ctx, cell_layer, "Confession");
+      return;
+    }
+  }
+
+  accessible_menu_draw_row(ctx, cell_layer, "Settings");
 }
 
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
-  if (cell_index->row == prayers_count()) {
-    settings_menu_show();
+  uint16_t row = cell_index->row;
+  if (row < prayers_count()) {
+    const Prayer *prayer = prayers_get(row);
+
+    if (prayer->destination == PRAYER_DESTINATION_ROSARY) {
+      rosary_menu_show();
+      return;
+    }
+
+    const PrayerTranslation *translation =
+        prayer_get_translation(prayer, prayer->default_language);
+
+    if (translation) {
+      prayer_screen_show(prayer->name, translation->text);
+    } else {
+      placeholder_screen_show(prayer->name);
+    }
     return;
   }
 
-  const Prayer *prayer = prayers_get(cell_index->row);
+  row -= prayers_count();
+  if (app_settings_get_daily_prayers_enabled()) {
+    if (row == 0) {
+      prayer_collection_menu_show(PRAYER_COLLECTION_DAILY);
+      return;
+    }
+    --row;
+  }
 
-  if (prayer->destination == PRAYER_DESTINATION_ROSARY) {
-    rosary_menu_show();
+  if (app_settings_get_confession_enabled()) {
+    if (row == 0) {
+      prayer_collection_menu_show(PRAYER_COLLECTION_CONFESSION);
+      return;
+    }
+  }
+
+  settings_menu_show();
+}
+
+static void menu_move_selection(bool up) {
+  if (!s_menu_layer) {
     return;
   }
 
-  const PrayerTranslation *translation =
-      prayer_get_translation(prayer, prayer->default_language);
-
-  if (translation) {
-    prayer_screen_show(prayer->name, translation->text);
-  } else {
-    placeholder_screen_show(prayer->name);
+  const uint16_t row_count =
+      menu_get_num_rows(s_menu_layer, 0, NULL);
+  if (row_count == 0) {
+    return;
   }
+
+  const MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
+  const bool should_wrap =
+      (up && selected.row == 0) ||
+      (!up && selected.row == row_count - 1);
+  if (should_wrap) {
+    menu_layer_set_selected_index(
+        s_menu_layer, MenuIndex(0, up ? row_count - 1 : 0),
+        up ? MenuRowAlignBottom : MenuRowAlignTop, true);
+    return;
+  }
+
+  menu_layer_set_selected_next(s_menu_layer, up, MenuRowAlignCenter, true);
+}
+
+static void menu_up_click_handler(ClickRecognizerRef recognizer,
+                                  void *context) {
+  (void)recognizer;
+  (void)context;
+  menu_move_selection(true);
+}
+
+static void menu_down_click_handler(ClickRecognizerRef recognizer,
+                                    void *context) {
+  (void)recognizer;
+  (void)context;
+  menu_move_selection(false);
+}
+
+static void menu_select_click_handler(ClickRecognizerRef recognizer,
+                                      void *context) {
+  (void)recognizer;
+  (void)context;
+  MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
+  menu_select_click(s_menu_layer, &selected, NULL);
+}
+
+static void menu_click_config_provider(void *context) {
+  (void)context;
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_UP, MAIN_MENU_REPEAT_INTERVAL_MS, menu_up_click_handler);
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_DOWN, MAIN_MENU_REPEAT_INTERVAL_MS, menu_down_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT,
+                                menu_select_click_handler);
 }
 
 static void menu_window_load(Window *window) {
@@ -68,7 +167,7 @@ static void menu_window_load(Window *window) {
       .select_click = menu_select_click,
   });
   accessible_menu_apply_colors(s_menu_layer);
-  menu_layer_set_click_config_onto_window(s_menu_layer, window);
+  window_set_click_config_provider(window, menu_click_config_provider);
   layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
 
@@ -83,6 +182,7 @@ static void menu_window_appear(Window *window) {
   }
 
   accessible_menu_apply_colors(s_menu_layer);
+  menu_layer_reload_data(s_menu_layer);
   layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
 }
 
@@ -95,6 +195,7 @@ static bool init(void) {
   prayer_screen_init();
   placeholder_screen_init();
   rosary_menu_init();
+  prayer_collection_menu_init();
   settings_menu_init();
 
   s_menu_window = window_create();
@@ -123,6 +224,7 @@ static void deinit(void) {
   s_menu_window = NULL;
 
   settings_menu_deinit();
+  prayer_collection_menu_deinit();
   rosary_menu_deinit();
   placeholder_screen_deinit();
   prayer_screen_deinit();

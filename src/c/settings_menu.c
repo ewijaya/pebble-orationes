@@ -11,7 +11,14 @@ enum {
   SETTINGS_MENU_ITEM_APPEARANCE,
   SETTINGS_MENU_ITEM_ACCENT_COLOR,
   SETTINGS_MENU_ITEM_NOON_REMINDER,
+  SETTINGS_MENU_ITEM_PRAYER_LIBRARY,
   SETTINGS_MENU_ITEM_COUNT,
+};
+
+enum {
+  PRAYER_LIBRARY_ITEM_DAILY_PRAYERS,
+  PRAYER_LIBRARY_ITEM_CONFESSION,
+  PRAYER_LIBRARY_ITEM_COUNT,
 };
 
 enum {
@@ -29,6 +36,8 @@ static Window *s_accent_color_window;
 static MenuLayer *s_accent_color_menu_layer;
 static Window *s_noon_reminder_window;
 static MenuLayer *s_noon_reminder_menu_layer;
+static Window *s_prayer_library_window;
+static MenuLayer *s_prayer_library_menu_layer;
 
 static uint16_t settings_get_num_rows(MenuLayer *menu_layer,
                                       uint16_t section_index, void *context) {
@@ -42,6 +51,7 @@ static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
       "Appearance",
       "Accent Color",
       "Noon Reminder",
+      "Prayer Library",
   };
   const char *label = labels[cell_index->row];
   accessible_menu_draw_row(ctx, cell_layer, label);
@@ -57,6 +67,44 @@ static void settings_select_click(MenuLayer *menu_layer,
     window_stack_push(s_accent_color_window, true);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_NOON_REMINDER) {
     window_stack_push(s_noon_reminder_window, true);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_PRAYER_LIBRARY) {
+    window_stack_push(s_prayer_library_window, true);
+  }
+}
+
+static uint16_t prayer_library_get_num_rows(MenuLayer *menu_layer,
+                                            uint16_t section_index,
+                                            void *context) {
+  return PRAYER_LIBRARY_ITEM_COUNT;
+}
+
+static void prayer_library_draw_row(GContext *ctx, const Layer *cell_layer,
+                                    MenuIndex *cell_index, void *context) {
+  if (cell_index->row == PRAYER_LIBRARY_ITEM_DAILY_PRAYERS) {
+    accessible_menu_draw_row_with_value(
+        ctx, cell_layer, "More Prayers",
+        app_settings_get_daily_prayers_enabled() ? "On" : "Off");
+  } else {
+    accessible_menu_draw_row_with_value(
+        ctx, cell_layer, "Confession",
+        app_settings_get_confession_enabled() ? "On" : "Off");
+  }
+}
+
+static void prayer_library_select_click(MenuLayer *menu_layer,
+                                        MenuIndex *cell_index,
+                                        void *context) {
+  bool saved = false;
+  if (cell_index->row == PRAYER_LIBRARY_ITEM_DAILY_PRAYERS) {
+    saved = app_settings_set_daily_prayers_enabled(
+        !app_settings_get_daily_prayers_enabled());
+  } else if (cell_index->row == PRAYER_LIBRARY_ITEM_CONFESSION) {
+    saved = app_settings_set_confession_enabled(
+        !app_settings_get_confession_enabled());
+  }
+
+  if (saved) {
+    layer_mark_dirty(menu_layer_get_layer(menu_layer));
   }
 }
 
@@ -255,6 +303,17 @@ static void noon_reminder_window_unload(Window *window) {
   s_noon_reminder_menu_layer = NULL;
 }
 
+static void prayer_library_window_load(Window *window) {
+  s_prayer_library_menu_layer =
+      create_menu(window, "Prayer Library", prayer_library_get_num_rows,
+                  prayer_library_draw_row, prayer_library_select_click);
+}
+
+static void prayer_library_window_unload(Window *window) {
+  menu_layer_destroy(s_prayer_library_menu_layer);
+  s_prayer_library_menu_layer = NULL;
+}
+
 void settings_menu_init(void) {
   s_settings_window = window_create();
   window_set_window_handlers(s_settings_window, (WindowHandlers){
@@ -285,9 +344,18 @@ void settings_menu_init(void) {
       .load = noon_reminder_window_load,
       .unload = noon_reminder_window_unload,
   });
+
+  s_prayer_library_window = window_create();
+  window_set_window_handlers(s_prayer_library_window, (WindowHandlers){
+      .load = prayer_library_window_load,
+      .unload = prayer_library_window_unload,
+  });
 }
 
 void settings_menu_deinit(void) {
+  window_destroy(s_prayer_library_window);
+  s_prayer_library_window = NULL;
+
   window_destroy(s_noon_reminder_window);
   s_noon_reminder_window = NULL;
 

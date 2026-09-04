@@ -8,12 +8,16 @@ enum {
   PERSIST_KEY_NOON_REMINDER_DURATION = 3,
   PERSIST_KEY_ACCENT_COLOR = 4,
   PERSIST_KEY_APPEARANCE = 5,
+  PERSIST_KEY_DAILY_PRAYERS_ENABLED = 6,
+  PERSIST_KEY_CONFESSION_ENABLED = 7,
 };
 
 static AppTextSize s_text_size = APP_TEXT_SIZE_LARGE;
 static AppAccentColor s_accent_color = APP_ACCENT_COLOR_OCEAN;
 static AppAppearance s_appearance = APP_APPEARANCE_LIGHT;
 static bool s_noon_reminder_enabled;
+static bool s_daily_prayers_enabled;
+static bool s_confession_enabled;
 static AppNoonReminderDuration s_noon_reminder_duration =
     APP_NOON_REMINDER_DURATION_10_SECONDS;
 
@@ -39,6 +43,8 @@ void app_settings_init(void) {
   s_accent_color = APP_ACCENT_COLOR_OCEAN;
   s_appearance = APP_APPEARANCE_LIGHT;
   s_noon_reminder_enabled = false;
+  s_daily_prayers_enabled = false;
+  s_confession_enabled = false;
   s_noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
 
   if (persist_exists(PERSIST_KEY_TEXT_SIZE)) {
@@ -75,6 +81,15 @@ void app_settings_init(void) {
       s_noon_reminder_duration =
           (AppNoonReminderDuration)stored_duration;
     }
+  }
+
+  if (persist_exists(PERSIST_KEY_DAILY_PRAYERS_ENABLED)) {
+    s_daily_prayers_enabled =
+        persist_read_bool(PERSIST_KEY_DAILY_PRAYERS_ENABLED);
+  }
+
+  if (persist_exists(PERSIST_KEY_CONFESSION_ENABLED)) {
+    s_confession_enabled = persist_read_bool(PERSIST_KEY_CONFESSION_ENABLED);
   }
 }
 
@@ -182,6 +197,32 @@ bool app_settings_set_noon_reminder_enabled(bool enabled) {
   }
 
   s_noon_reminder_enabled = enabled;
+  return true;
+}
+
+bool app_settings_get_daily_prayers_enabled(void) {
+  return s_daily_prayers_enabled;
+}
+
+bool app_settings_set_daily_prayers_enabled(bool enabled) {
+  if (persist_write_bool(PERSIST_KEY_DAILY_PRAYERS_ENABLED, enabled) < 0) {
+    return false;
+  }
+
+  s_daily_prayers_enabled = enabled;
+  return true;
+}
+
+bool app_settings_get_confession_enabled(void) {
+  return s_confession_enabled;
+}
+
+bool app_settings_set_confession_enabled(bool enabled) {
+  if (persist_write_bool(PERSIST_KEY_CONFESSION_ENABLED, enabled) < 0) {
+    return false;
+  }
+
+  s_confession_enabled = enabled;
   return true;
 }
 

@@ -21,8 +21,10 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Regina Caeli** — English text in a scrollable view.
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
 - **Memorare** — English text in a scrollable view.
+- **More Prayers** *(optional)* — prayers for Mental Prayer, Visit & Communion, Before Work, and Night Examination.
+- **Confession** *(optional)* — an examination of conscience, Act of Contrition, and prayers before and after Confession.
 
-Settings provide Large and Extra Large text, light and dark appearances, adaptive Ocean, Burgundy, Forest, and Monochrome accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface.
+The default menu stays focused on the five core prayers. Settings can enable the two additional collections, choose Large or Extra Large text, switch between light and dark appearances, select an adaptive accent, and turn on a noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and the main menu wraps from end to beginning.
 
 ## On a physical Pebble Time 2
 
@@ -38,7 +40,7 @@ Settings provide Large and Extra Large text, light and dark appearances, adaptiv
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.3.0, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The current release, v0.4.0, targets `emery`.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 

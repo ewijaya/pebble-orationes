@@ -42,6 +42,10 @@ bool app_settings_set_appearance(AppAppearance appearance);
 const char *app_settings_appearance_label(AppAppearance appearance);
 bool app_settings_get_noon_reminder_enabled(void);
 bool app_settings_set_noon_reminder_enabled(bool enabled);
+bool app_settings_get_daily_prayers_enabled(void);
+bool app_settings_set_daily_prayers_enabled(bool enabled);
+bool app_settings_get_confession_enabled(void);
+bool app_settings_set_confession_enabled(bool enabled);
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void);
 bool app_settings_set_noon_reminder_duration(
     AppNoonReminderDuration duration);

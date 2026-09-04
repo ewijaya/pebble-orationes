@@ -17,3 +17,7 @@ void accessible_menu_draw_header(GContext *ctx, const Layer *cell_layer,
                                  uint16_t section_index, void *context);
 void accessible_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                               const char *text);
+void accessible_menu_draw_row_with_value(GContext *ctx,
+                                         const Layer *cell_layer,
+                                         const char *text,
+                                         const char *value);

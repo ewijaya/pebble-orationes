@@ -1,7 +1,7 @@
 {
   "name": "orationes",
   "author": "ewijaya",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "keywords": [
     "pebble-app"
   ],
@@ -29,7 +29,7 @@
           "type": "font",
           "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_34",
           "file": "fonts/DejaVuSansCondensed-Bold.ttf",
-          "characterRegex": "[ -~·ÁÓÚáæéëíóúœǽ✠]"
+          "characterRegex": "[ -~·ÁÓÚáæéëíóúœǽ✠‘’“”•]"
         }
       ]
     }
