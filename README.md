@@ -6,7 +6,7 @@ A large-print, high-contrast Catholic prayer app for Pebble Time 2.
 
 **[Install from the Pebble App Store](https://apps.repebble.com/9882f741750c43eb8309777e)**
 
-Orationes is a personal native Pebble C app built specifically for Pebble Time 2 (`emery`). It favors readability on a small display through large bold text, strong black-and-white contrast, touchscreen scrolling, and hardware-button navigation.
+Orationes is a personal native Pebble C app built specifically for Pebble Time 2 (`emery`). It favors readability on a small display through large bold text, strong contrast, touchscreen scrolling, and hardware-button navigation.
 
 <p align="center">
   <img src="docs/images/framed/main-menu.png" alt="Orationes main menu on a Pebble Time 2-style frame" width="31%">
@@ -22,7 +22,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
 - **Memorare** — English text in a scrollable view.
 
-Prayer screens use `FONT_KEY_GOTHIC_28_BOLD` with 8 px margins. Menus use 54 px high-contrast rows. Ocean, burgundy, forest, and monochrome title accents adapt to the light and dark appearances available in Settings.
+Settings provide Large and Extra Large text, light and dark appearances, adaptive Ocean, Burgundy, Forest, and Monochrome accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface.
 
 ## On a physical Pebble Time 2
 
@@ -38,7 +38,7 @@ Prayer screens use `FONT_KEY_GOTHIC_28_BOLD` with 8 px margins. Menus use 54 px 
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.2.1, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The current release, v0.3.0, targets `emery`.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
