@@ -23,8 +23,9 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Memorare** — English text in a scrollable view.
 - **More Prayers** *(optional)* — prayers for Mental Prayer, Visit & Communion, Before Work, and Night Examination.
 - **Confession** *(optional)* — an examination of conscience, Act of Contrition, and prayers before and after Confession.
+- **Prayer library** — Psalm 50 (51), Psalm 2, Acceptance of Death, Prayer for Vocations, Blessed Be Your Purity, and the Canticle of the Three Children.
 
-The default menu stays focused on the five core prayers. Settings can enable the two additional collections, choose Large or Extra Large text, switch between light and dark appearances, select an adaptive accent, and turn on a noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and the main menu wraps from end to beginning.
+The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
 
 ## On a physical Pebble Time 2
 
@@ -40,7 +41,7 @@ The default menu stays focused on the five core prayers. Settings can enable the
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.4.0, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The current release, v0.5.0, targets `emery`.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
@@ -67,7 +68,7 @@ pebble install --cloudpebble build/pebble-orationes.pbw
 
 ### Architecture
 
-Orationes is an Emery-only native Pebble C SDK application. It has no PebbleKit JS, phone-side code, or network access. A reusable prayer screen renders scrollable texts, a reusable accessible menu renderer provides the high-contrast navigation, and Rosary data is kept separate from its menus. Prayer content is separated from UI code where practical. Builds produce a `.pbw` application bundle.
+Orationes is an Emery-only native Pebble C SDK application. A small bundled PebbleKit JS companion provides phone-side settings; prayer content and normal use remain offline. A reusable prayer screen renders scrollable texts, a reusable accessible menu renderer provides high-contrast navigation, and prayer data is separated from UI code where practical. Builds produce a `.pbw` application bundle.
 
 ### Updating screenshots
 
