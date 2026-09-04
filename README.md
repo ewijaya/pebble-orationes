@@ -20,6 +20,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Holy Rosary** — Today's Mysteries, All Mysteries, and the Litany of Loreto. The watch chooses Joyful (Mon/Sat), Sorrowful (Tue/Fri), Glorious (Wed/Sun), or Luminous (Thu) mysteries from its local weekday.
 - **Regina Caeli** — English text in a scrollable view.
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
+- **Memorare** — English text in a scrollable view.
 
 Prayer screens use `FONT_KEY_GOTHIC_28_BOLD` with 8 px margins. Menus use 54 px rows with white-on-black selection and black-on-white unselected items.
 

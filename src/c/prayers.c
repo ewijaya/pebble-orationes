@@ -31,6 +31,21 @@ static const PrayerTranslation s_angelus_translations[] = {
     },
 };
 
+static const char s_memorare_english[] =
+    "Remember, O most gracious Virgin Mary, that never was it known that "
+    "anyone who fled to your protection, implored your help or sought your "
+    "intercession, was left unaided. Inspired by this confidence, I fly "
+    "unto you, O Virgin of virgins, my Mother. To you I come, before you I "
+    "stand, sinful and sorrowful. O Mother of the Word incarnate, despise "
+    "not my petitions, but, in your mercy, hear and answer me. Amen.";
+
+static const PrayerTranslation s_memorare_translations[] = {
+    {
+        .language = PRAYER_LANGUAGE_ENGLISH,
+        .text = s_memorare_english,
+    },
+};
+
 static const char s_regina_caeli_english[] =
     "V. Queen of heaven, rejoice, alleluia.\n"
     "R. For he whom you did merit to bear, alleluia.\n\n"
@@ -187,6 +202,15 @@ static const Prayer s_prayers[] = {
         .translation_count =
             (uint8_t)(sizeof(s_angelus_translations) /
                       sizeof(s_angelus_translations[0])),
+    },
+    {
+        .name = "Memorare",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_memorare_translations,
+        .translation_count =
+            (uint8_t)(sizeof(s_memorare_translations) /
+                      sizeof(s_memorare_translations[0])),
     },
 };
 
