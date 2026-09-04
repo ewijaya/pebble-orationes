@@ -3,6 +3,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "main_menu_catalog.h"
+
+enum {
+  APP_MAIN_MENU_SLOT_COUNT = 7,
+};
+
 typedef enum {
   APP_TEXT_SIZE_LARGE,
   APP_TEXT_SIZE_EXTRA_LARGE,
@@ -42,10 +48,12 @@ bool app_settings_set_appearance(AppAppearance appearance);
 const char *app_settings_appearance_label(AppAppearance appearance);
 bool app_settings_get_noon_reminder_enabled(void);
 bool app_settings_set_noon_reminder_enabled(bool enabled);
-bool app_settings_get_daily_prayers_enabled(void);
-bool app_settings_set_daily_prayers_enabled(bool enabled);
-bool app_settings_get_confession_enabled(void);
-bool app_settings_set_confession_enabled(bool enabled);
+MainMenuEntryId app_settings_get_main_menu_slot(uint8_t slot_index);
+bool app_settings_set_main_menu_slot(uint8_t slot_index,
+                                     MainMenuEntryId entry_id);
+bool app_settings_set_main_menu_slots(
+    const MainMenuEntryId slots[APP_MAIN_MENU_SLOT_COUNT]);
+bool app_settings_restore_main_menu_defaults(void);
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void);
 bool app_settings_set_noon_reminder_duration(
     AppNoonReminderDuration duration);

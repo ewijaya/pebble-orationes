@@ -29,8 +29,11 @@ static GFont s_custom_body_font;
 
 static GFont get_body_font(void) {
   if (app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE) {
-    s_custom_body_font = fonts_load_custom_font(
-        resource_get_handle(RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_34));
+    if (!s_custom_body_font) {
+      s_custom_body_font = fonts_load_custom_font(
+          resource_get_handle(
+              RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_34));
+    }
     if (s_custom_body_font) {
       return s_custom_body_font;
     }
@@ -244,4 +247,52 @@ void prayer_screen_show(const char *title, const char *text) {
   s_title = title;
   s_text = text;
   window_stack_push(s_window, true);
+}
+
+void prayer_screen_refresh(void) {
+  if (!s_scroll_layer || !s_title_layer || !s_body_layer) {
+    return;
+  }
+
+  const GRect viewport =
+      layer_get_bounds(scroll_layer_get_layer(s_scroll_layer));
+  const int16_t text_width = viewport.size.w - (2 * HORIZONTAL_MARGIN);
+  const int16_t body_y = TITLE_TOP_MARGIN + TITLE_HEIGHT + BODY_TOP_MARGIN;
+  const int16_t old_offset =
+      scroll_layer_get_content_offset(s_scroll_layer).y;
+  const GFont body_font = get_body_font();
+
+  window_set_background_color(s_window, app_theme_background_color());
+  text_layer_set_background_color(s_title_layer,
+                                  app_theme_title_background_color());
+  text_layer_set_text_color(s_title_layer,
+                            app_theme_title_foreground_color());
+  text_layer_set_text_color(s_body_layer, app_theme_foreground_color());
+  text_layer_set_font(s_body_layer, body_font);
+
+  if (app_settings_get_text_size() == APP_TEXT_SIZE_LARGE &&
+      s_custom_body_font) {
+    fonts_unload_custom_font(s_custom_body_font);
+    s_custom_body_font = NULL;
+  }
+
+  layer_set_frame(text_layer_get_layer(s_body_layer),
+                  GRect(HORIZONTAL_MARGIN, body_y, text_width,
+                        BODY_LAYOUT_HEIGHT));
+  const GSize body_size = text_layer_get_content_size(s_body_layer);
+  layer_set_frame(text_layer_get_layer(s_body_layer),
+                  GRect(HORIZONTAL_MARGIN, body_y, text_width, body_size.h));
+
+  const int16_t content_height = body_y + body_size.h + BOTTOM_MARGIN;
+  const int16_t effective_height =
+      content_height > viewport.size.h ? content_height : viewport.size.h;
+  scroll_layer_set_content_size(
+      s_scroll_layer, GSize(viewport.size.w, effective_height));
+
+  const int16_t minimum_offset = viewport.size.h - effective_height;
+  const int16_t restored_offset =
+      old_offset < minimum_offset ? minimum_offset : old_offset;
+  scroll_layer_set_content_offset(s_scroll_layer,
+                                  GPoint(0, restored_offset), false);
+  layer_mark_dirty(scroll_layer_get_layer(s_scroll_layer));
 }

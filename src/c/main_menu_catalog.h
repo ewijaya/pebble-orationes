@@ -1,0 +1,45 @@
+#pragma once
+
+#include <stdint.h>
+
+#include "prayer_collections.h"
+#include "prayers.h"
+
+typedef enum {
+  MAIN_MENU_ENTRY_NONE,
+  MAIN_MENU_ENTRY_PRECES,
+  MAIN_MENU_ENTRY_HOLY_ROSARY,
+  MAIN_MENU_ENTRY_REGINA_CAELI,
+  MAIN_MENU_ENTRY_ANGELUS,
+  MAIN_MENU_ENTRY_MEMORARE,
+  MAIN_MENU_ENTRY_LITANY_OF_LORETO,
+  MAIN_MENU_ENTRY_MORE_PRAYERS,
+  MAIN_MENU_ENTRY_MENTAL_PRAYER,
+  MAIN_MENU_ENTRY_VISIT_AND_COMMUNION,
+  MAIN_MENU_ENTRY_BEFORE_WORK,
+  MAIN_MENU_ENTRY_NIGHT_EXAMINATION,
+  MAIN_MENU_ENTRY_CONFESSION,
+  MAIN_MENU_ENTRY_CONFESSION_EXAMINATION,
+  MAIN_MENU_ENTRY_ACT_OF_CONTRITION,
+  MAIN_MENU_ENTRY_BEFORE_CONFESSION,
+  MAIN_MENU_ENTRY_AFTER_CONFESSION,
+  MAIN_MENU_ENTRY_COUNT,
+} MainMenuEntryId;
+
+typedef enum {
+  MAIN_MENU_DESTINATION_NONE,
+  MAIN_MENU_DESTINATION_PRAYER,
+  MAIN_MENU_DESTINATION_LITANY,
+  MAIN_MENU_DESTINATION_COLLECTION,
+  MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+} MainMenuDestination;
+
+typedef struct {
+  const char *name;
+  MainMenuDestination destination;
+  uint8_t target;
+  uint8_t item_index;
+} MainMenuEntry;
+
+uint16_t main_menu_catalog_count(void);
+const MainMenuEntry *main_menu_catalog_get(MainMenuEntryId entry_id);

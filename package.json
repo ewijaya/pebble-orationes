@@ -6,17 +6,45 @@
     "pebble-app"
   ],
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "@rebble/clay": "^1.1.0"
+  },
   "pebble": {
     "displayName": "Orationes",
     "uuid": "9f17d477-cef1-4512-8536-f01d50bb07a3",
     "sdkVersion": "3",
+    "enableMultiJS": true,
     "targetPlatforms": [
       "emery"
+    ],
+    "capabilities": [
+      "configurable"
     ],
     "watchapp": {
       "watchface": false
     },
+    "messageKeys": [
+      "SettingsRequest",
+      "TextSize",
+      "Appearance",
+      "AccentColor",
+      "NoonReminderEnabled",
+      "NoonReminderDuration",
+      "ShowPreces",
+      "ShowHolyRosary",
+      "ShowReginaCaeli",
+      "ShowAngelus",
+      "ShowMemorare",
+      "ShowMorePrayers",
+      "ShowConfession",
+      "MainMenuSlot1",
+      "MainMenuSlot2",
+      "MainMenuSlot3",
+      "MainMenuSlot4",
+      "MainMenuSlot5",
+      "MainMenuSlot6",
+      "MainMenuSlot7"
+    ],
     "resources": {
       "media": [
         {

@@ -4,21 +4,22 @@
 
 #include "accessible_menu.h"
 #include "app_settings.h"
+#include "main_menu_catalog.h"
 #include "noon_reminder.h"
+#include "phone_settings.h"
 
 enum {
   SETTINGS_MENU_ITEM_TEXT_SIZE,
   SETTINGS_MENU_ITEM_APPEARANCE,
   SETTINGS_MENU_ITEM_ACCENT_COLOR,
   SETTINGS_MENU_ITEM_NOON_REMINDER,
-  SETTINGS_MENU_ITEM_PRAYER_LIBRARY,
+  SETTINGS_MENU_ITEM_MAIN_MENU,
   SETTINGS_MENU_ITEM_COUNT,
 };
 
 enum {
-  PRAYER_LIBRARY_ITEM_DAILY_PRAYERS,
-  PRAYER_LIBRARY_ITEM_CONFESSION,
-  PRAYER_LIBRARY_ITEM_COUNT,
+  MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS = APP_MAIN_MENU_SLOT_COUNT,
+  MAIN_MENU_SLOT_ITEM_COUNT,
 };
 
 enum {
@@ -36,8 +37,11 @@ static Window *s_accent_color_window;
 static MenuLayer *s_accent_color_menu_layer;
 static Window *s_noon_reminder_window;
 static MenuLayer *s_noon_reminder_menu_layer;
-static Window *s_prayer_library_window;
-static MenuLayer *s_prayer_library_menu_layer;
+static Window *s_main_menu_slots_window;
+static MenuLayer *s_main_menu_slots_menu_layer;
+static Window *s_main_menu_entry_window;
+static MenuLayer *s_main_menu_entry_menu_layer;
+static uint8_t s_editing_slot_index;
 
 static uint16_t settings_get_num_rows(MenuLayer *menu_layer,
                                       uint16_t section_index, void *context) {
@@ -51,7 +55,7 @@ static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
       "Appearance",
       "Accent Color",
       "Noon Reminder",
-      "Prayer Library",
+      "Main Menu",
   };
   const char *label = labels[cell_index->row];
   accessible_menu_draw_row(ctx, cell_layer, label);
@@ -67,44 +71,78 @@ static void settings_select_click(MenuLayer *menu_layer,
     window_stack_push(s_accent_color_window, true);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_NOON_REMINDER) {
     window_stack_push(s_noon_reminder_window, true);
-  } else if (cell_index->row == SETTINGS_MENU_ITEM_PRAYER_LIBRARY) {
-    window_stack_push(s_prayer_library_window, true);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_MAIN_MENU) {
+    window_stack_push(s_main_menu_slots_window, true);
   }
 }
 
-static uint16_t prayer_library_get_num_rows(MenuLayer *menu_layer,
-                                            uint16_t section_index,
-                                            void *context) {
-  return PRAYER_LIBRARY_ITEM_COUNT;
+static uint16_t main_menu_slots_get_num_rows(
+    MenuLayer *menu_layer, uint16_t section_index, void *context) {
+  return MAIN_MENU_SLOT_ITEM_COUNT;
 }
 
-static void prayer_library_draw_row(GContext *ctx, const Layer *cell_layer,
-                                    MenuIndex *cell_index, void *context) {
-  if (cell_index->row == PRAYER_LIBRARY_ITEM_DAILY_PRAYERS) {
-    accessible_menu_draw_row_with_value(
-        ctx, cell_layer, "More Prayers",
-        app_settings_get_daily_prayers_enabled() ? "On" : "Off");
-  } else {
-    accessible_menu_draw_row_with_value(
-        ctx, cell_layer, "Confession",
-        app_settings_get_confession_enabled() ? "On" : "Off");
+static void main_menu_slots_draw_row(GContext *ctx,
+                                     const Layer *cell_layer,
+                                     MenuIndex *cell_index,
+                                     void *context) {
+  if (cell_index->row == MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS) {
+    accessible_menu_draw_row(ctx, cell_layer, "Restore Defaults");
+    return;
+  }
+
+  const MainMenuEntry *entry = main_menu_catalog_get(
+      app_settings_get_main_menu_slot((uint8_t)cell_index->row));
+  if (entry) {
+    char label[32];
+    snprintf(label, sizeof(label), "%u. %s",
+             (unsigned int)cell_index->row + 1, entry->name);
+    accessible_menu_draw_row(ctx, cell_layer, label);
   }
 }
 
-static void prayer_library_select_click(MenuLayer *menu_layer,
-                                        MenuIndex *cell_index,
-                                        void *context) {
-  bool saved = false;
-  if (cell_index->row == PRAYER_LIBRARY_ITEM_DAILY_PRAYERS) {
-    saved = app_settings_set_daily_prayers_enabled(
-        !app_settings_get_daily_prayers_enabled());
-  } else if (cell_index->row == PRAYER_LIBRARY_ITEM_CONFESSION) {
-    saved = app_settings_set_confession_enabled(
-        !app_settings_get_confession_enabled());
+static void main_menu_slots_select_click(MenuLayer *menu_layer,
+                                         MenuIndex *cell_index,
+                                         void *context) {
+  if (cell_index->row == MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS) {
+    if (app_settings_restore_main_menu_defaults()) {
+      menu_layer_reload_data(menu_layer);
+      layer_mark_dirty(menu_layer_get_layer(menu_layer));
+      phone_settings_send_current();
+    }
+    return;
   }
 
-  if (saved) {
-    layer_mark_dirty(menu_layer_get_layer(menu_layer));
+  s_editing_slot_index = (uint8_t)cell_index->row;
+  window_stack_push(s_main_menu_entry_window, true);
+}
+
+static uint16_t main_menu_entry_get_num_rows(
+    MenuLayer *menu_layer, uint16_t section_index, void *context) {
+  return main_menu_catalog_count();
+}
+
+static void main_menu_entry_draw_row(GContext *ctx,
+                                     const Layer *cell_layer,
+                                     MenuIndex *cell_index,
+                                     void *context) {
+  const MainMenuEntry *entry =
+      main_menu_catalog_get((MainMenuEntryId)cell_index->row);
+  if (entry) {
+    accessible_menu_draw_row(ctx, cell_layer, entry->name);
+  }
+}
+
+static void main_menu_entry_select_click(MenuLayer *menu_layer,
+                                         MenuIndex *cell_index,
+                                         void *context) {
+  if (app_settings_set_main_menu_slot(
+          s_editing_slot_index, (MainMenuEntryId)cell_index->row)) {
+    if (s_main_menu_slots_menu_layer) {
+      menu_layer_reload_data(s_main_menu_slots_menu_layer);
+      layer_mark_dirty(menu_layer_get_layer(s_main_menu_slots_menu_layer));
+    }
+    phone_settings_send_current();
+    window_stack_pop(true);
   }
 }
 
@@ -124,6 +162,7 @@ static void appearance_draw_row(GContext *ctx, const Layer *cell_layer,
 static void appearance_select_click(MenuLayer *menu_layer,
                                     MenuIndex *cell_index, void *context) {
   if (app_settings_set_appearance((AppAppearance)cell_index->row)) {
+    phone_settings_send_current();
     window_stack_remove(s_settings_window, false);
     window_stack_pop(true);
   }
@@ -145,6 +184,7 @@ static void accent_color_draw_row(GContext *ctx, const Layer *cell_layer,
 static void accent_color_select_click(MenuLayer *menu_layer,
                                       MenuIndex *cell_index, void *context) {
   if (app_settings_set_accent_color((AppAccentColor)cell_index->row)) {
+    phone_settings_send_current();
     window_stack_remove(s_settings_window, false);
     window_stack_pop(true);
   }
@@ -166,6 +206,7 @@ static void text_size_draw_row(GContext *ctx, const Layer *cell_layer,
 static void text_size_select_click(MenuLayer *menu_layer,
                                    MenuIndex *cell_index, void *context) {
   if (app_settings_set_text_size((AppTextSize)cell_index->row)) {
+    phone_settings_send_current();
     window_stack_remove(s_settings_window, false);
     window_stack_pop(true);
   }
@@ -203,6 +244,7 @@ static void noon_reminder_select_click(MenuLayer *menu_layer,
   }
 
   if (saved) {
+    phone_settings_send_current();
     window_stack_remove(s_settings_window, false);
     window_stack_pop(true);
   }
@@ -303,15 +345,30 @@ static void noon_reminder_window_unload(Window *window) {
   s_noon_reminder_menu_layer = NULL;
 }
 
-static void prayer_library_window_load(Window *window) {
-  s_prayer_library_menu_layer =
-      create_menu(window, "Prayer Library", prayer_library_get_num_rows,
-                  prayer_library_draw_row, prayer_library_select_click);
+static void main_menu_entry_window_load(Window *window) {
+  s_main_menu_entry_menu_layer = create_menu(
+      window, "Choose Entry", main_menu_entry_get_num_rows,
+      main_menu_entry_draw_row, main_menu_entry_select_click);
+  menu_layer_set_selected_index(
+      s_main_menu_entry_menu_layer,
+      MenuIndex(0, app_settings_get_main_menu_slot(s_editing_slot_index)),
+      MenuRowAlignCenter, false);
 }
 
-static void prayer_library_window_unload(Window *window) {
-  menu_layer_destroy(s_prayer_library_menu_layer);
-  s_prayer_library_menu_layer = NULL;
+static void main_menu_entry_window_unload(Window *window) {
+  menu_layer_destroy(s_main_menu_entry_menu_layer);
+  s_main_menu_entry_menu_layer = NULL;
+}
+
+static void main_menu_slots_window_load(Window *window) {
+  s_main_menu_slots_menu_layer = create_menu(
+      window, "Main Menu", main_menu_slots_get_num_rows,
+      main_menu_slots_draw_row, main_menu_slots_select_click);
+}
+
+static void main_menu_slots_window_unload(Window *window) {
+  menu_layer_destroy(s_main_menu_slots_menu_layer);
+  s_main_menu_slots_menu_layer = NULL;
 }
 
 void settings_menu_init(void) {
@@ -345,16 +402,25 @@ void settings_menu_init(void) {
       .unload = noon_reminder_window_unload,
   });
 
-  s_prayer_library_window = window_create();
-  window_set_window_handlers(s_prayer_library_window, (WindowHandlers){
-      .load = prayer_library_window_load,
-      .unload = prayer_library_window_unload,
+  s_main_menu_entry_window = window_create();
+  window_set_window_handlers(s_main_menu_entry_window, (WindowHandlers){
+      .load = main_menu_entry_window_load,
+      .unload = main_menu_entry_window_unload,
+  });
+
+  s_main_menu_slots_window = window_create();
+  window_set_window_handlers(s_main_menu_slots_window, (WindowHandlers){
+      .load = main_menu_slots_window_load,
+      .unload = main_menu_slots_window_unload,
   });
 }
 
 void settings_menu_deinit(void) {
-  window_destroy(s_prayer_library_window);
-  s_prayer_library_window = NULL;
+  window_destroy(s_main_menu_entry_window);
+  s_main_menu_entry_window = NULL;
+
+  window_destroy(s_main_menu_slots_window);
+  s_main_menu_slots_window = NULL;
 
   window_destroy(s_noon_reminder_window);
   s_noon_reminder_window = NULL;
@@ -374,4 +440,25 @@ void settings_menu_deinit(void) {
 
 void settings_menu_show(void) {
   window_stack_push(s_settings_window, true);
+}
+
+void settings_menu_refresh(void) {
+  MenuLayer *menu_layers[] = {
+      s_settings_menu_layer,
+      s_text_size_menu_layer,
+      s_appearance_menu_layer,
+      s_accent_color_menu_layer,
+      s_noon_reminder_menu_layer,
+      s_main_menu_slots_menu_layer,
+      s_main_menu_entry_menu_layer,
+  };
+  for (uint8_t index = 0;
+       index < sizeof(menu_layers) / sizeof(menu_layers[0]); ++index) {
+    if (!menu_layers[index]) {
+      continue;
+    }
+    accessible_menu_apply_colors(menu_layers[index]);
+    menu_layer_reload_data(menu_layers[index]);
+    layer_mark_dirty(menu_layer_get_layer(menu_layers[index]));
+  }
 }

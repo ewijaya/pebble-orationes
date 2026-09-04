@@ -178,3 +178,19 @@ void rosary_menu_deinit(void) {
 void rosary_menu_show(void) {
   window_stack_push(s_rosary_window, true);
 }
+
+void rosary_menu_refresh(void) {
+  MenuLayer *menu_layers[] = {
+      s_rosary_menu_layer,
+      s_all_mysteries_menu_layer,
+  };
+  for (uint8_t index = 0;
+       index < sizeof(menu_layers) / sizeof(menu_layers[0]); ++index) {
+    if (!menu_layers[index]) {
+      continue;
+    }
+    accessible_menu_apply_colors(menu_layers[index]);
+    menu_layer_reload_data(menu_layers[index]);
+    layer_mark_dirty(menu_layer_get_layer(menu_layers[index]));
+  }
+}

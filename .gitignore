@@ -1,6 +1,7 @@
 # Pebble build output
 /build/
 /.lock-waf*
+/node_modules/
 
 # macOS
 .DS_Store

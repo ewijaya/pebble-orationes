@@ -103,3 +103,12 @@ void prayer_collection_menu_show(PrayerCollectionId collection_id) {
   s_collection = collection;
   window_stack_push(s_window, true);
 }
+
+void prayer_collection_menu_refresh(void) {
+  if (!s_menu_layer) {
+    return;
+  }
+  accessible_menu_apply_colors(s_menu_layer);
+  menu_layer_reload_data(s_menu_layer);
+  layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
+}

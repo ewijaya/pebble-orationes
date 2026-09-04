@@ -2,7 +2,10 @@
 
 #include "accessible_menu.h"
 #include "app_settings.h"
+#include "litany.h"
+#include "main_menu_catalog.h"
 #include "noon_reminder.h"
+#include "phone_settings.h"
 #include "placeholder_screen.h"
 #include "prayer_collection_menu.h"
 #include "prayer_screen.h"
@@ -18,38 +21,46 @@ enum {
 static Window *s_menu_window;
 static MenuLayer *s_menu_layer;
 
-static uint16_t optional_collection_count(void) {
-  return (app_settings_get_daily_prayers_enabled() ? 1 : 0) +
-         (app_settings_get_confession_enabled() ? 1 : 0);
+static uint16_t configured_entry_count(void) {
+  uint16_t count = 0;
+  for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
+    if (app_settings_get_main_menu_slot(slot) != MAIN_MENU_ENTRY_NONE) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+static MainMenuEntryId configured_entry_for_row(uint16_t row) {
+  uint16_t visible_row = 0;
+  for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
+    const MainMenuEntryId entry_id = app_settings_get_main_menu_slot(slot);
+    if (entry_id == MAIN_MENU_ENTRY_NONE) {
+      continue;
+    }
+    if (visible_row == row) {
+      return entry_id;
+    }
+    ++visible_row;
+  }
+  return MAIN_MENU_ENTRY_NONE;
 }
 
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
                                   void *context) {
-  return prayers_count() + optional_collection_count() +
+  return configured_entry_count() +
          MAIN_MENU_ITEM_SETTINGS_OFFSET;
 }
 
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
   uint16_t row = cell_index->row;
-  if (row < prayers_count()) {
-    const Prayer *prayer = prayers_get(row);
-    accessible_menu_draw_row(ctx, cell_layer, prayer->name);
-    return;
-  }
-
-  row -= prayers_count();
-  if (app_settings_get_daily_prayers_enabled()) {
-    if (row == 0) {
-      accessible_menu_draw_row(ctx, cell_layer, "More Prayers");
-      return;
-    }
-    --row;
-  }
-
-  if (app_settings_get_confession_enabled()) {
-    if (row == 0) {
-      accessible_menu_draw_row(ctx, cell_layer, "Confession");
+  const uint16_t entry_count = configured_entry_count();
+  if (row < entry_count) {
+    const MainMenuEntry *entry =
+        main_menu_catalog_get(configured_entry_for_row(row));
+    if (entry) {
+      accessible_menu_draw_row(ctx, cell_layer, entry->name);
       return;
     }
   }
@@ -60,39 +71,45 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   uint16_t row = cell_index->row;
-  if (row < prayers_count()) {
-    const Prayer *prayer = prayers_get(row);
-
-    if (prayer->destination == PRAYER_DESTINATION_ROSARY) {
-      rosary_menu_show();
+  const uint16_t entry_count = configured_entry_count();
+  if (row < entry_count) {
+    const MainMenuEntry *entry =
+        main_menu_catalog_get(configured_entry_for_row(row));
+    if (!entry) {
       return;
     }
 
-    const PrayerTranslation *translation =
-        prayer_get_translation(prayer, prayer->default_language);
-
-    if (translation) {
-      prayer_screen_show(prayer->name, translation->text);
-    } else {
-      placeholder_screen_show(prayer->name);
+    if (entry->destination == MAIN_MENU_DESTINATION_PRAYER) {
+      const Prayer *prayer = prayers_get_by_id((PrayerId)entry->target);
+      if (prayer && prayer->destination == PRAYER_DESTINATION_ROSARY) {
+        rosary_menu_show();
+      } else if (prayer) {
+        const PrayerTranslation *translation =
+            prayer_get_translation(prayer, prayer->default_language);
+        if (translation) {
+          prayer_screen_show(prayer->name, translation->text);
+        } else {
+          placeholder_screen_show(prayer->name);
+        }
+      }
+    } else if (entry->destination == MAIN_MENU_DESTINATION_LITANY) {
+      prayer_screen_show(entry->name, litany_of_loreto_text());
+    } else if (entry->destination == MAIN_MENU_DESTINATION_COLLECTION) {
+      prayer_collection_menu_show((PrayerCollectionId)entry->target);
+    } else if (entry->destination ==
+               MAIN_MENU_DESTINATION_COLLECTION_PRAYER) {
+      const PrayerCollection *collection = prayer_collections_get(
+          (PrayerCollectionId)entry->target);
+      if (collection && entry->item_index < collection->prayer_count) {
+        const Prayer *prayer = &collection->prayers[entry->item_index];
+        const PrayerTranslation *translation =
+            prayer_get_translation(prayer, prayer->default_language);
+        if (translation) {
+          prayer_screen_show(prayer->name, translation->text);
+        }
+      }
     }
     return;
-  }
-
-  row -= prayers_count();
-  if (app_settings_get_daily_prayers_enabled()) {
-    if (row == 0) {
-      prayer_collection_menu_show(PRAYER_COLLECTION_DAILY);
-      return;
-    }
-    --row;
-  }
-
-  if (app_settings_get_confession_enabled()) {
-    if (row == 0) {
-      prayer_collection_menu_show(PRAYER_COLLECTION_CONFESSION);
-      return;
-    }
   }
 
   settings_menu_show();
@@ -186,6 +203,26 @@ static void menu_window_appear(Window *window) {
   layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
 }
 
+static void settings_changed_handler(void) {
+  if (s_menu_layer) {
+    const uint16_t row_count = menu_get_num_rows(s_menu_layer, 0, NULL);
+    const MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
+    accessible_menu_apply_colors(s_menu_layer);
+    menu_layer_reload_data(s_menu_layer);
+    if (selected.row >= row_count) {
+      menu_layer_set_selected_index(
+          s_menu_layer, MenuIndex(0, row_count - 1), MenuRowAlignBottom,
+          false);
+    }
+    layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
+  }
+
+  prayer_screen_refresh();
+  settings_menu_refresh();
+  rosary_menu_refresh();
+  prayer_collection_menu_refresh();
+}
+
 static bool init(void) {
 #if defined(PBL_TOUCH)
   app_touch_navigation_enable(true);
@@ -206,6 +243,7 @@ static bool init(void) {
   });
 
   const bool show_noon_reminder = noon_reminder_init();
+  phone_settings_init(settings_changed_handler);
   if (launch_reason() == APP_LAUNCH_WAKEUP) {
     if (show_noon_reminder) {
       noon_reminder_show();
@@ -218,6 +256,7 @@ static bool init(void) {
 }
 
 static void deinit(void) {
+  phone_settings_deinit();
   noon_reminder_deinit();
 
   window_destroy(s_menu_window);
