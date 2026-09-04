@@ -2,6 +2,7 @@
 
 #include "accessible_menu.h"
 #include "app_settings.h"
+#include "noon_reminder.h"
 #include "placeholder_screen.h"
 #include "prayer_screen.h"
 #include "prayers.h"
@@ -76,7 +77,7 @@ static void menu_window_unload(Window *window) {
   s_menu_layer = NULL;
 }
 
-static void init(void) {
+static bool init(void) {
 #if defined(PBL_TOUCH)
   app_touch_navigation_enable(true);
 #endif
@@ -92,10 +93,22 @@ static void init(void) {
       .load = menu_window_load,
       .unload = menu_window_unload,
   });
+
+  const bool show_noon_reminder = noon_reminder_init();
+  if (launch_reason() == APP_LAUNCH_WAKEUP) {
+    if (show_noon_reminder) {
+      noon_reminder_show();
+    }
+    return show_noon_reminder;
+  }
+
   window_stack_push(s_menu_window, true);
+  return true;
 }
 
 static void deinit(void) {
+  noon_reminder_deinit();
+
   window_destroy(s_menu_window);
   s_menu_window = NULL;
 
@@ -106,7 +119,8 @@ static void deinit(void) {
 }
 
 int main(void) {
-  init();
-  app_event_loop();
+  if (init()) {
+    app_event_loop();
+  }
   deinit();
 }

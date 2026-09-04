@@ -232,6 +232,10 @@ void prayer_screen_deinit(void) {
 }
 
 void prayer_screen_show(const char *title, const char *text) {
+  if (window_stack_contains_window(s_window)) {
+    window_stack_remove(s_window, false);
+  }
+
   s_title = title;
   s_text = text;
   window_stack_push(s_window, true);

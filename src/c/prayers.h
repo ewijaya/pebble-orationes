@@ -25,7 +25,16 @@ typedef struct {
   uint8_t translation_count;
 } Prayer;
 
+typedef enum {
+  PRAYER_ID_PRECES,
+  PRAYER_ID_HOLY_ROSARY,
+  PRAYER_ID_REGINA_CAELI,
+  PRAYER_ID_ANGELUS,
+  PRAYER_ID_COUNT,
+} PrayerId;
+
 uint16_t prayers_count(void);
 const Prayer *prayers_get(uint16_t index);
+const Prayer *prayers_get_by_id(PrayerId prayer_id);
 const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
                                                 PrayerLanguage language);

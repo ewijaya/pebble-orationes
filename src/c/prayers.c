@@ -202,6 +202,12 @@ const Prayer *prayers_get(uint16_t index) {
   return &s_prayers[index];
 }
 
+const Prayer *prayers_get_by_id(PrayerId prayer_id) {
+  return (uint32_t)prayer_id < PRAYER_ID_COUNT
+             ? prayers_get((uint16_t)prayer_id)
+             : NULL;
+}
+
 const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
                                                 PrayerLanguage language) {
   if (!prayer) {
