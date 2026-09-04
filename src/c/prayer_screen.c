@@ -3,11 +3,12 @@
 #include <pebble.h>
 
 #include "app_settings.h"
+#include "app_theme.h"
 
 enum {
   HORIZONTAL_MARGIN = 8,
-  TITLE_TOP_MARGIN = 8,
-  TITLE_HEIGHT = 38,
+  TITLE_TOP_MARGIN = 0,
+  TITLE_HEIGHT = 44,
   BODY_TOP_MARGIN = 8,
   BOTTOM_MARGIN = 18,
   BODY_LAYOUT_HEIGHT = 30000,
@@ -160,6 +161,8 @@ static void window_load(Window *window) {
   const int16_t text_width = bounds.size.w - (2 * HORIZONTAL_MARGIN);
   const int16_t body_y = TITLE_TOP_MARGIN + TITLE_HEIGHT + BODY_TOP_MARGIN;
 
+  window_set_background_color(window, app_theme_background_color());
+
   s_scroll_layer = scroll_layer_create(bounds);
   scroll_layer_set_callbacks(s_scroll_layer, (ScrollLayerCallbacks){
       .click_config_provider = prayer_click_config_provider,
@@ -168,9 +171,11 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, scroll_layer_get_layer(s_scroll_layer));
 
   s_title_layer = text_layer_create(
-      GRect(HORIZONTAL_MARGIN, TITLE_TOP_MARGIN, text_width, TITLE_HEIGHT));
-  text_layer_set_background_color(s_title_layer, GColorClear);
-  text_layer_set_text_color(s_title_layer, GColorBlack);
+      GRect(0, TITLE_TOP_MARGIN, bounds.size.w, TITLE_HEIGHT));
+  text_layer_set_background_color(s_title_layer,
+                                  app_theme_title_background_color());
+  text_layer_set_text_color(s_title_layer,
+                            app_theme_title_foreground_color());
   text_layer_set_font(
       s_title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_title_layer, GTextAlignmentCenter);
@@ -181,7 +186,7 @@ static void window_load(Window *window) {
   s_body_layer = text_layer_create(
       GRect(HORIZONTAL_MARGIN, body_y, text_width, BODY_LAYOUT_HEIGHT));
   text_layer_set_background_color(s_body_layer, GColorClear);
-  text_layer_set_text_color(s_body_layer, GColorBlack);
+  text_layer_set_text_color(s_body_layer, app_theme_foreground_color());
   text_layer_set_font(s_body_layer, get_body_font());
   text_layer_set_text_alignment(s_body_layer, GTextAlignmentLeft);
   text_layer_set_overflow_mode(s_body_layer, GTextOverflowModeWordWrap);

@@ -10,6 +10,20 @@ typedef enum {
 } AppTextSize;
 
 typedef enum {
+  APP_ACCENT_COLOR_NAVY,
+  APP_ACCENT_COLOR_BURGUNDY,
+  APP_ACCENT_COLOR_FOREST,
+  APP_ACCENT_COLOR_MONOCHROME,
+  APP_ACCENT_COLOR_COUNT,
+} AppAccentColor;
+
+typedef enum {
+  APP_APPEARANCE_LIGHT,
+  APP_APPEARANCE_DARK,
+  APP_APPEARANCE_COUNT,
+} AppAppearance;
+
+typedef enum {
   APP_NOON_REMINDER_DURATION_5_SECONDS,
   APP_NOON_REMINDER_DURATION_10_SECONDS,
   APP_NOON_REMINDER_DURATION_30_SECONDS,
@@ -20,6 +34,12 @@ void app_settings_init(void);
 AppTextSize app_settings_get_text_size(void);
 bool app_settings_set_text_size(AppTextSize text_size);
 const char *app_settings_text_size_label(AppTextSize text_size);
+AppAccentColor app_settings_get_accent_color(void);
+bool app_settings_set_accent_color(AppAccentColor accent_color);
+const char *app_settings_accent_color_label(AppAccentColor accent_color);
+AppAppearance app_settings_get_appearance(void);
+bool app_settings_set_appearance(AppAppearance appearance);
+const char *app_settings_appearance_label(AppAppearance appearance);
 bool app_settings_get_noon_reminder_enabled(void);
 bool app_settings_set_noon_reminder_enabled(bool enabled);
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void);

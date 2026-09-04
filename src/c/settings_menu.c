@@ -8,6 +8,8 @@
 
 enum {
   SETTINGS_MENU_ITEM_TEXT_SIZE,
+  SETTINGS_MENU_ITEM_APPEARANCE,
+  SETTINGS_MENU_ITEM_ACCENT_COLOR,
   SETTINGS_MENU_ITEM_NOON_REMINDER,
   SETTINGS_MENU_ITEM_COUNT,
 };
@@ -21,6 +23,10 @@ static Window *s_settings_window;
 static MenuLayer *s_settings_menu_layer;
 static Window *s_text_size_window;
 static MenuLayer *s_text_size_menu_layer;
+static Window *s_appearance_window;
+static MenuLayer *s_appearance_menu_layer;
+static Window *s_accent_color_window;
+static MenuLayer *s_accent_color_menu_layer;
 static Window *s_noon_reminder_window;
 static MenuLayer *s_noon_reminder_menu_layer;
 
@@ -31,9 +37,13 @@ static uint16_t settings_get_num_rows(MenuLayer *menu_layer,
 
 static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
                               MenuIndex *cell_index, void *context) {
-  const char *label = cell_index->row == SETTINGS_MENU_ITEM_TEXT_SIZE
-                          ? "Text Size"
-                          : "Noon Reminder";
+  static const char *const labels[] = {
+      "Text Size",
+      "Appearance",
+      "Accent Color",
+      "Noon Reminder",
+  };
+  const char *label = labels[cell_index->row];
   accessible_menu_draw_row(ctx, cell_layer, label);
 }
 
@@ -41,8 +51,54 @@ static void settings_select_click(MenuLayer *menu_layer,
                                   MenuIndex *cell_index, void *context) {
   if (cell_index->row == SETTINGS_MENU_ITEM_TEXT_SIZE) {
     window_stack_push(s_text_size_window, true);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_APPEARANCE) {
+    window_stack_push(s_appearance_window, true);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_ACCENT_COLOR) {
+    window_stack_push(s_accent_color_window, true);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_NOON_REMINDER) {
     window_stack_push(s_noon_reminder_window, true);
+  }
+}
+
+static uint16_t appearance_get_num_rows(MenuLayer *menu_layer,
+                                        uint16_t section_index,
+                                        void *context) {
+  return APP_APPEARANCE_COUNT;
+}
+
+static void appearance_draw_row(GContext *ctx, const Layer *cell_layer,
+                                MenuIndex *cell_index, void *context) {
+  accessible_menu_draw_row(
+      ctx, cell_layer,
+      app_settings_appearance_label((AppAppearance)cell_index->row));
+}
+
+static void appearance_select_click(MenuLayer *menu_layer,
+                                    MenuIndex *cell_index, void *context) {
+  if (app_settings_set_appearance((AppAppearance)cell_index->row)) {
+    window_stack_remove(s_settings_window, false);
+    window_stack_pop(true);
+  }
+}
+
+static uint16_t accent_color_get_num_rows(MenuLayer *menu_layer,
+                                          uint16_t section_index,
+                                          void *context) {
+  return APP_ACCENT_COLOR_COUNT;
+}
+
+static void accent_color_draw_row(GContext *ctx, const Layer *cell_layer,
+                                  MenuIndex *cell_index, void *context) {
+  accessible_menu_draw_row(
+      ctx, cell_layer,
+      app_settings_accent_color_label((AppAccentColor)cell_index->row));
+}
+
+static void accent_color_select_click(MenuLayer *menu_layer,
+                                      MenuIndex *cell_index, void *context) {
+  if (app_settings_set_accent_color((AppAccentColor)cell_index->row)) {
+    window_stack_remove(s_settings_window, false);
+    window_stack_pop(true);
   }
 }
 
@@ -150,6 +206,36 @@ static void text_size_window_unload(Window *window) {
   s_text_size_menu_layer = NULL;
 }
 
+static void appearance_window_load(Window *window) {
+  s_appearance_menu_layer =
+      create_menu(window, "Appearance", appearance_get_num_rows,
+                  appearance_draw_row, appearance_select_click);
+  menu_layer_set_selected_index(
+      s_appearance_menu_layer,
+      MenuIndex(0, (uint16_t)app_settings_get_appearance()),
+      MenuRowAlignCenter, false);
+}
+
+static void appearance_window_unload(Window *window) {
+  menu_layer_destroy(s_appearance_menu_layer);
+  s_appearance_menu_layer = NULL;
+}
+
+static void accent_color_window_load(Window *window) {
+  s_accent_color_menu_layer =
+      create_menu(window, "Accent Color", accent_color_get_num_rows,
+                  accent_color_draw_row, accent_color_select_click);
+  menu_layer_set_selected_index(
+      s_accent_color_menu_layer,
+      MenuIndex(0, (uint16_t)app_settings_get_accent_color()),
+      MenuRowAlignCenter, false);
+}
+
+static void accent_color_window_unload(Window *window) {
+  menu_layer_destroy(s_accent_color_menu_layer);
+  s_accent_color_menu_layer = NULL;
+}
+
 static void noon_reminder_window_load(Window *window) {
   s_noon_reminder_menu_layer =
       create_menu(window, "Noon Reminder", noon_reminder_get_num_rows,
@@ -182,6 +268,18 @@ void settings_menu_init(void) {
       .unload = text_size_window_unload,
   });
 
+  s_appearance_window = window_create();
+  window_set_window_handlers(s_appearance_window, (WindowHandlers){
+      .load = appearance_window_load,
+      .unload = appearance_window_unload,
+  });
+
+  s_accent_color_window = window_create();
+  window_set_window_handlers(s_accent_color_window, (WindowHandlers){
+      .load = accent_color_window_load,
+      .unload = accent_color_window_unload,
+  });
+
   s_noon_reminder_window = window_create();
   window_set_window_handlers(s_noon_reminder_window, (WindowHandlers){
       .load = noon_reminder_window_load,
@@ -192,6 +290,12 @@ void settings_menu_init(void) {
 void settings_menu_deinit(void) {
   window_destroy(s_noon_reminder_window);
   s_noon_reminder_window = NULL;
+
+  window_destroy(s_accent_color_window);
+  s_accent_color_window = NULL;
+
+  window_destroy(s_appearance_window);
+  s_appearance_window = NULL;
 
   window_destroy(s_text_size_window);
   s_text_size_window = NULL;

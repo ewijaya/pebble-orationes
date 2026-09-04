@@ -77,6 +77,15 @@ static void menu_window_unload(Window *window) {
   s_menu_layer = NULL;
 }
 
+static void menu_window_appear(Window *window) {
+  if (!s_menu_layer) {
+    return;
+  }
+
+  accessible_menu_apply_colors(s_menu_layer);
+  layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
+}
+
 static bool init(void) {
 #if defined(PBL_TOUCH)
   app_touch_navigation_enable(true);
@@ -91,6 +100,7 @@ static bool init(void) {
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){
       .load = menu_window_load,
+      .appear = menu_window_appear,
       .unload = menu_window_unload,
   });
 

@@ -1,8 +1,11 @@
 #include "accessible_menu.h"
 
+#include "app_theme.h"
+
 enum {
   ROW_HORIZONTAL_MARGIN = 8,
   TEXT_VERTICAL_ADJUSTMENT = -1,
+  HEADER_DIVIDER_HEIGHT = 2,
 };
 
 static void draw_centered_text(GContext *ctx, const Layer *cell_layer,
@@ -29,8 +32,11 @@ static void draw_centered_text(GContext *ctx, const Layer *cell_layer,
 }
 
 void accessible_menu_apply_colors(MenuLayer *menu_layer) {
-  menu_layer_set_normal_colors(menu_layer, GColorWhite, GColorBlack);
-  menu_layer_set_highlight_colors(menu_layer, GColorBlack, GColorWhite);
+  menu_layer_set_normal_colors(menu_layer, app_theme_background_color(),
+                               app_theme_foreground_color());
+  menu_layer_set_highlight_colors(
+      menu_layer, app_theme_selected_background_color(),
+      app_theme_selected_foreground_color());
 }
 
 int16_t accessible_menu_get_cell_height(MenuLayer *menu_layer,
@@ -46,14 +52,25 @@ int16_t accessible_menu_get_header_height(MenuLayer *menu_layer,
 
 void accessible_menu_draw_header(GContext *ctx, const Layer *cell_layer,
                                  uint16_t section_index, void *context) {
-  draw_centered_text(ctx, cell_layer, (const char *)context, GColorWhite,
-                     GColorBlack);
+  draw_centered_text(ctx, cell_layer, (const char *)context,
+                     app_theme_title_background_color(),
+                     app_theme_title_foreground_color());
+
+  const GRect bounds = layer_get_bounds(cell_layer);
+  graphics_context_set_fill_color(ctx, app_theme_background_color());
+  graphics_fill_rect(
+      ctx,
+      GRect(0, bounds.size.h - HEADER_DIVIDER_HEIGHT, bounds.size.w,
+            HEADER_DIVIDER_HEIGHT),
+      0, GCornerNone);
 }
 
 void accessible_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                               const char *text) {
   const bool selected = menu_cell_layer_is_highlighted(cell_layer);
   draw_centered_text(ctx, cell_layer, text,
-                     selected ? GColorBlack : GColorWhite,
-                     selected ? GColorWhite : GColorBlack);
+                     selected ? app_theme_selected_background_color()
+                              : app_theme_background_color(),
+                     selected ? app_theme_selected_foreground_color()
+                              : app_theme_foreground_color());
 }

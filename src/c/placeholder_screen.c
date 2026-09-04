@@ -2,6 +2,8 @@
 
 #include <pebble.h>
 
+#include "app_theme.h"
+
 static Window *s_window;
 static TextLayer *s_name_layer;
 static TextLayer *s_hint_layer;
@@ -10,9 +12,11 @@ static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
+  window_set_background_color(window, app_theme_background_color());
+
   s_name_layer = text_layer_create(GRect(12, 44, bounds.size.w - 24, 80));
   text_layer_set_background_color(s_name_layer, GColorClear);
-  text_layer_set_text_color(s_name_layer, GColorBlack);
+  text_layer_set_text_color(s_name_layer, app_theme_foreground_color());
   text_layer_set_font(s_name_layer,
                       fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_name_layer, GTextAlignmentCenter);
@@ -21,7 +25,7 @@ static void window_load(Window *window) {
   s_hint_layer =
       text_layer_create(GRect(12, bounds.size.h - 54, bounds.size.w - 24, 30));
   text_layer_set_background_color(s_hint_layer, GColorClear);
-  text_layer_set_text_color(s_hint_layer, GColorDarkGray);
+  text_layer_set_text_color(s_hint_layer, app_theme_foreground_color());
   text_layer_set_font(s_hint_layer,
                       fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_alignment(s_hint_layer, GTextAlignmentCenter);

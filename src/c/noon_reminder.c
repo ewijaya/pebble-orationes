@@ -3,6 +3,7 @@
 #include <pebble.h>
 
 #include "app_settings.h"
+#include "app_theme.h"
 #include "liturgical_calendar.h"
 #include "prayer_screen.h"
 #include "prayers.h"
@@ -182,10 +183,14 @@ static void window_load(Window *window) {
   const GRect bounds = layer_get_bounds(window_layer);
   const int16_t text_width = bounds.size.w - 2 * HORIZONTAL_MARGIN;
 
+  window_set_background_color(window, app_theme_background_color());
+
   s_title_layer = text_layer_create(
-      GRect(HORIZONTAL_MARGIN, 18, text_width, 38));
-  text_layer_set_background_color(s_title_layer, GColorClear);
-  text_layer_set_text_color(s_title_layer, GColorBlack);
+      GRect(0, 0, bounds.size.w, 44));
+  text_layer_set_background_color(s_title_layer,
+                                  app_theme_title_background_color());
+  text_layer_set_text_color(s_title_layer,
+                            app_theme_title_foreground_color());
   text_layer_set_font(
       s_title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_title_layer, GTextAlignmentCenter);
@@ -195,7 +200,7 @@ static void window_load(Window *window) {
   s_prayer_layer = text_layer_create(
       GRect(HORIZONTAL_MARGIN, 72, text_width, 70));
   text_layer_set_background_color(s_prayer_layer, GColorClear);
-  text_layer_set_text_color(s_prayer_layer, GColorBlack);
+  text_layer_set_text_color(s_prayer_layer, app_theme_foreground_color());
   text_layer_set_font(
       s_prayer_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(s_prayer_layer, GTextAlignmentCenter);
@@ -206,7 +211,7 @@ static void window_load(Window *window) {
   s_hint_layer = text_layer_create(
       GRect(HORIZONTAL_MARGIN, 154, text_width, 60));
   text_layer_set_background_color(s_hint_layer, GColorClear);
-  text_layer_set_text_color(s_hint_layer, GColorBlack);
+  text_layer_set_text_color(s_hint_layer, app_theme_foreground_color());
   text_layer_set_font(
       s_hint_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   text_layer_set_text_alignment(s_hint_layer, GTextAlignmentCenter);
