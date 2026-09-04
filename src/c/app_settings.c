@@ -11,7 +11,7 @@ enum {
 };
 
 static AppTextSize s_text_size = APP_TEXT_SIZE_LARGE;
-static AppAccentColor s_accent_color = APP_ACCENT_COLOR_NAVY;
+static AppAccentColor s_accent_color = APP_ACCENT_COLOR_OCEAN;
 static AppAppearance s_appearance = APP_APPEARANCE_LIGHT;
 static bool s_noon_reminder_enabled;
 static AppNoonReminderDuration s_noon_reminder_duration =
@@ -22,7 +22,7 @@ static bool text_size_is_valid(int32_t value) {
 }
 
 static bool accent_color_is_valid(int32_t value) {
-  return value >= APP_ACCENT_COLOR_NAVY && value < APP_ACCENT_COLOR_COUNT;
+  return value >= APP_ACCENT_COLOR_OCEAN && value < APP_ACCENT_COLOR_COUNT;
 }
 
 static bool appearance_is_valid(int32_t value) {
@@ -36,7 +36,7 @@ static bool noon_reminder_duration_is_valid(int32_t value) {
 
 void app_settings_init(void) {
   s_text_size = APP_TEXT_SIZE_LARGE;
-  s_accent_color = APP_ACCENT_COLOR_NAVY;
+  s_accent_color = APP_ACCENT_COLOR_OCEAN;
   s_appearance = APP_APPEARANCE_LIGHT;
   s_noon_reminder_enabled = false;
   s_noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
@@ -127,8 +127,8 @@ bool app_settings_set_accent_color(AppAccentColor accent_color) {
 
 const char *app_settings_accent_color_label(AppAccentColor accent_color) {
   switch (accent_color) {
-    case APP_ACCENT_COLOR_NAVY:
-      return "Navy";
+    case APP_ACCENT_COLOR_OCEAN:
+      return "Ocean";
     case APP_ACCENT_COLOR_BURGUNDY:
       return "Burgundy";
     case APP_ACCENT_COLOR_FOREST:
@@ -139,7 +139,7 @@ const char *app_settings_accent_color_label(AppAccentColor accent_color) {
       break;
   }
 
-  return "Navy";
+  return "Ocean";
 }
 
 AppAppearance app_settings_get_appearance(void) {

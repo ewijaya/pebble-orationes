@@ -22,7 +22,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
 - **Memorare** — English text in a scrollable view.
 
-Prayer screens use `FONT_KEY_GOTHIC_28_BOLD` with 8 px margins. Menus use 54 px high-contrast rows. Light and dark appearances plus navy, burgundy, forest, and monochrome title accents are available in Settings.
+Prayer screens use `FONT_KEY_GOTHIC_28_BOLD` with 8 px margins. Menus use 54 px high-contrast rows. Ocean, burgundy, forest, and monochrome title accents adapt to the light and dark appearances available in Settings.
 
 ## On a physical Pebble Time 2
 

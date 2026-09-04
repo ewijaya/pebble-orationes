@@ -8,19 +8,19 @@ static bool is_dark(void) {
 
 static GColor accent_color(void) {
   switch (app_settings_get_accent_color()) {
-    case APP_ACCENT_COLOR_NAVY:
-      return GColorOxfordBlue;
+    case APP_ACCENT_COLOR_OCEAN:
+      return is_dark() ? GColorTiffanyBlue : GColorCobaltBlue;
     case APP_ACCENT_COLOR_BURGUNDY:
-      return GColorBulgarianRose;
+      return is_dark() ? GColorDarkCandyAppleRed : GColorBulgarianRose;
     case APP_ACCENT_COLOR_FOREST:
-      return GColorDarkGreen;
+      return is_dark() ? GColorMayGreen : GColorDarkGreen;
     case APP_ACCENT_COLOR_MONOCHROME:
       return is_dark() ? GColorWhite : GColorBlack;
     case APP_ACCENT_COLOR_COUNT:
       break;
   }
 
-  return GColorOxfordBlue;
+  return is_dark() ? GColorTiffanyBlue : GColorCobaltBlue;
 }
 
 GColor app_theme_background_color(void) {
@@ -44,8 +44,15 @@ GColor app_theme_title_background_color(void) {
 }
 
 GColor app_theme_title_foreground_color(void) {
-  return app_settings_get_accent_color() == APP_ACCENT_COLOR_MONOCHROME &&
-                 is_dark()
-             ? GColorBlack
-             : GColorWhite;
+  switch (app_settings_get_accent_color()) {
+    case APP_ACCENT_COLOR_OCEAN:
+    case APP_ACCENT_COLOR_FOREST:
+    case APP_ACCENT_COLOR_MONOCHROME:
+      return is_dark() ? GColorBlack : GColorWhite;
+    case APP_ACCENT_COLOR_BURGUNDY:
+    case APP_ACCENT_COLOR_COUNT:
+      return GColorWhite;
+  }
+
+  return GColorWhite;
 }
