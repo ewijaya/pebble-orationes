@@ -2,7 +2,7 @@
 
 [![Latest release](https://img.shields.io/github/v/release/ewijaya/pebble-orationes?display_name=tag)](https://github.com/ewijaya/pebble-orationes/releases/latest)
 
-A large-print, high-contrast Catholic prayer app for Pebble Time 2.
+Your Pebble tells time. Orationes helps you make time for prayer.
 
 **[Install from the Pebble App Store](https://apps.repebble.com/9882f741750c43eb8309777e)**
 
