@@ -1,27 +1,43 @@
 #include <pebble.h>
 
 #include "accessible_menu.h"
+#include "app_settings.h"
 #include "placeholder_screen.h"
 #include "prayer_screen.h"
 #include "prayers.h"
 #include "rosary_menu.h"
+#include "settings_menu.h"
+
+enum {
+  MAIN_MENU_ITEM_SETTINGS_OFFSET = 1,
+};
 
 static Window *s_menu_window;
 static MenuLayer *s_menu_layer;
 
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
                                   void *context) {
-  return prayers_count();
+  return prayers_count() + MAIN_MENU_ITEM_SETTINGS_OFFSET;
 }
 
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
+  if (cell_index->row == prayers_count()) {
+    accessible_menu_draw_row(ctx, cell_layer, "Settings");
+    return;
+  }
+
   const Prayer *prayer = prayers_get(cell_index->row);
   accessible_menu_draw_row(ctx, cell_layer, prayer->name);
 }
 
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
+  if (cell_index->row == prayers_count()) {
+    settings_menu_show();
+    return;
+  }
+
   const Prayer *prayer = prayers_get(cell_index->row);
 
   if (prayer->destination == PRAYER_DESTINATION_ROSARY) {
@@ -65,9 +81,11 @@ static void init(void) {
   app_touch_navigation_enable(true);
 #endif
 
+  app_settings_init();
   prayer_screen_init();
   placeholder_screen_init();
   rosary_menu_init();
+  settings_menu_init();
 
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){
@@ -81,6 +99,7 @@ static void deinit(void) {
   window_destroy(s_menu_window);
   s_menu_window = NULL;
 
+  settings_menu_deinit();
   rosary_menu_deinit();
   placeholder_screen_deinit();
   prayer_screen_deinit();

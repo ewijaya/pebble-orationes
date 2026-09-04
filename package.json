@@ -24,6 +24,12 @@
           "name": "MENU_ICON",
           "file": "images/orationes-menu-icon.png",
           "menuIcon": true
+        },
+        {
+          "type": "font",
+          "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_34",
+          "file": "fonts/DejaVuSansCondensed-Bold.ttf",
+          "characterRegex": "[ -~·ÁÓÚáæéëíóúœǽ✠]"
         }
       ]
     }

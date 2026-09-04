@@ -2,6 +2,8 @@
 
 #include <pebble.h>
 
+#include "app_settings.h"
+
 enum {
   HORIZONTAL_MARGIN = 8,
   TITLE_TOP_MARGIN = 8,
@@ -22,6 +24,19 @@ static const char *s_title;
 static const char *s_text;
 static AppTimer *s_fast_scroll_timer;
 static int8_t s_fast_scroll_direction;
+static GFont s_custom_body_font;
+
+static GFont get_body_font(void) {
+  if (app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE) {
+    s_custom_body_font = fonts_load_custom_font(
+        resource_get_handle(RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_34));
+    if (s_custom_body_font) {
+      return s_custom_body_font;
+    }
+  }
+
+  return fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+}
 
 static void stop_fast_scrolling(void) {
   s_fast_scroll_direction = 0;
@@ -167,8 +182,7 @@ static void window_load(Window *window) {
       GRect(HORIZONTAL_MARGIN, body_y, text_width, BODY_LAYOUT_HEIGHT));
   text_layer_set_background_color(s_body_layer, GColorClear);
   text_layer_set_text_color(s_body_layer, GColorBlack);
-  text_layer_set_font(s_body_layer,
-                      fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_font(s_body_layer, get_body_font());
   text_layer_set_text_alignment(s_body_layer, GTextAlignmentLeft);
   text_layer_set_overflow_mode(s_body_layer, GTextOverflowModeWordWrap);
   text_layer_set_text(s_body_layer, s_text);
@@ -190,6 +204,11 @@ static void window_unload(Window *window) {
 
   text_layer_destroy(s_body_layer);
   s_body_layer = NULL;
+
+  if (s_custom_body_font) {
+    fonts_unload_custom_font(s_custom_body_font);
+    s_custom_body_font = NULL;
+  }
 
   text_layer_destroy(s_title_layer);
   s_title_layer = NULL;
