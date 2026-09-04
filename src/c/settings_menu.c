@@ -28,7 +28,7 @@ enum {
 };
 
 enum {
-  MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS = 100,
+  MENU_WRAP_REPEAT_INTERVAL_MS = 100,
 };
 
 static Window *s_settings_window;
@@ -59,7 +59,7 @@ static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
       "Appearance",
       "Accent Color",
       "Noon Reminder",
-      "Main Menu",
+      "Prayer Shortcuts",
   };
   const char *label = labels[cell_index->row];
   accessible_menu_draw_row(ctx, cell_layer, label);
@@ -120,6 +120,63 @@ static void main_menu_slots_select_click(MenuLayer *menu_layer,
   window_stack_push(s_main_menu_entry_window, true);
 }
 
+static void move_menu_selection_with_wrap(MenuLayer *menu_layer,
+                                          uint16_t row_count, bool up) {
+  if (!menu_layer || row_count == 0) {
+    return;
+  }
+
+  const MenuIndex selected = menu_layer_get_selected_index(menu_layer);
+  const bool should_wrap =
+      (up && selected.row == 0) ||
+      (!up && selected.row == row_count - 1);
+  if (should_wrap) {
+    menu_layer_set_selected_index(
+        menu_layer, MenuIndex(0, up ? row_count - 1 : 0),
+        up ? MenuRowAlignBottom : MenuRowAlignTop, true);
+    return;
+  }
+
+  menu_layer_set_selected_next(menu_layer, up, MenuRowAlignCenter, true);
+}
+
+static void main_menu_slots_up_click_handler(ClickRecognizerRef recognizer,
+                                             void *context) {
+  (void)recognizer;
+  (void)context;
+  move_menu_selection_with_wrap(s_main_menu_slots_menu_layer,
+                                MAIN_MENU_SLOT_ITEM_COUNT, true);
+}
+
+static void main_menu_slots_down_click_handler(ClickRecognizerRef recognizer,
+                                               void *context) {
+  (void)recognizer;
+  (void)context;
+  move_menu_selection_with_wrap(s_main_menu_slots_menu_layer,
+                                MAIN_MENU_SLOT_ITEM_COUNT, false);
+}
+
+static void main_menu_slots_select_click_handler(
+    ClickRecognizerRef recognizer, void *context) {
+  (void)recognizer;
+  (void)context;
+  MenuIndex selected =
+      menu_layer_get_selected_index(s_main_menu_slots_menu_layer);
+  main_menu_slots_select_click(s_main_menu_slots_menu_layer, &selected, NULL);
+}
+
+static void main_menu_slots_click_config_provider(void *context) {
+  (void)context;
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_UP, MENU_WRAP_REPEAT_INTERVAL_MS,
+      main_menu_slots_up_click_handler);
+  window_single_repeating_click_subscribe(
+      BUTTON_ID_DOWN, MENU_WRAP_REPEAT_INTERVAL_MS,
+      main_menu_slots_down_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT,
+                                main_menu_slots_select_click_handler);
+}
+
 static uint16_t main_menu_entry_get_num_rows(
     MenuLayer *menu_layer, uint16_t section_index, void *context) {
   return main_menu_catalog_count();
@@ -151,30 +208,8 @@ static void main_menu_entry_select_click(MenuLayer *menu_layer,
 }
 
 static void main_menu_entry_move_selection(bool up) {
-  if (!s_main_menu_entry_menu_layer) {
-    return;
-  }
-
-  const uint16_t row_count = main_menu_catalog_count();
-  if (row_count == 0) {
-    return;
-  }
-
-  const MenuIndex selected =
-      menu_layer_get_selected_index(s_main_menu_entry_menu_layer);
-  const bool should_wrap =
-      (up && selected.row == 0) ||
-      (!up && selected.row == row_count - 1);
-  if (should_wrap) {
-    menu_layer_set_selected_index(
-        s_main_menu_entry_menu_layer,
-        MenuIndex(0, up ? row_count - 1 : 0),
-        up ? MenuRowAlignBottom : MenuRowAlignTop, true);
-    return;
-  }
-
-  menu_layer_set_selected_next(s_main_menu_entry_menu_layer, up,
-                               MenuRowAlignCenter, true);
+  move_menu_selection_with_wrap(s_main_menu_entry_menu_layer,
+                                main_menu_catalog_count(), up);
 }
 
 static void main_menu_entry_up_click_handler(ClickRecognizerRef recognizer,
@@ -203,10 +238,10 @@ static void main_menu_entry_select_click_handler(
 static void main_menu_entry_click_config_provider(void *context) {
   (void)context;
   window_single_repeating_click_subscribe(
-      BUTTON_ID_UP, MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS,
+      BUTTON_ID_UP, MENU_WRAP_REPEAT_INTERVAL_MS,
       main_menu_entry_up_click_handler);
   window_single_repeating_click_subscribe(
-      BUTTON_ID_DOWN, MAIN_MENU_ENTRY_REPEAT_INTERVAL_MS,
+      BUTTON_ID_DOWN, MENU_WRAP_REPEAT_INTERVAL_MS,
       main_menu_entry_down_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT,
                                 main_menu_entry_select_click_handler);
@@ -413,7 +448,7 @@ static void noon_reminder_window_unload(Window *window) {
 
 static void main_menu_entry_window_load(Window *window) {
   s_main_menu_entry_menu_layer = create_menu(
-      window, "Choose Entry", main_menu_entry_get_num_rows,
+      window, "Choose Shortcut", main_menu_entry_get_num_rows,
       main_menu_entry_draw_row, main_menu_entry_select_click);
   window_set_click_config_provider(window,
                                    main_menu_entry_click_config_provider);
@@ -430,8 +465,10 @@ static void main_menu_entry_window_unload(Window *window) {
 
 static void main_menu_slots_window_load(Window *window) {
   s_main_menu_slots_menu_layer = create_menu(
-      window, "Main Menu", main_menu_slots_get_num_rows,
+      window, "Shortcuts", main_menu_slots_get_num_rows,
       main_menu_slots_draw_row, main_menu_slots_select_click);
+  window_set_click_config_provider(window,
+                                   main_menu_slots_click_config_provider);
 }
 
 static void main_menu_slots_window_unload(Window *window) {

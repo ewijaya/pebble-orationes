@@ -103,11 +103,11 @@ module.exports = [
     items: [
       {
         type: 'heading',
-        defaultValue: 'Main Menu'
+        defaultValue: 'Prayer Shortcuts'
       },
       {
         type: 'text',
-        defaultValue: 'Choose up to seven entries. Collections open a submenu; individual prayers open directly. Empty slots are omitted. Settings is always available.'
+        defaultValue: 'Choose up to seven shortcuts. Collections open a submenu; individual prayers open directly. Empty slots are omitted. Settings is always available.'
       },
       mainMenuSlot(1, '1'),
       mainMenuSlot(2, '2'),
