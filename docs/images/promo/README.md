@@ -54,11 +54,16 @@ GitHub. No new watch release is part of this visual update.
 ## Publication verification — 2026-09-05
 
 The ordinary public RePebble listing references the updated banner, both icons,
-description, and fifth native screenshot. The original four screenshots remain
-in order, with the main menu first. Downloaded banner artwork was visually checked;
-the downloaded native screenshot matches the local capture pixel for pixel.
+and description. At the user's request, the gallery was reordered to cyan Preces,
+main menu, Angelus, and Holy Rosary. The duplicate Preces was removed. All four
+saved screenshots were compared pixel for pixel with backed-up originals, and
+the ordinary public page was checked for the same gallery order.
+
 The app UUID, published releases, visibility, source, website, and companion fields
-were preserved. RePebble still uses its generated OG endpoint.
+were preserved. RePebble still uses its generated OG endpoint. After reordering,
+both the canonical OG URL and a cache-busting request still showed the old main
+menu. The new order is live, but a change to the OG image is not yet verified;
+the source may have a separate cache or image-selection rule.
 
 The GitHub social-preview PNG is ready but its repository setting was not changed:
 browser control encountered sleeping/inaccessible windows. To apply it, open
