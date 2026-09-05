@@ -6,12 +6,15 @@ PebbleKit JS provides phone settings through Clay.
 ## Checks
 
 ```sh
+npm ci --ignore-scripts
 python3 scripts/test.py
 python3 scripts/check_release.py
 ```
 
-The first command needs Python 3, Node.js, and a C compiler supporting AddressSanitizer
-and UndefinedBehaviorSanitizer. It runs on GitHub Actions without the Pebble SDK.
+Install the locked npm dependencies first; the Clay integration test uses the
+actual installed parser. The host tests need Python 3, Node.js, and a C compiler
+supporting AddressSanitizer and UndefinedBehaviorSanitizer. They run on GitHub
+Actions without the Pebble SDK.
 It checks settings migration, interrupted writes, recovery from corruption, phone
 message validation and acknowledgments, reading-position persistence, Gregorian
 Easter boundaries, weekdays, and noon scheduling across daylight-saving changes.
