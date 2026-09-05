@@ -1,5 +1,40 @@
 # Release verification
 
+## v0.8.1 — 2026-09-05
+
+Saving Slot 3 as Aspirations in the actual mobile configuration page produced
+`TypeError: Illegal invocation` in the phone log. The timer passed directly to
+the sync helper was invoked with the helper's options object as its receiver.
+The mobile WebView rejected that call before the settings message was sent.
+Wrapping both timer functions preserves their global receiver; parse errors
+and queue errors now have separate log messages.
+
+`tests/test_phone_config.js` exercises the actual companion entry point and
+installed Clay parser with WebView-style timer receiver checks. It reproduced
+the original exception before the fix and passes afterward, covering Slot 3
+as Aspirations, integer/toggle conversion, replacement saves, stale ACKs,
+pending-save recovery after restart, and confirmation cleanup.
+
+`python3 scripts/check_release.py` passed all host/content checks and the clean
+Emery build, metadata, and memory budgets. Resources remain 28,686 B, static
+RAM 64,977 B, heap 66,095 B, and virtual image 64,980 B. Candidate PBW size is
+776,595 B; the established SDK RWX warning remains. Watch C code is unchanged.
+
+The corrected candidate was installed and launched on the physical PT2.
+`build/pt2-clay-sync-fixed.png` confirms Aspirations in Slot 3 after the pending
+mobile save was recovered. The user then tried further settings through MyApp
+and confirmed that Save Settings works on the physical PT2. This approval
+covers the fix before the version-only bump to 0.8.1.
+
+The versioned 0.8.1 PBW passed the clean build, host/content checks, metadata,
+and memory budgets, then installed successfully on Emery and the physical PT2.
+All five reader screenshot comparisons passed using the QA Python environment
+(the initial screenshot invocation used a Python without Pillow). Listing
+artwork is unchanged because this release changes only phone synchronization.
+
+Release PBW SHA-256:
+`681bbbfdb9c840cf89333deeaa87b7d1cef7dcce8e02044c33da005f4a0e6207`.
+
 ## v0.8.0 — 2026-09-05
 
 The final candidate was built with Pebble Tool 5.0.40 and SDK 4.33.1 for Emery

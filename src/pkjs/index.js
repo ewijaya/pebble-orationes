@@ -13,7 +13,10 @@ function sendSettings(settings) {
 }
 var sync = require('./settings-sync')({
   keys: messageKeys, storage: localStorage, send: sendSettings,
-  schedule: setTimeout, cancel: clearTimeout
+  // WebView timers require their global receiver. Passing them directly makes
+  // settings-sync call them with its options object and throws before sending.
+  schedule: function(callback, delay) { return setTimeout(callback, delay); },
+  cancel: function(timer) { clearTimeout(timer); }
 });
 
 function requestWatchSettings() {
@@ -53,11 +56,17 @@ Pebble.addEventListener('webviewclosed', function(event) {
     return;
   }
 
+  var settings;
   try {
-    var settings = clay.getSettings(event.response);
-    sync.submit(settings);
+    settings = clay.getSettings(event.response);
   } catch (error) {
     console.log('Could not parse Orationes settings: ' + error);
+    return;
+  }
+  try {
+    sync.submit(settings);
+  } catch (error) {
+    console.log('Could not queue Orationes settings: ' + error);
   }
 });
 

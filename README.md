@@ -29,7 +29,9 @@ The default menu stays focused on the five core entries. On the watch or in the 
 
 **Continue** offers **Resume** or **Start again** for your last saved prayer. Ordinary prayer openings start at the top. **Remember Place** can be disabled in watch or phone Settings. **All Prayers** lets you browse five categories and open any prayer or pin it to the main menu. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
-**New in v0.8.0:** choose navigation highlights independently of Title Accent, preview appearance changes before saving, and read with a cleaner progress indicator. The refreshed UI includes the connected-cross mark, category icons, saved-prayer details in Continue, and shortcut confirmations. See the [UI changes](docs/ui-refresh.md) and [release verification](docs/verification.md).
+**Fixed in v0.8.1:** Save Settings in the phone's Clay configuration page now sends changes to the watch correctly. Pending changes also resume after restarting Orationes. Verified with MyApp and a physical Pebble Time 2; see [release verification](docs/verification.md).
+
+Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 
@@ -43,7 +45,7 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-Orationes **v0.8.0** targets Pebble Time 2 (`emery`). Use the App Store installation flow above or download the PBW from GitHub Releases.
+Orationes **v0.8.1** targets Pebble Time 2 (`emery`). Use the App Store installation flow above or download the PBW from GitHub Releases.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
