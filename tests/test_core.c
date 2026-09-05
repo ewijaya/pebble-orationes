@@ -61,6 +61,40 @@ static void test_settings(void) {
   for (int i = 0; i < 5; ++i) assert(app_settings_get_main_menu_slot(i) == i + 1);
 }
 
+static void test_navigation_migration(void) {
+  // Exact v0.7 schema: size, accent, appearance, reminder, duration, remember, slots.
+  const uint8_t old[] = {1,2,1,0,2,1, 5,2,3,4,1,23,24};
+  storage_reset();
+  assert(durable_store_write(40,1,old,sizeof(old)));
+  app_settings_init();
+  assert(app_settings_get_text_size()==APP_TEXT_SIZE_EXTRA_LARGE);
+  assert(app_settings_get_accent_color()==APP_ACCENT_COLOR_FOREST);
+  assert(app_settings_get_appearance()==APP_APPEARANCE_DARK);
+  assert(app_settings_get_main_menu_slot(5)==23);
+  assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_CLASSIC);
+  storage_fail_next_write(10);
+  assert(!app_settings_set_navigation_highlight(APP_NAVIGATION_AMBER));
+  app_settings_init();
+  assert(app_settings_get_main_menu_slot(5)==23);
+  assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_CLASSIC);
+  for(int i=0;i<APP_NAVIGATION_COUNT;++i) {
+    assert(app_settings_set_navigation_highlight(i));app_settings_init();
+    assert(app_settings_get_navigation_highlight()==i);
+    assert(app_settings_get_accent_color()==APP_ACCENT_COLOR_FOREST);
+    assert(app_settings_get_main_menu_slot(5)==23);
+  }
+  assert(!app_settings_set_navigation_highlight(APP_NAVIGATION_COUNT));
+  assert(!app_settings_set_navigation_highlight((AppNavigationHighlight)-1));
+  uint8_t restored[sizeof(old)];
+  assert(durable_store_read(40,1,restored,sizeof(restored)));
+  assert(!memcmp(old,restored,sizeof(old)));
+  AppSettings invalid=app_settings_get();invalid.navigation_highlight=255;
+  assert(!app_settings_apply(&invalid));
+  assert(durable_store_write(44,2,&invalid,sizeof(invalid)));
+  app_settings_init();assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_CLASSIC);
+  assert(app_settings_get_main_menu_slot(5)==23);
+}
+
 static void test_calendar(void) {
   assert(!liturgical_calendar_is_eastertide_date(2026, 4, 4));
   assert(liturgical_calendar_is_eastertide_date(2026, 4, 5));
@@ -79,7 +113,7 @@ static void test_calendar(void) {
   assert(!rosary_mystery_set_for_weekday(7));
 }
 static void test_recoverable_settings(void) {
-  for (int torn = 0; torn < 29; ++torn) {
+  for (int torn = 0; torn < 16 + sizeof(AppSettings); ++torn) {
     storage_reset();
     app_settings_init();
     assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
@@ -99,7 +133,7 @@ static void test_recoverable_settings(void) {
   app_settings_init();
   assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
   assert(app_settings_set_appearance(APP_APPEARANCE_DARK));
-  storage_corrupt(41); // Newest bank is corrupt; recover previous settings.
+  storage_corrupt(45); // Newest bank is corrupt; recover previous settings.
   app_settings_init();
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
   assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
@@ -184,9 +218,20 @@ static void test_catalog_destinations(void) {
     }
   }
 }
+static void test_packaged_preces(void) {
+  const Prayer *prayer = prayers_get_by_id(PRAYER_ID_PRECES);
+  const char *text = prayer_get_translation(prayer, prayer->default_language)->text;
+  FILE *file = fopen("resources/data/preces.bin", "rb");
+  assert(file);
+  for (size_t i=0;i<=strlen(text);++i) assert(fgetc(file) == (unsigned char)text[i]);
+  assert(fgetc(file) == EOF);
+  fclose(file);
+}
 int main(void) {
+  test_packaged_preces();
   extern void run_phone_tests(void);
   test_settings();
+  test_navigation_migration();
   test_calendar();
   test_recoverable_settings();
   test_reading_position();

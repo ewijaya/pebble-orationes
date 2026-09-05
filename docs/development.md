@@ -26,11 +26,14 @@ For screenshot regression, install Pillow and run:
 ```sh
 python3 scripts/check_release.py --screenshots
 python3 scripts/qa_flows.py
+python3 scripts/qa_appearance.py
 ```
 
 This installs into the local Emery emulator and changes its shortcuts, theme, font
-size, and reminder preferences. It compares five prayer screens pixel for pixel
-with `tests/screenshots/`. Those baselines were captured before changing the reader.
+size, and reminder preferences. It compares prayer/title pixels in five screens against the original
+`tests/screenshots/` baselines. The rightmost four pixels and bottom 28 pixels are
+excluded because the edge progress indicator intentionally replaces the dotted
+bottom shadow. All other pixels must match exactly.
 It does not install on a physical watch. Re-capture baselines only after reviewing
 an intentional visual change; never update them simply to make a failing test pass.
 Start without firmware alerts covering the app; restart the emulator if necessary.
@@ -64,6 +67,15 @@ guards those files byte for byte. For an authorized text edit, compare it with t
 approved source and explicitly review the baseline update. Canonical local files in
 `content/` remain ignored. The catalog generator never rewrites prayer wording.
 
+Preces is packaged verbatim in `resources/data/preces.bin`, including its NUL
+terminator. Run `python3 scripts/generate_text_resource.py` after an authorized
+Preces edit; both build and host checks reject a stale resource. A host test compares
+the resource against the C compiler's original string, not merely a second parser.
+The watch loads and caches those 3,712 bytes on first use. This keeps the text
+outside Pebble's 16-bit loaded/virtual image limit while preserving offline use.
+Link-time optimization retains `__pbl_app_info` explicitly; the bundle gate checks
+its signature and image-size fields before any install.
+
 ## Settings and storage
 
 `AppSettings` is a compact byte-based record. All setters validate a candidate and
@@ -73,7 +85,9 @@ schedule must succeed before enabling is saved.
 
 `durable_store.c` alternates checksummed, versioned records between two keys. It
 keeps the prior valid record during a failed or partial write. Settings use keys
-40/41; the reading position uses 42/43. Old settings keys 1–7, 20–24, and 30–36
+44/45 (schema 2); the reading position uses 42/43. Schema 1 settings at
+40/41 are read on upgrade and retained untouched. Navigation Highlight is appended
+to the record and defaults to Classic, preserving the previous selection colors. Old settings keys 1–7, 20–24, and 30–36
 are read for migration and are never repurposed. Wakeups retain keys 10/11.
 Changing a record layout requires a schema migration.
 
@@ -107,3 +121,16 @@ Plain text retains its original TextLayer rendering; styled text retains its exi
 viewport renderer. Bookmarks are written on leaving the reader, rather than on every
 scroll event. Abrupt loss of power before leaving can therefore retain the previous
 checkpoint. The double-Select exit still saves through window cleanup.
+
+## UI appearance
+
+Title Accent controls title bands; Navigation Highlight controls selected menu rows.
+The latter has Classic, Amber, Tangerine, Violet, Magenta, and Lime choices, with
+fixed contrasting text colors. Both settings have independent native and phone
+previews. Native Up/Down previews without saving; Select commits and Back cancels.
+`app_fonts.c` shares stable custom-font handles until app exit so preview and reader
+rebuilds cannot confuse cached metrics by reusing an unloaded font address.
+`qa_appearance.py` checks raw palette values, readable text, cancel/save, relaunch,
+and independence from every existing Title Accent in both appearances.
+
+See [the UI refresh record](ui-refresh.md) for the complete change and verification.

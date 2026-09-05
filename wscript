@@ -1,4 +1,6 @@
 import os.path
+import subprocess
+import sys
 
 top = '.'
 out = 'build'
@@ -13,6 +15,7 @@ def configure(ctx):
 
 
 def build(ctx):
+    subprocess.run([sys.executable, 'scripts/generate_text_resource.py', '--check'], check=True)
     ctx.load('pebble_sdk')
 
     binaries = []
@@ -20,6 +23,11 @@ def build(ctx):
 
     for platform in ctx.env.TARGET_PLATFORMS:
         ctx.env = ctx.all_envs[platform]
+        # Cross-module size optimization keeps the loaded image below Pebble's
+        # 16-bit load_size limit while preserving the bundled prayer library.
+        ctx.env.append_value('CFLAGS', ['-flto'])
+        # The loader requires the generated process header at the start of the image.
+        ctx.env.append_value('LINKFLAGS', ['-flto', '-Wl,--undefined=__pbl_app_info'])
         ctx.set_group(ctx.env.PLATFORM_NAME)
         app_elf = '{}/pebble-app.elf'.format(ctx.env.BUILD_DIR)
         ctx.pbl_build(

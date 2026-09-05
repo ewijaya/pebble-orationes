@@ -2,19 +2,23 @@
 
 #include "accessible_menu.h"
 #include "app_settings.h"
+#include "app_theme.h"
+#include "app_fonts.h"
 #include "litany.h"
 #include "main_menu_catalog.h"
 #include "noon_reminder.h"
 #include "phone_settings.h"
 #include "placeholder_screen.h"
 #include "prayer_collection_menu.h"
-#include "prayer_screen.h"
-#include "prayers.h"
-#include "rosary_menu.h"
-#include "settings_menu.h"
 #include "prayer_library.h"
 #include "prayer_navigation.h"
+#include "prayer_screen.h"
+#include "prayers.h"
 #include "reading_position.h"
+#include "rosary_menu.h"
+#include "settings_menu.h"
+#include "ui_notice.h"
+#include <stdio.h>
 
 enum {
   MAIN_MENU_FIXED_ITEMS = 2,
@@ -23,6 +27,22 @@ enum {
 
 static Window *s_menu_window;
 static MenuLayer *s_menu_layer;
+static Layer *s_brand_layer;
+static const char *saved_prayer_name(void) {
+  ReadingPosition p;
+  return reading_position_get(&p) ? main_menu_catalog_get(p.entry)->name : "";
+}
+static void draw_brand(Layer *layer, GContext *ctx) {
+  graphics_context_set_fill_color(ctx, app_theme_title_background_color());
+  graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+  ui_symbol_draw(ctx, UI_SYMBOL_MARK, GPoint(35, 4),
+                 app_theme_title_foreground_color());
+  graphics_context_set_text_color(ctx, app_theme_title_foreground_color());
+  graphics_draw_text(ctx, "Orationes",
+                     fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                     GRect(64, 0, 130, 32), GTextOverflowModeWordWrap,
+                     GTextAlignmentLeft, NULL);
+}
 
 static uint16_t configured_entry_count(void) {
   uint16_t count = 0;
@@ -73,17 +93,25 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
 
   row -= entry_count;
   const bool resume = has_continue();
+  if (resume && row == 0) {
+    accessible_menu_draw_detail(ctx, cell_layer, "Continue",
+                                saved_prayer_name(), UI_SYMBOL_BOOKMARK);
+    return;
+  }
   accessible_menu_draw_row(ctx, cell_layer,
       resume && row == 0 ? "Continue" : row == (resume ? 1 : 0) ? "All Prayers" : "Settings");
 }
 
 static int16_t menu_get_cell_height(MenuLayer *menu_layer,
                                     MenuIndex *cell_index, void *context) {
+  if (has_continue() && cell_index->row == configured_entry_count())
+    return accessible_menu_detail_height(
+        menu_layer, "Continue", saved_prayer_name(), UI_SYMBOL_BOOKMARK);
   const MainMenuEntryId entry_id = configured_entry_for_row(cell_index->row);
-  return main_menu_catalog_is_card(entry_id)
-      ? accessible_menu_wrapped_row_height(
-            menu_layer, main_menu_catalog_get(entry_id)->name)
-      : ACCESSIBLE_MENU_ROW_HEIGHT;
+  return entry_id != MAIN_MENU_ENTRY_NONE
+             ? accessible_menu_wrapped_row_height(
+                   menu_layer, main_menu_catalog_get(entry_id)->name)
+             : ACCESSIBLE_MENU_ROW_HEIGHT;
 }
 
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
@@ -164,7 +192,11 @@ static void menu_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  s_menu_layer = menu_layer_create(bounds);
+  s_brand_layer = layer_create(GRect(0, 0, bounds.size.w, 32));
+  layer_set_update_proc(s_brand_layer, draw_brand);
+  layer_add_child(window_layer, s_brand_layer);
+  s_menu_layer =
+      menu_layer_create(GRect(0, 32, bounds.size.w, bounds.size.h - 32));
   menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
       .get_num_rows = menu_get_num_rows,
       .get_cell_height = menu_get_cell_height,
@@ -177,6 +209,8 @@ static void menu_window_load(Window *window) {
 }
 
 static void menu_window_unload(Window *window) {
+  layer_destroy(s_brand_layer);
+  s_brand_layer = NULL;
   menu_layer_destroy(s_menu_layer);
   s_menu_layer = NULL;
 }
@@ -186,12 +220,15 @@ static void menu_window_appear(Window *window) {
     return;
   }
 
+  layer_mark_dirty(s_brand_layer);
   accessible_menu_apply_colors(s_menu_layer);
   menu_layer_reload_data(s_menu_layer);
   layer_mark_dirty(menu_layer_get_layer(s_menu_layer));
 }
 
 static void settings_changed_handler(void) {
+  if (s_brand_layer)
+    layer_mark_dirty(s_brand_layer);
   if (!app_settings_get_remember_place()) reading_position_clear();
   if (s_menu_layer) {
     const uint16_t row_count = menu_get_num_rows(s_menu_layer, 0, NULL);
@@ -229,6 +266,15 @@ static void shortcut_saved_handler(uint8_t slot_index) {
   menu_layer_reload_data(s_menu_layer);
   menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, row),
                                 MenuRowAlignCenter, false);
+  char message[40];
+  const MainMenuEntryId entry = app_settings_get_main_menu_slot(slot_index);
+  snprintf(message, sizeof(message),
+           entry == MAIN_MENU_ENTRY_NONE ? "Slot %u cleared"
+                                         : "Pinned to slot %u",
+           slot_index + 1);
+  ui_notice_show(message, entry == MAIN_MENU_ENTRY_NONE
+                              ? "Shortcut removed"
+                              : main_menu_catalog_get(entry)->name);
 }
 
 static bool init(void) {
@@ -237,6 +283,7 @@ static bool init(void) {
 #endif
 
   app_settings_init();
+  ui_notice_init();
   prayer_screen_init();
   placeholder_screen_init();
   rosary_menu_init();
@@ -265,6 +312,7 @@ static bool init(void) {
 }
 
 static void deinit(void) {
+  ui_notice_deinit();
   phone_settings_deinit();
   noon_reminder_deinit();
 
@@ -277,6 +325,7 @@ static void deinit(void) {
   rosary_menu_deinit();
   placeholder_screen_deinit();
   prayer_screen_deinit();
+  app_fonts_deinit();
 }
 
 int main(void) {

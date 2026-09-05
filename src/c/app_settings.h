@@ -24,6 +24,16 @@ typedef enum {
 } AppAccentColor;
 
 typedef enum {
+  APP_NAVIGATION_CLASSIC,
+  APP_NAVIGATION_AMBER,
+  APP_NAVIGATION_TANGERINE,
+  APP_NAVIGATION_VIOLET,
+  APP_NAVIGATION_MAGENTA,
+  APP_NAVIGATION_LIME,
+  APP_NAVIGATION_COUNT,
+} AppNavigationHighlight;
+
+typedef enum {
   APP_APPEARANCE_LIGHT,
   APP_APPEARANCE_DARK,
   APP_APPEARANCE_COUNT,
@@ -44,6 +54,7 @@ typedef struct {
   uint8_t noon_reminder_duration;
   uint8_t remember_place;
   uint8_t slots[APP_MAIN_MENU_SLOT_COUNT];
+  uint8_t navigation_highlight;
 } AppSettings;
 
 typedef void (*AppSettingsChangedHandler)(void);
@@ -78,3 +89,8 @@ bool app_settings_set_noon_reminder_duration(
 uint32_t app_settings_get_noon_reminder_duration_seconds(void);
 const char *app_settings_noon_reminder_duration_label(
     AppNoonReminderDuration duration);
+
+AppNavigationHighlight app_settings_get_navigation_highlight(void);
+bool app_settings_set_navigation_highlight(AppNavigationHighlight value);
+const char *
+app_settings_navigation_highlight_label(AppNavigationHighlight value);

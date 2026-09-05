@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" shape-rendering="crispEdges">
+  <title>Orationes — regular-weight cross joined to its circle</title>
+  <!-- Pixel-aligned 2px ring: centered at (12,12), radii 9.5 and 11.5. -->
+  <path fill="black" d="M9 1h7v1h-7Z M7 2h11v1h-11Z M5 3h4v1h-4Z M16 3h4v1h-4Z M4 4h3v1h-3Z M18 4h3v1h-3Z M3 5h3v1h-3Z M19 5h3v1h-3Z M3 6h2v1h-2Z M20 6h2v1h-2Z M2 7h2v1h-2Z M21 7h2v1h-2Z M2 8h2v1h-2Z M21 8h2v1h-2Z M1 9h2v1h-2Z M22 9h2v1h-2Z M1 10h2v1h-2Z M22 10h2v1h-2Z M1 11h2v1h-2Z M22 11h2v1h-2Z M1 12h2v1h-2Z M22 12h2v1h-2Z M1 13h2v1h-2Z M22 13h2v1h-2Z M1 14h2v1h-2Z M22 14h2v1h-2Z M1 15h2v1h-2Z M22 15h2v1h-2Z M2 16h2v1h-2Z M21 16h2v1h-2Z M2 17h2v1h-2Z M21 17h2v1h-2Z M3 18h2v1h-2Z M20 18h2v1h-2Z M3 19h3v1h-3Z M19 19h3v1h-3Z M4 20h3v1h-3Z M18 20h3v1h-3Z M5 21h4v1h-4Z M16 21h4v1h-4Z M7 22h11v1h-11Z M9 23h7v1h-7Z"/>
+  <path fill="black" d="M11.5 1H13.5V24H11.5Z M3 6.5H22V8.5H3Z"/>
+</svg>

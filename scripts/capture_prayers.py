@@ -38,6 +38,9 @@ for name, entry, size, appearance in [
         from PIL import Image, ImageChops
         actual = Image.open(target).convert('RGB')
         expected = Image.open(args.compare / target.name).convert('RGB')
-        assert actual.size == expected.size and ImageChops.difference(actual, expected).getbbox() is None, f'Render changed: {name}'
+        # The new edge indicator replaces the old 20px dotted bottom shadow.
+        # Keep original reference images and require exact prayer/title pixels elsewhere.
+        region = (0, 0, 196, 200)
+        assert actual.size == expected.size and ImageChops.difference(actual.crop(region), expected.crop(region)).getbbox() is None, f'Render changed: {name}'
     run('emu-button', '--emulator', 'emery', 'click', 'back')
-    print(f'{name}: captured' + ('; exact match' if args.compare else ''), flush=True)
+    print(f'{name}: captured' + ('; prayer/title pixels match' if args.compare else ''), flush=True)

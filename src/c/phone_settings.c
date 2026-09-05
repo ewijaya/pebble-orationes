@@ -68,6 +68,8 @@ void phone_settings_send_current(void) {
 
   dict_write_uint32(iterator, MESSAGE_KEY_SettingsAck, s_ack);
   dict_write_uint8(iterator, MESSAGE_KEY_SettingsStatus, s_status);
+  dict_write_uint8(iterator, MESSAGE_KEY_NavigationHighlight,
+                   app_settings_get_navigation_highlight());
   dict_write_uint8(iterator, MESSAGE_KEY_RememberPlace, app_settings_get_remember_place());
   dict_write_uint8(iterator, MESSAGE_KEY_TextSize,
                    app_settings_get_text_size());
@@ -104,6 +106,8 @@ static void inbox_received_handler(DictionaryIterator *iterator, void *context) 
   valid &= read_setting(iterator, MESSAGE_KEY_AccentColor, &updated.accent_color);
   valid &= read_setting(iterator, MESSAGE_KEY_NoonReminderEnabled, &updated.noon_reminder_enabled);
   valid &= read_setting(iterator, MESSAGE_KEY_NoonReminderDuration, &updated.noon_reminder_duration);
+  valid &= read_setting(iterator, MESSAGE_KEY_NavigationHighlight,
+                        &updated.navigation_highlight);
   valid &= read_setting(iterator, MESSAGE_KEY_RememberPlace, &updated.remember_place);
   for (uint8_t i = 0; i < APP_MAIN_MENU_SLOT_COUNT; ++i) {
     valid &= read_setting(iterator, main_menu_slot_message_key(i), &updated.slots[i]);

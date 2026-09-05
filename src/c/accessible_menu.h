@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ui_symbols.h"
 #include <pebble.h>
 
 enum {
@@ -23,3 +24,12 @@ void accessible_menu_draw_row_with_value(GContext *ctx,
                                          const Layer *cell_layer,
                                          const char *text,
                                          const char *value);
+
+void accessible_menu_draw_detail(GContext *ctx, const Layer *cell,
+                                 const char *title, const char *detail,
+                                 UiSymbol icon);
+int16_t accessible_menu_detail_height(MenuLayer *menu, const char *title,
+                                      const char *detail, UiSymbol icon);
+void accessible_menu_draw_icon_row(GContext *ctx, const Layer *cell,
+                                   const char *text, UiSymbol icon);
+int16_t accessible_menu_icon_height(MenuLayer *menu, const char *text);

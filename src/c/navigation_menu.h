@@ -1,4 +1,5 @@
 #pragma once
+#include "ui_symbols.h"
 #include <pebble.h>
 
 typedef struct NavigationMenu NavigationMenu;
@@ -10,6 +11,7 @@ struct NavigationMenu {
   const char *(*label)(uint16_t row, void *context);
   void (*select)(uint16_t row, void *context);
   void *context;
+  UiSymbol (*icon)(uint16_t row);
 };
 void navigation_menu_init(NavigationMenu *menu, const char *title,
                           uint16_t (*count)(void *),

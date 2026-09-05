@@ -1,4 +1,5 @@
 #include "prayer_screen.h"
+#include "app_fonts.h"
 
 #include <pebble.h>
 #include <limits.h>
@@ -24,6 +25,7 @@ enum {
 
 static Window *s_window;
 static ScrollLayer *s_scroll_layer;
+static Layer *s_progress_layer;
 static TextLayer *s_title_layer;
 static TextLayer *s_body_layer;
 static const char *s_title;
@@ -31,8 +33,6 @@ static const char *s_text;
 static int16_t s_title_height;
 static AppTimer *s_fast_scroll_timer;
 static int8_t s_fast_scroll_direction;
-static GFont s_custom_body_font;
-static GFont s_italic_body_font;
 static GFont s_rendered_body_font;
 static Layer *s_styled_body_layer;
 static const PrayerParagraph *s_paragraphs;
@@ -71,6 +71,8 @@ static int32_t styled_scroll_offset(void) {
 
 static void styled_offset_changed(ScrollLayer *scroll_layer, void *context) {
   (void)context;
+  if (s_progress_layer)
+    layer_mark_dirty(s_progress_layer);
   if (!s_styled_body_layer) {
     return;
   }
@@ -90,29 +92,10 @@ static void styled_offset_changed(ScrollLayer *scroll_layer, void *context) {
 }
 
 static GFont get_italic_font(void) {
-  if (!s_italic_body_font) {
-    const uint32_t resource =
-        app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE
-            ? RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_OBLIQUE_34
-            : RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_OBLIQUE_28;
-    s_italic_body_font = fonts_load_custom_font(resource_get_handle(resource));
-  }
-  return s_italic_body_font;
+  return app_fonts_italic(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
 }
-
 static GFont get_body_font(void) {
-  if (app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE) {
-    if (!s_custom_body_font) {
-      s_custom_body_font = fonts_load_custom_font(
-          resource_get_handle(
-              RESOURCE_ID_FONT_DEJAVU_SANS_CONDENSED_BOLD_34));
-    }
-    if (s_custom_body_font) {
-      return s_custom_body_font;
-    }
-  }
-
-  return fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+  return app_fonts_body(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
 }
 
 static GFont paragraph_font(const PrayerParagraph *paragraph) {
@@ -306,6 +289,27 @@ static void prayer_click_config_provider(void *context) {
                                exit_app_multi_click_handler);
 }
 
+static void draw_progress(Layer *layer, GContext *ctx) {
+  if (!s_scroll_layer)
+    return;
+  const int16_t range = native_scroll_range();
+  if (!range)
+    return;
+  const GRect b = layer_get_bounds(layer);
+  int32_t offset = -scroll_layer_get_content_offset(s_scroll_layer).y;
+  if (offset < 0)
+    offset = 0;
+  if (offset > range)
+    offset = range;
+  const int16_t thumb = 18;
+  const int16_t y = 4 + offset * (b.size.h - 8 - thumb) / range;
+  graphics_context_set_fill_color(ctx, app_theme_background_color());
+  graphics_fill_rect(ctx, b, 0, GCornerNone);
+  graphics_context_set_stroke_color(ctx, app_theme_foreground_color());
+  graphics_draw_line(ctx, GPoint(2, 4), GPoint(2, b.size.h - 4));
+  graphics_context_set_fill_color(ctx, app_theme_foreground_color());
+  graphics_fill_rect(ctx, GRect(0, y, 4, thumb), 1, GCornersAll);
+}
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   const GRect bounds = layer_get_bounds(window_layer);
@@ -314,12 +318,17 @@ static void window_load(Window *window) {
   window_set_background_color(window, app_theme_background_color());
 
   s_scroll_layer = scroll_layer_create(bounds);
+  scroll_layer_set_shadow_hidden(s_scroll_layer, true);
   scroll_layer_set_callbacks(s_scroll_layer, (ScrollLayerCallbacks){
       .click_config_provider = prayer_click_config_provider,
       .content_offset_changed_handler = styled_offset_changed,
   });
   scroll_layer_set_click_config_onto_window(s_scroll_layer, window);
   layer_add_child(window_layer, scroll_layer_get_layer(s_scroll_layer));
+  s_progress_layer =
+      layer_create(GRect(bounds.size.w - 4, 0, 4, bounds.size.h));
+  layer_set_update_proc(s_progress_layer, draw_progress);
+  layer_add_child(window_layer, s_progress_layer);
 
   s_title_layer = text_layer_create(
       GRect(0, TITLE_TOP_MARGIN, bounds.size.w, TITLE_LAYOUT_HEIGHT));
@@ -400,24 +409,18 @@ static void window_unload(Window *window) {
   free(s_paragraph_heights);
   s_paragraph_heights = NULL;
   s_styled_content_height = 0;
-  if (s_italic_body_font) {
-    fonts_unload_custom_font(s_italic_body_font);
-    s_italic_body_font = NULL;
-  }
 
   if (s_body_layer) {
     text_layer_destroy(s_body_layer);
     s_body_layer = NULL;
   }
 
-  if (s_custom_body_font) {
-    fonts_unload_custom_font(s_custom_body_font);
-    s_custom_body_font = NULL;
-  }
 
   text_layer_destroy(s_title_layer);
   s_title_layer = NULL;
 
+  layer_destroy(s_progress_layer);
+  s_progress_layer = NULL;
   scroll_layer_destroy(s_scroll_layer);
   s_scroll_layer = NULL;
 }

@@ -57,7 +57,7 @@ module.exports = [
       {
         type: 'select',
         messageKey: 'AccentColor',
-        label: 'Accent color',
+        label: 'Title accent',
         defaultValue: '0',
         serializeValueAs: 'integer',
         options: [
@@ -65,6 +65,15 @@ module.exports = [
           { label: 'Burgundy', value: '1' },
           { label: 'Forest', value: '2' },
           { label: 'Monochrome', value: '3' }
+        ]
+      },
+      {
+        type: 'select', messageKey: 'NavigationHighlight', label: 'Navigation highlight',
+        defaultValue: '0', serializeValueAs: 'integer',
+        options: [
+          {label: 'Classic', value: '0'}, {label: 'Amber', value: '1'},
+          {label: 'Tangerine', value: '2'}, {label: 'Violet', value: '3'},
+          {label: 'Magenta', value: '4'}, {label: 'Lime', value: '5'}
         ]
       },
       {

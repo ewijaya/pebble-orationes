@@ -12,10 +12,10 @@ static bool s_is_cards;
 
 static int16_t menu_get_cell_height(MenuLayer *menu_layer,
                                     MenuIndex *cell_index, void *context) {
-  return s_is_cards && s_collection && cell_index->row < s_collection->prayer_count
-      ? accessible_menu_wrapped_row_height(
-            menu_layer, s_collection->prayers[cell_index->row].name)
-      : ACCESSIBLE_MENU_ROW_HEIGHT;
+  return s_collection && cell_index->row < s_collection->prayer_count
+             ? accessible_menu_wrapped_row_height(
+                   menu_layer, s_collection->prayers[cell_index->row].name)
+             : ACCESSIBLE_MENU_ROW_HEIGHT;
 }
 
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer,
@@ -23,6 +23,11 @@ static uint16_t menu_get_num_rows(MenuLayer *menu_layer,
   return s_collection ? s_collection->prayer_count : 0;
 }
 
+static int16_t menu_header_height(MenuLayer *layer, uint16_t section,
+                                  void *context) {
+  return accessible_menu_get_header_height(
+      layer, section, (void *)(s_collection ? s_collection->name : "Prayers"));
+}
 static void menu_draw_header(GContext *ctx, const Layer *cell_layer,
                              uint16_t section_index, void *context) {
   accessible_menu_draw_header(
@@ -84,14 +89,15 @@ static void cards_click_config_provider(void *context) {
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   s_menu_layer = menu_layer_create(layer_get_bounds(window_layer));
-  menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
-      .get_num_rows = menu_get_num_rows,
-      .get_cell_height = menu_get_cell_height,
-      .get_header_height = accessible_menu_get_header_height,
-      .draw_row = menu_draw_row,
-      .draw_header = menu_draw_header,
-      .select_click = menu_select_click,
-  });
+  menu_layer_set_callbacks(s_menu_layer, NULL,
+                           (MenuLayerCallbacks){
+                               .get_num_rows = menu_get_num_rows,
+                               .get_cell_height = menu_get_cell_height,
+                               .get_header_height = menu_header_height,
+                               .draw_row = menu_draw_row,
+                               .draw_header = menu_draw_header,
+                               .select_click = menu_select_click,
+                           });
   accessible_menu_apply_colors(s_menu_layer);
   menu_layer_set_click_config_onto_window(s_menu_layer, window);
   if (s_is_cards) {

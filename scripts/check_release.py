@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import struct
 import sys
 import zipfile
 
@@ -45,6 +46,12 @@ with zipfile.ZipFile(bundle) as archive:
     assert info['targetPlatforms'] == ['emery']
     assert info['watchapp']['watchface'] is False
     assert 'pebble-js-app.js' in archive.namelist()
+    binary = archive.read('emery/pebble-app.bin')
+    assert binary[:8] == b'PBLAPP\0\0', 'Missing process header (check LTO retention)'
+    metrics['load'] = struct.unpack_from('<H', binary, 14)[0]
+    metrics['virtual'] = struct.unpack_from('<H', binary, 128)[0]
+    assert 0 < metrics['load'] <= metrics['virtual'] <= 65535
+    assert metrics['virtual'] >= metrics['ram'] - 8  # ELF padding may differ slightly.
 run('git', 'diff', '--check')
 (ROOT / 'build/regression-metrics.json').write_text(json.dumps(metrics, indent=2) + '\n')
 if args.screenshots:

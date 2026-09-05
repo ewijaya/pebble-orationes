@@ -18,6 +18,8 @@ module.exports = function() {
     var defaultSlots = clayConfig.meta.userData.defaultSlots;
     var appearance = clayConfig.getItemByMessageKey('Appearance');
     var accentColor = clayConfig.getItemByMessageKey('AccentColor');
+    var navigation = clayConfig.getItemByMessageKey('NavigationHighlight');
+    var textSize = clayConfig.getItemByMessageKey('TextSize');
     var accentPreview = clayConfig.getItemById('accent-preview');
     var accentPalettes = {
       0: {
@@ -38,14 +40,21 @@ module.exports = function() {
       }
     };
 
+    var navigationPalettes = [null,
+      {color: '#FFAA00', text: '#000000'}, {color: '#FF5500', text: '#000000'},
+      {color: '#AA00FF', text: '#FFFFFF'}, {color: '#FF00FF', text: '#000000'},
+      {color: '#AAFF00', text: '#000000'}];
     function updateAccentPreview() {
-      var palette = accentPalettes[accentColor.get()][appearance.get()];
-      accentPreview.set(
-        '<span style="display:block;padding:10px 12px;border:2px solid #777;' +
-        'border-radius:4px;background:' + palette.color + ';color:' +
-        palette.text + ';font-weight:bold;text-align:center">' +
-        palette.name + ' accent · ' + palette.color + '</span>'
-      );
+      var dark = Number(appearance.get()) === 1;
+      var palette = accentPalettes[accentColor.get()][dark ? 1 : 0];
+      var nav = navigationPalettes[Number(navigation.get())] ||
+        {color: dark ? '#FFFFFF' : '#000000', text: dark ? '#000000' : '#FFFFFF'};
+      var background = dark ? '#000000' : '#FFFFFF';
+      var foreground = dark ? '#FFFFFF' : '#000000';
+      accentPreview.set('<div style="border:2px solid #777;background:' + background + ';color:' + foreground + '">' +
+        '<div style="padding:8px;background:' + palette.color + ';color:' + palette.text + ';font-size:22px;font-weight:bold">Title preview</div>' +
+        '<div style="padding:12px;font-weight:bold;font-size:' + (Number(textSize.get()) ? 34 : 28) + 'px">Make time for prayer.</div>' +
+        '<div style="padding:10px;background:' + nav.color + ';color:' + nav.text + ';font-size:24px;font-weight:bold">Selected prayer</div></div>');
     }
 
     var priorValues = slotKeys.map(function(k) { return Number(clayConfig.getItemByMessageKey(k).get()); });
@@ -80,6 +89,8 @@ module.exports = function() {
       restoringDefaults = false;
     });
 
+    navigation.on('change', updateAccentPreview);
+    textSize.on('change', updateAccentPreview);
     appearance.on('change', updateAccentPreview);
     accentColor.on('change', updateAccentPreview);
     updateAccentPreview();

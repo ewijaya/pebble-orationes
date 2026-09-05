@@ -18,9 +18,8 @@ Maintain one repeatable visual set without committing the build directory.
 
 - Run `python3 scripts/frame_screenshots.py` before `pebble clean`; clean removes the build captures.
 - If Pillow is missing, use a temporary virtual environment or document `python3 -m pip install Pillow`. Do not add a runtime dependency to the app.
-- Confirm matching copies under `docs/images/raw/` and 600x800 composites under `docs/images/framed/`.
+- Confirm matching copies under `docs/images/raw/` and optional 600x800 composites under `build/framed-screenshots/`. Frames are generated exports, not checked-in assets. To frame existing raw images, use `--input-dir docs/images/raw`.
 - Visually inspect every raw and framed result. Regeneration may produce no Git diff for unchanged images; report that rather than forcing binary changes.
 - Keep `build/` ignored and stage only deliberate documentation assets.
 
 For App Store upload, use raw captures copied to temporary files named like `emery_01_main-menu.png`; do not upload framed watch mockups as native screenshots.
-

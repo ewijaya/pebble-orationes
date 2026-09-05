@@ -3,6 +3,11 @@
 
 #include <stddef.h>
 
+#ifdef PBL_PLATFORM_EMERY
+#include <pebble.h>
+#include "preces_resource.h"
+#endif
+
 static const char s_angelus_english[] =
     "V. The Angel of the Lord declared unto Mary.\n"
     "R. And she conceived of the Holy Spirit.\n\n"
@@ -320,6 +325,8 @@ static const PrayerTranslation s_regina_caeli_translations[] = {
     },
 };
 
+// The watch loads this exact literal from its packaged resource on first use.
+#ifndef PBL_PLATFORM_EMERY
 static const char s_preces_latin[] =
     "Sérviam!\n\n"
     "V. Ad Trinitátem Beatíssimam.\n"
@@ -413,12 +420,20 @@ static const char s_preces_latin[] =
     "V. Pax.\n"
     "R. In ætérnum.";
 
+#endif
+
+#ifdef PBL_PLATFORM_EMERY
+static PrayerTranslation s_preces_translations[] = {
+    {.language = PRAYER_LANGUAGE_LATIN, .text = NULL},
+};
+#else
 static const PrayerTranslation s_preces_translations[] = {
     {
         .language = PRAYER_LANGUAGE_LATIN,
         .text = s_preces_latin,
     },
 };
+#endif
 
 static const Prayer s_prayers[] = {
     {
@@ -554,6 +569,21 @@ const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
   for (uint8_t index = 0; index < prayer->translation_count; ++index) {
     const PrayerTranslation *translation = &prayer->translations[index];
     if (translation->language == language) {
+#ifdef PBL_PLATFORM_EMERY
+      if (translation == &s_preces_translations[0] && !translation->text) {
+        const ResHandle handle = resource_get_handle(RESOURCE_ID_PRECES_TEXT);
+        if (resource_size(handle) != PRECES_RESOURCE_BYTES) return NULL;
+        char *text = malloc(PRECES_RESOURCE_BYTES);
+        if (!text) return NULL;
+        if (resource_load(handle, (uint8_t *)text, PRECES_RESOURCE_BYTES) != PRECES_RESOURCE_BYTES ||
+            text[PRECES_RESOURCE_BYTES-1] != '\0') {
+          free(text);
+          return NULL;
+        }
+        // Cached for the app lifetime; the OS releases app heap on exit.
+        s_preces_translations[0].text = text;
+      }
+#endif
       return translation;
     }
   }

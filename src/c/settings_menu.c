@@ -4,6 +4,7 @@
 
 #include "accessible_menu.h"
 #include "app_settings.h"
+#include "appearance_picker.h"
 #include "main_menu_catalog.h"
 #include "noon_reminder.h"
 #include "phone_settings.h"
@@ -12,6 +13,7 @@ enum {
   SETTINGS_MENU_ITEM_TEXT_SIZE,
   SETTINGS_MENU_ITEM_APPEARANCE,
   SETTINGS_MENU_ITEM_ACCENT_COLOR,
+  SETTINGS_MENU_ITEM_NAVIGATION,
   SETTINGS_MENU_ITEM_NOON_REMINDER,
   SETTINGS_MENU_ITEM_MAIN_MENU,
   SETTINGS_MENU_ITEM_REMEMBER_PLACE,
@@ -34,12 +36,6 @@ enum {
 
 static Window *s_settings_window;
 static MenuLayer *s_settings_menu_layer;
-static Window *s_text_size_window;
-static MenuLayer *s_text_size_menu_layer;
-static Window *s_appearance_window;
-static MenuLayer *s_appearance_menu_layer;
-static Window *s_accent_color_window;
-static MenuLayer *s_accent_color_menu_layer;
 static Window *s_noon_reminder_window;
 static MenuLayer *s_noon_reminder_menu_layer;
 static Window *s_main_menu_slots_window;
@@ -54,33 +50,70 @@ static uint16_t settings_get_num_rows(MenuLayer *menu_layer,
   return SETTINGS_MENU_ITEM_COUNT;
 }
 
+static const char *const s_settings_labels[] = {
+    "Text Size",      "Appearance",
+    "Title Accent",   "Navigation Highlight",
+    "Noon Reminder",  "Prayer Shortcuts",
+    "Remember Place",
+};
+
+static const char *settings_value(uint16_t row) {
+  const char *value = "";
+  switch (row) {
+  case SETTINGS_MENU_ITEM_TEXT_SIZE:
+    value = app_settings_text_size_label(app_settings_get_text_size());
+    break;
+  case SETTINGS_MENU_ITEM_APPEARANCE:
+    value = app_settings_appearance_label(app_settings_get_appearance());
+    break;
+  case SETTINGS_MENU_ITEM_ACCENT_COLOR:
+    value = app_settings_accent_color_label(app_settings_get_accent_color());
+    break;
+  case SETTINGS_MENU_ITEM_NAVIGATION:
+    value = app_settings_navigation_highlight_label(
+        app_settings_get_navigation_highlight());
+    break;
+  case SETTINGS_MENU_ITEM_NOON_REMINDER:
+    value = app_settings_get_noon_reminder_enabled()
+                ? app_settings_noon_reminder_duration_label(
+                      app_settings_get_noon_reminder_duration())
+                : "Off";
+    break;
+  case SETTINGS_MENU_ITEM_MAIN_MENU:
+    value = "Arrange seven slots";
+    break;
+  case SETTINGS_MENU_ITEM_REMEMBER_PLACE:
+    value = app_settings_get_remember_place() ? "On" : "Off";
+    break;
+  }
+  return value;
+}
 static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
                               MenuIndex *cell_index, void *context) {
-  static const char *const labels[] = {
-      "Text Size",
-      "Appearance",
-      "Accent Color",
-      "Noon Reminder",
-      "Prayer Shortcuts",
-      "Remember Place",
-  };
-  const char *label = labels[cell_index->row];
-  if (cell_index->row == SETTINGS_MENU_ITEM_REMEMBER_PLACE) {
-    accessible_menu_draw_row_with_value(ctx, cell_layer, label,
-        app_settings_get_remember_place() ? "On" : "Off");
-  } else {
-    accessible_menu_draw_row(ctx, cell_layer, label);
-  }
+  accessible_menu_draw_detail(ctx, cell_layer,
+                              s_settings_labels[cell_index->row],
+                              settings_value(cell_index->row), UI_SYMBOL_NONE);
+}
+static int16_t settings_height(MenuLayer *layer, MenuIndex *index,
+                               void *context) {
+  return accessible_menu_detail_height(layer, s_settings_labels[index->row],
+                                       settings_value(index->row),
+                                       UI_SYMBOL_NONE);
+}
+static void appearance_saved(void) {
+  window_stack_remove(s_settings_window, true);
 }
 
 static void settings_select_click(MenuLayer *menu_layer,
                                   MenuIndex *cell_index, void *context) {
   if (cell_index->row == SETTINGS_MENU_ITEM_TEXT_SIZE) {
-    window_stack_push(s_text_size_window, true);
+    appearance_picker_show(APPEARANCE_PICKER_SIZE, appearance_saved);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_APPEARANCE) {
-    window_stack_push(s_appearance_window, true);
+    appearance_picker_show(APPEARANCE_PICKER_APPEARANCE, appearance_saved);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_ACCENT_COLOR) {
-    window_stack_push(s_accent_color_window, true);
+    appearance_picker_show(APPEARANCE_PICKER_ACCENT, appearance_saved);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_NAVIGATION) {
+    appearance_picker_show(APPEARANCE_PICKER_NAVIGATION, appearance_saved);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_NOON_REMINDER) {
     window_stack_push(s_noon_reminder_window, true);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_MAIN_MENU) {
@@ -103,7 +136,7 @@ static int16_t main_menu_slots_get_cell_height(MenuLayer *menu_layer,
   if (cell_index->row < APP_MAIN_MENU_SLOT_COUNT) {
     const MainMenuEntryId entry_id =
         app_settings_get_main_menu_slot((uint8_t)cell_index->row);
-    if (main_menu_catalog_is_card(entry_id)) {
+    {
       char label[128];
       snprintf(label, sizeof(label), "%u. %s", (unsigned int)cell_index->row + 1,
                main_menu_catalog_get(entry_id)->name);
@@ -237,7 +270,8 @@ static int16_t main_menu_entry_get_cell_height(MenuLayer *menu_layer,
              main_menu_catalog_get(entry_id)->name);
     return accessible_menu_wrapped_row_height(menu_layer, label);
   }
-  return ACCESSIBLE_MENU_ROW_HEIGHT;
+  return accessible_menu_wrapped_row_height(
+      menu_layer, main_menu_catalog_get(entry_id)->name);
 }
 
 static void main_menu_entry_select_click(MenuLayer *menu_layer,
@@ -246,14 +280,13 @@ static void main_menu_entry_select_click(MenuLayer *menu_layer,
   if (app_settings_set_main_menu_slot(
           s_editing_slot_index, (MainMenuEntryId)cell_index->row)) {
     phone_settings_send_current();
-    if (s_shortcut_saved_handler) {
-      s_shortcut_saved_handler(s_editing_slot_index);
-    }
     // Remove the intermediate screens before revealing the main menu once.
     // BACK without a selection still follows the normal window stack.
     window_stack_remove(s_main_menu_slots_window, false);
     window_stack_remove(s_settings_window, false);
     window_stack_pop(true);
+    if (s_shortcut_saved_handler)
+      s_shortcut_saved_handler(s_editing_slot_index);
   }
 }
 
@@ -295,72 +328,6 @@ static void main_menu_entry_click_config_provider(void *context) {
       main_menu_entry_down_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT,
                                 main_menu_entry_select_click_handler);
-}
-
-static uint16_t appearance_get_num_rows(MenuLayer *menu_layer,
-                                        uint16_t section_index,
-                                        void *context) {
-  return APP_APPEARANCE_COUNT;
-}
-
-static void appearance_draw_row(GContext *ctx, const Layer *cell_layer,
-                                MenuIndex *cell_index, void *context) {
-  accessible_menu_draw_row(
-      ctx, cell_layer,
-      app_settings_appearance_label((AppAppearance)cell_index->row));
-}
-
-static void appearance_select_click(MenuLayer *menu_layer,
-                                    MenuIndex *cell_index, void *context) {
-  if (app_settings_set_appearance((AppAppearance)cell_index->row)) {
-    phone_settings_send_current();
-    window_stack_remove(s_settings_window, false);
-    window_stack_pop(true);
-  }
-}
-
-static uint16_t accent_color_get_num_rows(MenuLayer *menu_layer,
-                                          uint16_t section_index,
-                                          void *context) {
-  return APP_ACCENT_COLOR_COUNT;
-}
-
-static void accent_color_draw_row(GContext *ctx, const Layer *cell_layer,
-                                  MenuIndex *cell_index, void *context) {
-  accessible_menu_draw_row(
-      ctx, cell_layer,
-      app_settings_accent_color_label((AppAccentColor)cell_index->row));
-}
-
-static void accent_color_select_click(MenuLayer *menu_layer,
-                                      MenuIndex *cell_index, void *context) {
-  if (app_settings_set_accent_color((AppAccentColor)cell_index->row)) {
-    phone_settings_send_current();
-    window_stack_remove(s_settings_window, false);
-    window_stack_pop(true);
-  }
-}
-
-static uint16_t text_size_get_num_rows(MenuLayer *menu_layer,
-                                       uint16_t section_index,
-                                       void *context) {
-  return APP_TEXT_SIZE_COUNT;
-}
-
-static void text_size_draw_row(GContext *ctx, const Layer *cell_layer,
-                               MenuIndex *cell_index, void *context) {
-  accessible_menu_draw_row(
-      ctx, cell_layer,
-      app_settings_text_size_label((AppTextSize)cell_index->row));
-}
-
-static void text_size_select_click(MenuLayer *menu_layer,
-                                   MenuIndex *cell_index, void *context) {
-  if (app_settings_set_text_size((AppTextSize)cell_index->row)) {
-    phone_settings_send_current();
-    window_stack_remove(s_settings_window, false);
-    window_stack_pop(true);
-  }
 }
 
 static uint16_t noon_reminder_get_num_rows(MenuLayer *menu_layer,
@@ -426,58 +393,13 @@ static MenuLayer *create_menu(Window *window, const char *header,
 
 static void settings_window_load(Window *window) {
   s_settings_menu_layer =
-      create_menu(window, "Settings", settings_get_num_rows,
-                  settings_draw_row, settings_select_click, NULL);
+      create_menu(window, "Settings", settings_get_num_rows, settings_draw_row,
+                  settings_select_click, settings_height);
 }
 
 static void settings_window_unload(Window *window) {
   menu_layer_destroy(s_settings_menu_layer);
   s_settings_menu_layer = NULL;
-}
-
-static void text_size_window_load(Window *window) {
-  s_text_size_menu_layer =
-      create_menu(window, "Text Size", text_size_get_num_rows,
-                  text_size_draw_row, text_size_select_click, NULL);
-  menu_layer_set_selected_index(
-      s_text_size_menu_layer,
-      MenuIndex(0, (uint16_t)app_settings_get_text_size()),
-      MenuRowAlignCenter, false);
-}
-
-static void text_size_window_unload(Window *window) {
-  menu_layer_destroy(s_text_size_menu_layer);
-  s_text_size_menu_layer = NULL;
-}
-
-static void appearance_window_load(Window *window) {
-  s_appearance_menu_layer =
-      create_menu(window, "Appearance", appearance_get_num_rows,
-                  appearance_draw_row, appearance_select_click, NULL);
-  menu_layer_set_selected_index(
-      s_appearance_menu_layer,
-      MenuIndex(0, (uint16_t)app_settings_get_appearance()),
-      MenuRowAlignCenter, false);
-}
-
-static void appearance_window_unload(Window *window) {
-  menu_layer_destroy(s_appearance_menu_layer);
-  s_appearance_menu_layer = NULL;
-}
-
-static void accent_color_window_load(Window *window) {
-  s_accent_color_menu_layer =
-      create_menu(window, "Accent Color", accent_color_get_num_rows,
-                  accent_color_draw_row, accent_color_select_click, NULL);
-  menu_layer_set_selected_index(
-      s_accent_color_menu_layer,
-      MenuIndex(0, (uint16_t)app_settings_get_accent_color()),
-      MenuRowAlignCenter, false);
-}
-
-static void accent_color_window_unload(Window *window) {
-  menu_layer_destroy(s_accent_color_menu_layer);
-  s_accent_color_menu_layer = NULL;
 }
 
 static void noon_reminder_window_load(Window *window) {
@@ -532,29 +454,12 @@ static void main_menu_slots_window_unload(Window *window) {
 }
 
 void settings_menu_init(SettingsShortcutSavedHandler shortcut_saved_handler) {
+  appearance_picker_init();
   s_shortcut_saved_handler = shortcut_saved_handler;
   s_settings_window = window_create();
   window_set_window_handlers(s_settings_window, (WindowHandlers){
       .load = settings_window_load,
       .unload = settings_window_unload,
-  });
-
-  s_text_size_window = window_create();
-  window_set_window_handlers(s_text_size_window, (WindowHandlers){
-      .load = text_size_window_load,
-      .unload = text_size_window_unload,
-  });
-
-  s_appearance_window = window_create();
-  window_set_window_handlers(s_appearance_window, (WindowHandlers){
-      .load = appearance_window_load,
-      .unload = appearance_window_unload,
-  });
-
-  s_accent_color_window = window_create();
-  window_set_window_handlers(s_accent_color_window, (WindowHandlers){
-      .load = accent_color_window_load,
-      .unload = accent_color_window_unload,
   });
 
   s_noon_reminder_window = window_create();
@@ -577,6 +482,7 @@ void settings_menu_init(SettingsShortcutSavedHandler shortcut_saved_handler) {
 }
 
 void settings_menu_deinit(void) {
+  appearance_picker_deinit();
   s_shortcut_saved_handler = NULL;
   window_destroy(s_main_menu_entry_window);
   s_main_menu_entry_window = NULL;
@@ -587,14 +493,8 @@ void settings_menu_deinit(void) {
   window_destroy(s_noon_reminder_window);
   s_noon_reminder_window = NULL;
 
-  window_destroy(s_accent_color_window);
-  s_accent_color_window = NULL;
 
-  window_destroy(s_appearance_window);
-  s_appearance_window = NULL;
 
-  window_destroy(s_text_size_window);
-  s_text_size_window = NULL;
 
   window_destroy(s_settings_window);
   s_settings_window = NULL;
@@ -605,11 +505,9 @@ void settings_menu_show(void) {
 }
 
 void settings_menu_refresh(void) {
+  appearance_picker_refresh();
   MenuLayer *menu_layers[] = {
       s_settings_menu_layer,
-      s_text_size_menu_layer,
-      s_appearance_menu_layer,
-      s_accent_color_menu_layer,
       s_noon_reminder_menu_layer,
       s_main_menu_slots_menu_layer,
       s_main_menu_entry_menu_layer,

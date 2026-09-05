@@ -1,7 +1,7 @@
 {
   "name": "orationes",
   "author": "ewijaya",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "keywords": [
     "pebble-app"
   ],
@@ -47,7 +47,8 @@
       "RememberPlace",
       "SettingsTransaction",
       "SettingsAck",
-      "SettingsStatus"
+      "SettingsStatus",
+      "NavigationHighlight"
     ],
     "resources": {
       "media": [
@@ -61,7 +62,7 @@
           "type": "font",
           "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_34",
           "file": "fonts/DejaVuSansCondensed-Bold.ttf",
-          "characterRegex": "[ -~\u00b7\u00c1\u00d3\u00da\u00e1\u00e6\u00e9\u00eb\u00ed\u00f1\u00f3\u00fa\u0153\u01fd\u2720\u2018\u2019\u201c\u201d\u2026\u2022]"
+          "characterRegex": "[ -~·ÁÓÚáæéëíñóúœǽ✠‘’“”…•]"
         },
         {
           "type": "font",
@@ -74,6 +75,11 @@
           "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_OBLIQUE_34",
           "file": "fonts/DejaVuSansCondensed-BoldOblique.ttf",
           "characterRegex": "[ -~]"
+        },
+        {
+          "type": "raw",
+          "name": "PRECES_TEXT",
+          "file": "data/preces.bin"
         }
       ]
     }

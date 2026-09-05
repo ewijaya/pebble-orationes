@@ -75,5 +75,18 @@ void run_phone_tests(void) {
   s_receiver(&incoming, NULL);
   assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
   assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  incoming.count=0;
+  dict_write_uint32(&incoming,MESSAGE_KEY_NavigationHighlight,APP_NAVIGATION_VIOLET);
+  s_receiver(&incoming,NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus)==0);
+  assert(reply(MESSAGE_KEY_NavigationHighlight)==APP_NAVIGATION_VIOLET);
+  app_settings_init();assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_VIOLET);
+  incoming.count=0;
+  dict_write_uint32(&incoming,MESSAGE_KEY_NavigationHighlight,APP_NAVIGATION_COUNT);
+  dict_write_uint32(&incoming,MESSAGE_KEY_AccentColor,APP_ACCENT_COLOR_FOREST);
+  s_receiver(&incoming,NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus)==1);
+  assert(app_settings_get_accent_color()==APP_ACCENT_COLOR_OCEAN);
+  assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_VIOLET);
   phone_settings_deinit();
 }

@@ -1,4 +1,56 @@
-# v0.7.0 verification — 2026-09-05
+# Release verification
+
+## v0.8.0 — 2026-09-05
+
+The final candidate was built with Pebble Tool 5.0.40 and SDK 4.33.1 for Emery
+only. Its UUID remains `9f17d477-cef1-4512-8536-f01d50bb07a3`; the PBW metadata
+reports `0.8.0`. The bundled Clay companion continues to provide phone settings.
+
+| Check | Result |
+| --- | --- |
+| Clean build, PBW metadata, process header, and memory budgets | Passed |
+| Sanitizer-backed C host tests and JS regression tests | Passed |
+| Settings schema migration, interrupted writes, invalid messages, and acknowledgments | Passed |
+| Generated catalog and complete C-literal/packaged Preces equality | Passed |
+| Prayer content comparison against v0.7.0 | Ten prayer literal arrays identical; all six other guarded content files byte-identical |
+| Existing prayer rendering | Five baseline comparisons passed outside the intentional progress-indicator and former shadow regions |
+| Continue and reader lifecycle | Preces and Aspirations scroll, exit/relaunch, Resume, font-size round trip, and Start again passed |
+| Library and pinning | Categories, prayer cards, pin confirmation, return selection, and empty-favorites access passed |
+| Reader bounds | Preces in Large/Light and Litany in Extra Large/Dark reached stable bottoms, clamped at both ends, and returned to the exact top pixels |
+| Appearance preflight on the same UI source | All six navigation palettes in both appearances, cancel/save, relaunch persistence, eight independent title/appearance combinations, font previews, and shortcut clearing passed |
+| Phone preview logic | All 48 appearance/title/navigation combinations passed host checks |
+| Physical PT2 | Exact final PBW installed successfully; a subsequent launch and screenshot confirmed the new header and existing shortcuts |
+| Release screenshots | Eight native 200×228 captures refreshed and visually reviewed with their optional 600×800 frames; main menu retains Memorare |
+
+The appearance preflight used the same UI source before the version-only bump.
+The final v0.8.0 PBW passed the clean release gate, five reader comparisons, and
+the complete `scripts/qa_flows.py` run. Local evidence is under
+`build/regression-screenshots/`, `build/qa-flows/`, and
+`build/pt2-v0.8.0-open.png`; generated evidence is ignored by Git.
+
+| Build metric | v0.7.0 release | v0.8.0 release |
+| --- | ---: | ---: |
+| Resources | 24,969 B | 28,686 B |
+| Static RAM | 65,393 B | 64,977 B |
+| Initial available heap | 65,679 B | 66,095 B |
+| PBW | 769,283 B | 775,762 B |
+
+Loaded image: 63,812 B. Virtual image: 64,980 B, leaving 555 B within the
+16-bit virtual-image limit. Preces allocates its 3,712-byte resource on first
+use; custom fonts are shared and cached until app exit. The known SDK RWX
+LOAD-segment warning is the only compiler/linker warning.
+
+Final PBW SHA-256:
+`47dc0aa94b30dd61e95d4f906e248b59258486dac9628439dd77fef44c10aadd`.
+
+Hands-on physical touch/hold behavior, wrist-distance readability, the actual
+phone configuration page, and reminder presentation still require device QA.
+Reminder timing, weekday selection, and seasonal boundaries are covered by host
+tests; this release did not repeat the earlier simulated-noon experiment below.
+Prayer wording, mystery content, and weekday mappings are unchanged. No guided
+Rosary was added. See [UI implementation notes](ui-refresh.md) for design details.
+
+## v0.7.0 — 2026-09-05
 
 Tested locally with Pebble Tool 5.0.40, SDK 4.33.1, and the Emery emulator on
 an Apple Silicon Mac. This record covers the v0.7.0 release candidate.

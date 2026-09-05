@@ -43,8 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("docs/images/framed"),
-        help="directory for framed showcase images",
+        default=Path("build/framed-screenshots"),
+        help="directory for optional generated frames (ignored by Git)",
     )
     return parser.parse_args()
 
@@ -119,7 +119,8 @@ def main() -> int:
         output_stem = OUTPUT_ALIASES.get(source_path.stem, source_path.stem)
         raw_path = args.raw_dir / f"{output_stem}.png"
         framed_path = args.output_dir / f"{output_stem}.png"
-        shutil.copy2(source_path, raw_path)
+        if source_path.resolve() != raw_path.resolve():
+            shutil.copy2(source_path, raw_path)
         frame_screenshot(raw_path, framed_path)
         print(f"{source_path.name} -> {framed_path}")
 

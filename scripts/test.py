@@ -10,6 +10,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 subprocess.run(["python3", "scripts/generate_catalog.py", "--check"], check=True)
+subprocess.run(["python3", "scripts/generate_text_resource.py", "--check"], check=True)
 for filename, expected in json.loads(Path("tests/content-sha256.json").read_text()).items():
     actual = hashlib.sha256(Path(filename).read_bytes()).hexdigest()
     assert actual == expected, f"Prayer source changed: {filename}; review wording before updating baseline"

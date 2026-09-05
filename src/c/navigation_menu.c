@@ -7,11 +7,24 @@ static uint16_t count_rows(MenuLayer *layer, uint16_t section, void *context) {
 }
 static int16_t row_height(MenuLayer *layer, MenuIndex *index, void *context) {
   NavigationMenu *menu = context;
+  if (menu->icon)
+    return accessible_menu_icon_height(layer,
+                                       menu->label(index->row, menu->context));
   return accessible_menu_wrapped_row_height(layer, menu->label(index->row, menu->context));
 }
 static void draw_row(GContext *ctx, const Layer *cell, MenuIndex *index, void *context) {
   NavigationMenu *menu = context;
-  accessible_menu_draw_row(ctx, cell, menu->label(index->row, menu->context));
+  if (menu->icon)
+    accessible_menu_draw_icon_row(ctx, cell,
+                                  menu->label(index->row, menu->context),
+                                  menu->icon(index->row));
+  else
+    accessible_menu_draw_row(ctx, cell, menu->label(index->row, menu->context));
+}
+static int16_t header_height(MenuLayer *layer, uint16_t section,
+                             void *context) {
+  NavigationMenu *menu = context;
+  return accessible_menu_get_header_height(layer, section, (void *)menu->title);
 }
 static void draw_header(GContext *ctx, const Layer *cell, uint16_t section, void *context) {
   NavigationMenu *menu = context;
@@ -40,10 +53,14 @@ static void load(Window *window) {
   NavigationMenu *menu = window_get_user_data(window);
   Layer *root = window_get_root_layer(window);
   menu->layer = menu_layer_create(layer_get_bounds(root));
-  menu_layer_set_callbacks(menu->layer, menu, (MenuLayerCallbacks){
-    .get_num_rows = count_rows, .get_cell_height = row_height, .draw_row = draw_row,
-    .get_header_height = accessible_menu_get_header_height, .draw_header = draw_header,
-  });
+  menu_layer_set_callbacks(menu->layer, menu,
+                           (MenuLayerCallbacks){
+                               .get_num_rows = count_rows,
+                               .get_cell_height = row_height,
+                               .draw_row = draw_row,
+                               .get_header_height = header_height,
+                               .draw_header = draw_header,
+                           });
   accessible_menu_apply_colors(menu->layer);
   window_set_click_config_provider_with_context(window, clicks, menu);
   layer_add_child(root, menu_layer_get_layer(menu->layer));

@@ -14,6 +14,12 @@ static SettingsShortcutSavedHandler s_saved_handler;
 static char s_slot_label[128];
 static char s_resume_label[128];
 
+static UiSymbol category_icon(uint16_t row) {
+  static const UiSymbol icons[] = {UI_SYMBOL_SUN, UI_SYMBOL_CROSS,
+                                   UI_SYMBOL_HEART, UI_SYMBOL_BOOK,
+                                   UI_SYMBOL_CARD};
+  return row < 5 ? icons[row] : UI_SYMBOL_NONE;
+}
 static uint16_t category_count(void *context) { return main_menu_catalog_category_count(); }
 static const char *category_label(uint16_t row, void *context) { return main_menu_catalog_category_name(row); }
 static uint16_t entry_count(void *context) {
@@ -90,6 +96,7 @@ static void select_continue(uint16_t row, void *context) {
 void prayer_library_init(SettingsShortcutSavedHandler saved_handler) {
   s_saved_handler = saved_handler;
   navigation_menu_init(&s_categories, "All Prayers", category_count, category_label, select_category, NULL);
+  s_categories.icon = category_icon;
   navigation_menu_init(&s_entries, "Prayers", entry_count, entry_label, select_entry, NULL);
   navigation_menu_init(&s_actions, "Prayer Options", two_rows, action_label, select_action, NULL);
   navigation_menu_init(&s_slots, "Choose Slot", slot_count, slot_label, select_slot, NULL);

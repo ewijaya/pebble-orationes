@@ -59,14 +59,25 @@ static uint16_t rosary_menu_get_num_rows(MenuLayer *menu_layer,
   return ROSARY_MENU_ITEM_COUNT;
 }
 
+static const char *const s_rosary_labels[] = {
+    "Today's Mysteries",
+    "All Mysteries",
+    "Litany of Loreto",
+};
+static int16_t rosary_height(MenuLayer *layer, MenuIndex *index,
+                             void *context) {
+  return accessible_menu_wrapped_row_height(layer, s_rosary_labels[index->row]);
+}
+static int16_t mystery_height(MenuLayer *layer, MenuIndex *index,
+                              void *context) {
+  const RosaryMysterySet *set = rosary_mystery_set_get(index->row);
+  char label[MYSTERY_TITLE_BUFFER_SIZE];
+  snprintf(label, sizeof(label), "%s · %s", set->name, set->weekday_label);
+  return accessible_menu_wrapped_row_height(layer, label);
+}
 static void rosary_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                                  MenuIndex *cell_index, void *context) {
-  static const char *const labels[] = {
-      "Today's Mysteries",
-      "All Mysteries",
-      "Litany of Loreto",
-  };
-  accessible_menu_draw_row(ctx, cell_layer, labels[cell_index->row]);
+  accessible_menu_draw_row(ctx, cell_layer, s_rosary_labels[cell_index->row]);
 }
 
 static void rosary_menu_select_click(MenuLayer *menu_layer,
@@ -119,14 +130,17 @@ static void menu_window_load(Window *window, MenuLayer **menu_layer,
                              MenuLayerSelectCallback select_click) {
   Layer *window_layer = window_get_root_layer(window);
   *menu_layer = menu_layer_create(layer_get_bounds(window_layer));
-  menu_layer_set_callbacks(*menu_layer, (void *)header, (MenuLayerCallbacks){
-      .get_num_rows = get_rows,
-      .get_cell_height = accessible_menu_get_cell_height,
-      .get_header_height = accessible_menu_get_header_height,
-      .draw_row = draw_row,
-      .draw_header = accessible_menu_draw_header,
-      .select_click = select_click,
-  });
+  menu_layer_set_callbacks(
+      *menu_layer, (void *)header,
+      (MenuLayerCallbacks){
+          .get_num_rows = get_rows,
+          .get_cell_height =
+              window == s_rosary_window ? rosary_height : mystery_height,
+          .get_header_height = accessible_menu_get_header_height,
+          .draw_row = draw_row,
+          .draw_header = accessible_menu_draw_header,
+          .select_click = select_click,
+      });
   accessible_menu_apply_colors(*menu_layer);
   menu_layer_set_click_config_onto_window(*menu_layer, window);
   layer_add_child(window_layer, menu_layer_get_layer(*menu_layer));

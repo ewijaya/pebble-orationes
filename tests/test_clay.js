@@ -13,6 +13,8 @@ function item(value) {
   };
 }
 catalog.defaults.forEach(function(value, index) { items['MainMenuSlot' + (index + 1)] = item(String(value)); });
+items.TextSize = item(0);
+items.NavigationHighlight = item(0);
 items.Appearance = item(0);
 items.AccentColor = item(0);
 items['accent-preview'] = item('');
@@ -36,3 +38,18 @@ items.MainMenuSlot1.set('2');
 assert.equal(Number(items.MainMenuSlot2.get()), 1); // Previous values reset with defaults.
 assert.equal(catalog.options.length, 39);
 console.log('Phone shortcut swap and defaults regression tests passed');
+
+[0,1].forEach(function(appearance) {
+  items.Appearance.set(appearance);
+  [0,1,2,3].forEach(function(accent) {
+    items.AccentColor.set(accent);
+    [0,1,2,3,4,5].forEach(function(nav) {
+      items.NavigationHighlight.set(nav);
+      var preview=items['accent-preview'].get();
+      assert(preview.indexOf('Selected prayer')!==-1);
+      assert(preview.indexOf('undefined')===-1);
+      assert.equal(items.AccentColor.get(),accent);
+    });
+  });
+});
+items.TextSize.set(1);assert(items['accent-preview'].get().indexOf('font-size:34px')!==-1);

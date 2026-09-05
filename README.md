@@ -1,6 +1,6 @@
 # Orationes
 
-[![Latest release](https://img.shields.io/github/v/release/ewijaya/pebble-orationes?display_name=tag)](https://github.com/ewijaya/pebble-orationes/releases/latest)
+[Latest release](https://github.com/ewijaya/pebble-orationes/releases/latest)
 
 Your Pebble tells time. Orationes helps you make time for prayer.
 
@@ -9,7 +9,7 @@ Your Pebble tells time. Orationes helps you make time for prayer.
 Orationes is a personal native Pebble C app built specifically for Pebble Time 2 (`emery`). It favors readability on a small display through large bold text, strong contrast, touchscreen scrolling, and hardware-button navigation.
 
 <p align="center">
-  <a href="https://github.com/ewijaya/pebble-orationes/releases/latest"><img src="docs/images/promo/orationes-og-1200x630.png" alt="Make time for prayer. Orationes for Pebble Time 2, showing its cyan-on-dark prayer screen." width="960"></a>
+  <a href="https://apps.repebble.com/9882f741750c43eb8309777e"><img src="docs/images/store/orationes-banner-realistic-main-menu-master.png" alt="Make time for prayer. Catholic prayers for Pebble Time 2, with large text, clear contrast, and offline access. Orationes main menu shown on a watch mockup." width="960"></a>
 </p>
 
 ## What's included
@@ -29,26 +29,11 @@ The default menu stays focused on the five core entries. On the watch or in the 
 
 **Continue** offers **Resume** or **Start again** for your last saved prayer. Ordinary prayer openings start at the top. **Remember Place** can be disabled in watch or phone Settings. **All Prayers** lets you browse five categories and open any prayer or pin it to the main menu. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
+**New in v0.8.0:** choose navigation highlights independently of Title Accent, preview appearance changes before saving, and read with a cleaner progress indicator. The refreshed UI includes the connected-cross mark, category icons, saved-prayer details in Continue, and shortcut confirmations. See the [UI changes](docs/ui-refresh.md) and [release verification](docs/verification.md).
+
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 
-<p align="center">
-  <img src="docs/images/promo/01-read.png" alt="Read prayers in large, high-contrast text" width="24%">
-  <img src="docs/images/promo/02-continue.png" alt="Continue your saved prayer: Resume or Start again" width="24%">
-  <img src="docs/images/promo/03-library.png" alt="Browse All Prayers and pin a favorite" width="24%">
-  <img src="docs/images/promo/04-appearance.png" alt="Choose light or dark appearance and large or extra-large text" width="24%">
-</p>
-
-<p align="center">
-  <img src="docs/images/promo/category-guide.png" alt="Daily Prayer; Marian and Rosary; Confession; Psalms and Other; Prayer Cards" width="960">
-</p>
-
 Browse the [prayer directory](docs/prayer-list.md) for the complete library, languages, and shortcut names.
-
-## On a physical Pebble Time 2
-
-<p align="center">
-  <img src="docs/images/physical/orationes-on-physical-pt2.jpg" alt="Orationes launcher, main menu, and Preces running on a physical Pebble Time 2" width="680">
-</p>
 
 ## Install
 
@@ -58,7 +43,7 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The latest GitHub release, **v0.7.0**, targets `emery`. The App Store currently offers v0.6.0; use GitHub for v0.7.0.
+Orationes **v0.8.0** targets Pebble Time 2 (`emery`). Use the App Store installation flow above or download the PBW from GitHub Releases.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
@@ -91,14 +76,14 @@ Orationes is an Emery-only native Pebble C SDK application. A small bundled Pebb
 
 ### Updating screenshots
 
-Regenerating framed screenshots requires Python 3 and Pillow:
+Optional framed exports can be generated from the retained raw screenshots with Python 3 and Pillow:
 
 ```sh
 python3 -m pip install Pillow
-python3 scripts/frame_screenshots.py
+python3 scripts/frame_screenshots.py --input-dir docs/images/raw
 ```
 
-The script reads Emery captures from `build/emulator-screenshots/`, copies them to `docs/images/raw/`, and writes composites to `docs/images/framed/`. The `build/` directory remains ignored.
+Frames are written to `build/framed-screenshots/` and remain ignored by Git. With no arguments, the script reads fresh Emery captures from `build/emulator-screenshots/` and also copies them to `docs/images/raw/`. Use the native raw images for App Store screenshots.
 
 </details>
 

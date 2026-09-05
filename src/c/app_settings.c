@@ -1,8 +1,9 @@
 #include "app_settings.h"
 
-#include <pebble.h>
-#include <string.h>
 #include "durable_store.h"
+#include <pebble.h>
+#include <stddef.h>
+#include <string.h>
 
 enum {
   PERSIST_KEY_TEXT_SIZE = 1,
@@ -17,7 +18,7 @@ enum {
   LEGACY_MAIN_PRAYER_COUNT = PRAYER_ID_MEMORARE + 1,
 };
 
-enum { SETTINGS_RECORD_KEY = 40, SETTINGS_SCHEMA = 1 };
+enum { SETTINGS_RECORD_KEY = 44, SETTINGS_SCHEMA = 2, LEGACY_RECORD_KEY = 40 };
 static AppSettings s_state;
 static AppSettingsChangedHandler s_changed_handler;
 static bool s_daily_prayers_enabled;
@@ -199,10 +200,22 @@ void app_settings_init(void) {
     }
   }
   load_main_menu_slots();
-  AppSettings saved;
-  if (durable_store_read(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA, &saved, sizeof(saved)) &&
-      app_settings_validate(&saved)) {
+  AppSettings saved = {0};
+  const bool loaded = durable_store_read(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA,
+                                         &saved, sizeof(saved));
+  if (saved.navigation_highlight >= APP_NAVIGATION_COUNT)
+    saved.navigation_highlight = APP_NAVIGATION_CLASSIC;
+  if (loaded && app_settings_validate(&saved)) {
     s_state = saved;
+  } else {
+    // Schema 1 is the exact 13-byte prefix. Keep its banks for failed
+    // migrations and downgrades; schema 2 uses a new pair, never overwriting
+    // the source.
+    saved = (AppSettings){0};
+    if (durable_store_read(LEGACY_RECORD_KEY, 1, &saved,
+                           offsetof(AppSettings, navigation_highlight)) &&
+        app_settings_validate(&saved))
+      s_state = saved;
   }
 }
 
@@ -215,8 +228,10 @@ bool app_settings_validate(const AppSettings *settings) {
          accent_color_is_valid(settings->accent_color) &&
          appearance_is_valid(settings->appearance) &&
          noon_reminder_duration_is_valid(settings->noon_reminder_duration) &&
-         settings->noon_reminder_enabled <= 1 && settings->remember_place <= 1 &&
-         main_menu_slots_are_valid(settings->slots);
+         settings->noon_reminder_enabled <= 1 &&
+         settings->remember_place <= 1 &&
+         main_menu_slots_are_valid(settings->slots) &&
+         settings->navigation_highlight < APP_NAVIGATION_COUNT;
 }
 bool app_settings_apply(const AppSettings *settings) {
   if (!app_settings_validate(settings)) return false;
@@ -405,4 +420,21 @@ const char *app_settings_noon_reminder_duration_label(
   }
 
   return "10 seconds";
+}
+
+AppNavigationHighlight app_settings_get_navigation_highlight(void) {
+  return s_state.navigation_highlight;
+}
+bool app_settings_set_navigation_highlight(AppNavigationHighlight value) {
+  if ((unsigned)value >= APP_NAVIGATION_COUNT)
+    return false;
+  AppSettings next = s_state;
+  next.navigation_highlight = value;
+  return app_settings_apply(&next);
+}
+const char *
+app_settings_navigation_highlight_label(AppNavigationHighlight value) {
+  static const char *const labels[] = {"Classic", "Amber",   "Tangerine",
+                                       "Violet",  "Magenta", "Lime"};
+  return (unsigned)value < APP_NAVIGATION_COUNT ? labels[value] : labels[0];
 }
