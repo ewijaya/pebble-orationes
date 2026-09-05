@@ -31,6 +31,8 @@ The default menu stays focused on the five core entries. On the watch or in the 
 
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 
+Browse the [prayer directory](docs/prayer-list.md) for the complete library, languages, and shortcut names.
+
 ## On a physical Pebble Time 2
 
 <p align="center">
