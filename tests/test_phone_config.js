@@ -40,7 +40,8 @@ function start() {
     vm.runInContext('(function(require, module, exports) {\n' + fs.readFileSync(filename, 'utf8') + '\n})', context)(resolver, module, module.exports);
     return module.exports;
   }
-  var clay = load(require.resolve('@rebble/clay/dist/js'), function(name) {
+  // Use the published bundle; dist/js is a copy created only by the Pebble SDK.
+  var clay = load(require.resolve('@rebble/clay/src/js'), function(name) {
     assert.equal(name, 'message_keys'); return keys;
   });
   load(require.resolve('../src/pkjs/index'), function(name) {
