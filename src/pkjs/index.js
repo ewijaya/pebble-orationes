@@ -5,47 +5,27 @@ var messageKeys = require('message_keys');
 var config = require('./config');
 var customClay = require('./custom-clay');
 
-var PENDING_SETTINGS_KEY = 'orationes-pending-settings';
-var clay = new Clay(config, customClay, { autoHandleEvents: false });
-
-function readPendingSettings() {
-  try {
-    return JSON.parse(localStorage.getItem(PENDING_SETTINGS_KEY));
-  } catch (error) {
-    console.log('Could not read pending Orationes settings: ' + error);
-    return null;
-  }
-}
-
-function savePendingSettings(settings) {
-  localStorage.setItem(PENDING_SETTINGS_KEY, JSON.stringify(settings));
-}
-
-function clearPendingSettings() {
-  localStorage.removeItem(PENDING_SETTINGS_KEY);
-}
-
-function sendSettings(settings, clearWhenSent) {
-  Pebble.sendAppMessage(settings, function() {
-    if (clearWhenSent) {
-      clearPendingSettings();
-    }
-    console.log('Sent Orationes settings to Pebble');
-  }, function(error) {
+var clay = new Clay(config, customClay, { autoHandleEvents: false, userData: {defaultSlots: require('./catalog').defaults} });
+function sendSettings(settings) {
+  Pebble.sendAppMessage(settings, function() {}, function(error) {
     console.log('Could not send Orationes settings: ' + JSON.stringify(error));
   });
 }
+var sync = require('./settings-sync')({
+  keys: messageKeys, storage: localStorage, send: sendSettings,
+  schedule: setTimeout, cancel: clearTimeout
+});
 
 function requestWatchSettings() {
   var request = {};
   request[messageKeys.SettingsRequest] = 1;
-  sendSettings(request, false);
+  sendSettings(request);
 }
 
 function snapshotForClay(payload) {
   var settings = {};
   Object.keys(messageKeys).forEach(function(name) {
-    if (name === 'SettingsRequest') {
+    if (name.indexOf('Settings') === 0) {
       return;
     }
     var numericKey = messageKeys[name];
@@ -59,15 +39,12 @@ function snapshotForClay(payload) {
 }
 
 Pebble.addEventListener('ready', function() {
-  var pending = readPendingSettings();
-  if (pending) {
-    sendSettings(pending, true);
-  } else {
-    requestWatchSettings();
-  }
+  sync.start();
+  requestWatchSettings();
 });
 
 Pebble.addEventListener('showConfiguration', function() {
+  clay.config[1].defaultValue = sync.status();
   Pebble.openURL(clay.generateUrl());
 });
 
@@ -78,15 +55,15 @@ Pebble.addEventListener('webviewclosed', function(event) {
 
   try {
     var settings = clay.getSettings(event.response);
-    savePendingSettings(settings);
-    sendSettings(settings, true);
+    sync.submit(settings);
   } catch (error) {
     console.log('Could not parse Orationes settings: ' + error);
   }
 });
 
 Pebble.addEventListener('appmessage', function(event) {
-  var snapshot = snapshotForClay(event.payload || {});
+  sync.receive(event.payload || {});
+  var snapshot = snapshotForClay(sync.draft() || event.payload || {});
   if (Object.keys(snapshot).length > 0) {
     clay.setSettings(snapshot);
   }

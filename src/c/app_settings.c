@@ -2,6 +2,7 @@
 
 #include <pebble.h>
 #include <string.h>
+#include "durable_store.h"
 
 enum {
   PERSIST_KEY_TEXT_SIZE = 1,
@@ -16,26 +17,12 @@ enum {
   LEGACY_MAIN_PRAYER_COUNT = PRAYER_ID_MEMORARE + 1,
 };
 
-static AppTextSize s_text_size = APP_TEXT_SIZE_LARGE;
-static AppAccentColor s_accent_color = APP_ACCENT_COLOR_OCEAN;
-static AppAppearance s_appearance = APP_APPEARANCE_LIGHT;
-static bool s_noon_reminder_enabled;
+enum { SETTINGS_RECORD_KEY = 40, SETTINGS_SCHEMA = 1 };
+static AppSettings s_state;
+static AppSettingsChangedHandler s_changed_handler;
 static bool s_daily_prayers_enabled;
 static bool s_confession_enabled;
 static bool s_legacy_main_prayer_visible[LEGACY_MAIN_PRAYER_COUNT];
-static MainMenuEntryId s_main_menu_slots[APP_MAIN_MENU_SLOT_COUNT];
-static const MainMenuEntryId
-    s_default_main_menu_slots[APP_MAIN_MENU_SLOT_COUNT] = {
-        MAIN_MENU_ENTRY_PRECES,
-        MAIN_MENU_ENTRY_HOLY_ROSARY,
-        MAIN_MENU_ENTRY_REGINA_CAELI,
-        MAIN_MENU_ENTRY_ANGELUS,
-        MAIN_MENU_ENTRY_MEMORARE,
-        MAIN_MENU_ENTRY_NONE,
-        MAIN_MENU_ENTRY_NONE,
-};
-static AppNoonReminderDuration s_noon_reminder_duration =
-    APP_NOON_REMINDER_DURATION_10_SECONDS;
 
 static bool text_size_is_valid(int32_t value) {
   return value >= APP_TEXT_SIZE_LARGE && value < APP_TEXT_SIZE_COUNT;
@@ -67,12 +54,12 @@ static uint32_t main_menu_slot_persist_key(uint8_t slot_index) {
 }
 
 static void set_default_main_menu_slots(void) {
-  memcpy(s_main_menu_slots, s_default_main_menu_slots,
-         sizeof(s_main_menu_slots));
+  memcpy(s_state.slots, main_menu_default_slots,
+         sizeof(s_state.slots));
 }
 
 static bool main_menu_slots_are_valid(
-    const MainMenuEntryId slots[APP_MAIN_MENU_SLOT_COUNT]) {
+    const uint8_t slots[APP_MAIN_MENU_SLOT_COUNT]) {
   bool used[MAIN_MENU_ENTRY_COUNT] = {false};
   for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
     const MainMenuEntryId entry_id = slots[slot];
@@ -103,25 +90,25 @@ static void migrate_legacy_main_menu_settings(void) {
        next_slot < APP_MAIN_MENU_SLOT_COUNT;
        ++prayer_id) {
     if (s_legacy_main_prayer_visible[prayer_id]) {
-      s_main_menu_slots[next_slot++] = core_entries[prayer_id];
+      s_state.slots[next_slot++] = core_entries[prayer_id];
     }
   }
   if (s_daily_prayers_enabled && next_slot < APP_MAIN_MENU_SLOT_COUNT) {
-    s_main_menu_slots[next_slot++] = MAIN_MENU_ENTRY_MORE_PRAYERS;
+    s_state.slots[next_slot++] = MAIN_MENU_ENTRY_MORE_PRAYERS;
   }
   if (s_confession_enabled && next_slot < APP_MAIN_MENU_SLOT_COUNT) {
-    s_main_menu_slots[next_slot++] = MAIN_MENU_ENTRY_CONFESSION;
+    s_state.slots[next_slot++] = MAIN_MENU_ENTRY_CONFESSION;
   }
   while (next_slot < APP_MAIN_MENU_SLOT_COUNT) {
-    s_main_menu_slots[next_slot++] = MAIN_MENU_ENTRY_NONE;
+    s_state.slots[next_slot++] = MAIN_MENU_ENTRY_NONE;
   }
 }
 
 static void load_main_menu_slots(void) {
   bool has_saved_slots = false;
-  MainMenuEntryId loaded[APP_MAIN_MENU_SLOT_COUNT];
+  uint8_t loaded[APP_MAIN_MENU_SLOT_COUNT];
   set_default_main_menu_slots();
-  memcpy(loaded, s_main_menu_slots, sizeof(loaded));
+  memcpy(loaded, s_state.slots, sizeof(loaded));
 
   for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
     const uint32_t persist_key = main_menu_slot_persist_key(slot);
@@ -136,7 +123,7 @@ static void load_main_menu_slots(void) {
   }
 
   if (has_saved_slots && main_menu_slots_are_valid(loaded)) {
-    memcpy(s_main_menu_slots, loaded, sizeof(s_main_menu_slots));
+    memcpy(s_state.slots, loaded, sizeof(s_state.slots));
     return;
   }
 
@@ -144,13 +131,15 @@ static void load_main_menu_slots(void) {
 }
 
 void app_settings_init(void) {
-  s_text_size = APP_TEXT_SIZE_LARGE;
-  s_accent_color = APP_ACCENT_COLOR_OCEAN;
-  s_appearance = APP_APPEARANCE_LIGHT;
-  s_noon_reminder_enabled = false;
+  s_state = (AppSettings){0};
+  s_state.remember_place = true;
+  s_state.text_size = APP_TEXT_SIZE_LARGE;
+  s_state.accent_color = APP_ACCENT_COLOR_OCEAN;
+  s_state.appearance = APP_APPEARANCE_LIGHT;
+  s_state.noon_reminder_enabled = false;
   s_daily_prayers_enabled = false;
   s_confession_enabled = false;
-  s_noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
+  s_state.noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
   for (PrayerId prayer_id = PRAYER_ID_PRECES;
        prayer_id <= PRAYER_ID_MEMORARE; ++prayer_id) {
     s_legacy_main_prayer_visible[prayer_id] = true;
@@ -159,12 +148,12 @@ void app_settings_init(void) {
   if (persist_exists(PERSIST_KEY_TEXT_SIZE)) {
     const int32_t stored_text_size = persist_read_int(PERSIST_KEY_TEXT_SIZE);
     if (text_size_is_valid(stored_text_size)) {
-      s_text_size = (AppTextSize)stored_text_size;
+      s_state.text_size = (AppTextSize)stored_text_size;
     }
   }
 
   if (persist_exists(PERSIST_KEY_NOON_REMINDER_ENABLED)) {
-    s_noon_reminder_enabled =
+    s_state.noon_reminder_enabled =
         persist_read_bool(PERSIST_KEY_NOON_REMINDER_ENABLED);
   }
 
@@ -172,14 +161,14 @@ void app_settings_init(void) {
     const int32_t stored_accent_color =
         persist_read_int(PERSIST_KEY_ACCENT_COLOR);
     if (accent_color_is_valid(stored_accent_color)) {
-      s_accent_color = (AppAccentColor)stored_accent_color;
+      s_state.accent_color = (AppAccentColor)stored_accent_color;
     }
   }
 
   if (persist_exists(PERSIST_KEY_APPEARANCE)) {
     const int32_t stored_appearance = persist_read_int(PERSIST_KEY_APPEARANCE);
     if (appearance_is_valid(stored_appearance)) {
-      s_appearance = (AppAppearance)stored_appearance;
+      s_state.appearance = (AppAppearance)stored_appearance;
     }
   }
 
@@ -187,7 +176,7 @@ void app_settings_init(void) {
     const int32_t stored_duration =
         persist_read_int(PERSIST_KEY_NOON_REMINDER_DURATION);
     if (noon_reminder_duration_is_valid(stored_duration)) {
-      s_noon_reminder_duration =
+      s_state.noon_reminder_duration =
           (AppNoonReminderDuration)stored_duration;
     }
   }
@@ -210,23 +199,49 @@ void app_settings_init(void) {
     }
   }
   load_main_menu_slots();
+  AppSettings saved;
+  if (durable_store_read(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA, &saved, sizeof(saved)) &&
+      app_settings_validate(&saved)) {
+    s_state = saved;
+  }
+}
+
+void app_settings_set_changed_handler(AppSettingsChangedHandler handler) {
+  s_changed_handler = handler;
+}
+AppSettings app_settings_get(void) { return s_state; }
+bool app_settings_validate(const AppSettings *settings) {
+  return settings && text_size_is_valid(settings->text_size) &&
+         accent_color_is_valid(settings->accent_color) &&
+         appearance_is_valid(settings->appearance) &&
+         noon_reminder_duration_is_valid(settings->noon_reminder_duration) &&
+         settings->noon_reminder_enabled <= 1 && settings->remember_place <= 1 &&
+         main_menu_slots_are_valid(settings->slots);
+}
+bool app_settings_apply(const AppSettings *settings) {
+  if (!app_settings_validate(settings)) return false;
+  if (memcmp(&s_state, settings, sizeof(s_state)) == 0) return true;
+  if (!durable_store_write(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA, settings, sizeof(*settings))) return false;
+  s_state = *settings;
+  if (s_changed_handler) s_changed_handler();
+  return true;
+}
+bool app_settings_get_remember_place(void) { return s_state.remember_place; }
+bool app_settings_set_remember_place(bool enabled) {
+  AppSettings updated = s_state;
+  updated.remember_place = enabled;
+  return app_settings_apply(&updated);
 }
 
 AppTextSize app_settings_get_text_size(void) {
-  return s_text_size;
+  return s_state.text_size;
 }
 
 bool app_settings_set_text_size(AppTextSize text_size) {
-  if (!text_size_is_valid(text_size)) {
-    return false;
-  }
-
-  if (persist_write_int(PERSIST_KEY_TEXT_SIZE, text_size) < 0) {
-    return false;
-  }
-
-  s_text_size = text_size;
-  return true;
+  if (!text_size_is_valid(text_size)) return false;
+  AppSettings updated = s_state;
+  updated.text_size = text_size;
+  return app_settings_apply(&updated);
 }
 
 const char *app_settings_text_size_label(AppTextSize text_size) {
@@ -243,20 +258,14 @@ const char *app_settings_text_size_label(AppTextSize text_size) {
 }
 
 AppAccentColor app_settings_get_accent_color(void) {
-  return s_accent_color;
+  return s_state.accent_color;
 }
 
 bool app_settings_set_accent_color(AppAccentColor accent_color) {
-  if (!accent_color_is_valid(accent_color)) {
-    return false;
-  }
-
-  if (persist_write_int(PERSIST_KEY_ACCENT_COLOR, accent_color) < 0) {
-    return false;
-  }
-
-  s_accent_color = accent_color;
-  return true;
+  if (!accent_color_is_valid(accent_color)) return false;
+  AppSettings updated = s_state;
+  updated.accent_color = accent_color;
+  return app_settings_apply(&updated);
 }
 
 const char *app_settings_accent_color_label(AppAccentColor accent_color) {
@@ -277,20 +286,14 @@ const char *app_settings_accent_color_label(AppAccentColor accent_color) {
 }
 
 AppAppearance app_settings_get_appearance(void) {
-  return s_appearance;
+  return s_state.appearance;
 }
 
 bool app_settings_set_appearance(AppAppearance appearance) {
-  if (!appearance_is_valid(appearance)) {
-    return false;
-  }
-
-  if (persist_write_int(PERSIST_KEY_APPEARANCE, appearance) < 0) {
-    return false;
-  }
-
-  s_appearance = appearance;
-  return true;
+  if (!appearance_is_valid(appearance)) return false;
+  AppSettings updated = s_state;
+  updated.appearance = appearance;
+  return app_settings_apply(&updated);
 }
 
 const char *app_settings_appearance_label(AppAppearance appearance) {
@@ -307,40 +310,30 @@ const char *app_settings_appearance_label(AppAppearance appearance) {
 }
 
 bool app_settings_get_noon_reminder_enabled(void) {
-  return s_noon_reminder_enabled;
+  return s_state.noon_reminder_enabled;
 }
 
 bool app_settings_set_noon_reminder_enabled(bool enabled) {
-  if (persist_write_bool(PERSIST_KEY_NOON_REMINDER_ENABLED, enabled) < 0) {
-    return false;
-  }
-
-  s_noon_reminder_enabled = enabled;
-  return true;
+  AppSettings updated = s_state;
+  updated.noon_reminder_enabled = enabled;
+  return app_settings_apply(&updated);
 }
 
 MainMenuEntryId app_settings_get_main_menu_slot(uint8_t slot_index) {
   return slot_index < APP_MAIN_MENU_SLOT_COUNT
-             ? s_main_menu_slots[slot_index]
+             ? s_state.slots[slot_index]
              : MAIN_MENU_ENTRY_NONE;
 }
 
 bool app_settings_set_main_menu_slots(
     const MainMenuEntryId slots[APP_MAIN_MENU_SLOT_COUNT]) {
-  if (!slots || !main_menu_slots_are_valid(slots)) {
-    return false;
+  if (!slots) return false;
+  AppSettings updated = s_state;
+  for (uint8_t i = 0; i < APP_MAIN_MENU_SLOT_COUNT; ++i) {
+    if (!main_menu_entry_is_valid(slots[i])) return false;
+    updated.slots[i] = slots[i];
   }
-
-  bool saved = true;
-  for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
-    if (persist_write_int(main_menu_slot_persist_key(slot), slots[slot]) < 0) {
-      saved = false;
-    }
-  }
-  if (saved) {
-    memcpy(s_main_menu_slots, slots, sizeof(s_main_menu_slots));
-  }
-  return saved;
+  return app_settings_apply(&updated);
 }
 
 bool app_settings_set_main_menu_slot(uint8_t slot_index,
@@ -351,7 +344,7 @@ bool app_settings_set_main_menu_slot(uint8_t slot_index,
   }
 
   MainMenuEntryId updated[APP_MAIN_MENU_SLOT_COUNT];
-  memcpy(updated, s_main_menu_slots, sizeof(updated));
+  for (uint8_t i = 0; i < APP_MAIN_MENU_SLOT_COUNT; ++i) updated[i] = s_state.slots[i];
   const MainMenuEntryId prior_entry = updated[slot_index];
 
   if (entry_id != MAIN_MENU_ENTRY_NONE) {
@@ -367,29 +360,24 @@ bool app_settings_set_main_menu_slot(uint8_t slot_index,
 }
 
 bool app_settings_restore_main_menu_defaults(void) {
-  return app_settings_set_main_menu_slots(s_default_main_menu_slots);
+  AppSettings updated = s_state;
+  memcpy(updated.slots, main_menu_default_slots, sizeof(updated.slots));
+  return app_settings_apply(&updated);
 }
 
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void) {
-  return s_noon_reminder_duration;
+  return s_state.noon_reminder_duration;
 }
 
-bool app_settings_set_noon_reminder_duration(
-    AppNoonReminderDuration duration) {
-  if (!noon_reminder_duration_is_valid(duration)) {
-    return false;
-  }
-
-  if (persist_write_int(PERSIST_KEY_NOON_REMINDER_DURATION, duration) < 0) {
-    return false;
-  }
-
-  s_noon_reminder_duration = duration;
-  return true;
+bool app_settings_set_noon_reminder_duration(AppNoonReminderDuration duration) {
+  if (!noon_reminder_duration_is_valid(duration)) return false;
+  AppSettings updated = s_state;
+  updated.noon_reminder_duration = duration;
+  return app_settings_apply(&updated);
 }
 
 uint32_t app_settings_get_noon_reminder_duration_seconds(void) {
-  switch (s_noon_reminder_duration) {
+  switch (s_state.noon_reminder_duration) {
     case APP_NOON_REMINDER_DURATION_5_SECONDS:
       return 5;
     case APP_NOON_REMINDER_DURATION_10_SECONDS:

@@ -2,11 +2,15 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.6.0**. It lists what is available rather than reproducing the prayer texts. [Install Orationes](https://apps.repebble.com/9882f741750c43eb8309777e) · [Back to README](../README.md)
+This directory describes the library in **v0.7.0**. It lists what is available rather than reproducing the prayer texts. [Install Orationes](https://apps.repebble.com/9882f741750c43eb8309777e) · [Back to README](../README.md)
+
+**All Prayers** is available for browsing this library without first
+configuring a shortcut. Each entry offers **Open** and **Pin to main menu**.
+**Continue** reopens the last saved reading place, with a **Start again** option.
 
 ## Choose what appears on your watch
 
-Open **Settings → Prayer Shortcuts** on the watch, or Orationes **Settings** in the Pebble mobile app. Choose and arrange up to seven entries: individual prayers, Prayer Cards, or collections. Choose **Empty** to leave a slot unused. Settings stays available.
+Open **Settings → Prayer Shortcuts** on the watch, or Orationes **Settings** in the Pebble mobile app. Choose and arrange up to seven entries: individual prayers, Prayer Cards, or collections. Choose **Empty** to leave a slot unused. All Prayers and Settings stay available.
 
 The default shortcuts are **Preces, Holy Rosary, Regina Caeli, Angelus, and Memorare**, in that order. Everything else is optional; adding a shortcut does not download anything. All prayer content is already on the watch.
 

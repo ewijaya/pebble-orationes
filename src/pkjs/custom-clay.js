@@ -15,7 +15,7 @@ module.exports = function() {
       'MainMenuSlot6',
       'MainMenuSlot7'
     ];
-    var defaultSlots = [1, 2, 3, 4, 5, 0, 0];
+    var defaultSlots = clayConfig.meta.userData.defaultSlots;
     var appearance = clayConfig.getItemByMessageKey('Appearance');
     var accentColor = clayConfig.getItemByMessageKey('AccentColor');
     var accentPreview = clayConfig.getItemById('accent-preview');
@@ -48,24 +48,26 @@ module.exports = function() {
       );
     }
 
+    var priorValues = slotKeys.map(function(k) { return Number(clayConfig.getItemByMessageKey(k).get()); });
     slotKeys.forEach(function(messageKey, changedIndex) {
       clayConfig.getItemByMessageKey(messageKey).on('change', function() {
         if (restoringDefaults) {
           return;
         }
-        var changedValue = this.get();
-        if (changedValue === 0) {
-          return;
-        }
-        for (var index = 0; index < slotKeys.length; index += 1) {
-          if (index !== changedIndex &&
-              clayConfig.getItemByMessageKey(slotKeys[index]).get() ===
-                  changedValue) {
-            window.alert('That entry is already assigned to another slot.');
-            this.set(0);
-            return;
+        var changedValue = Number(this.get());
+        var priorValue = priorValues[changedIndex];
+        restoringDefaults = true;
+        if (changedValue !== 0) {
+          for (var index = 0; index < slotKeys.length; index += 1) {
+            if (index !== changedIndex && Number(clayConfig.getItemByMessageKey(slotKeys[index]).get()) === changedValue) {
+              clayConfig.getItemByMessageKey(slotKeys[index]).set(priorValue);
+              priorValues[index] = priorValue;
+              break;
+            }
           }
         }
+        priorValues[changedIndex] = changedValue;
+        restoringDefaults = false;
       });
     });
 
@@ -74,6 +76,7 @@ module.exports = function() {
       slotKeys.forEach(function(messageKey, index) {
         clayConfig.getItemByMessageKey(messageKey).set(defaultSlots[index]);
       });
+      priorValues = defaultSlots.slice();
       restoringDefaults = false;
     });
 

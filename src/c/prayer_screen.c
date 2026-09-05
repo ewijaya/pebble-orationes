@@ -2,6 +2,8 @@
 
 #include <pebble.h>
 #include <limits.h>
+#include <string.h>
+#include "reading_position.h"
 
 #include "app_settings.h"
 #include "app_theme.h"
@@ -31,11 +33,19 @@ static AppTimer *s_fast_scroll_timer;
 static int8_t s_fast_scroll_direction;
 static GFont s_custom_body_font;
 static GFont s_italic_body_font;
+static GFont s_rendered_body_font;
 static Layer *s_styled_body_layer;
 static const PrayerParagraph *s_paragraphs;
 static uint16_t s_paragraph_count;
 static int16_t *s_paragraph_heights;
 static int32_t s_styled_content_height;
+static MainMenuEntryId s_entry_id;
+static bool s_resume;
+static bool s_rebuilding;
+static bool capture_position(ReadingPosition *position);
+static void restore_position(const ReadingPosition *position);
+static void save_position(void);
+static void restore_saved_position(void);
 
 // ScrollLayer uses int16 coordinates. Long styled documents keep int32 layout
 // positions and map their range onto the native range, drawing in the viewport.
@@ -351,6 +361,7 @@ static void window_load(Window *window) {
           GSize(bounds.size.w, content_height > bounds.size.h
                                   ? content_height : bounds.size.h));
       styled_offset_changed(s_scroll_layer, NULL);
+      restore_saved_position();
       return;
     }
     s_text = "Unable to display this prayer. Please reopen it.";
@@ -359,7 +370,8 @@ static void window_load(Window *window) {
       GRect(HORIZONTAL_MARGIN, body_y, text_width, BODY_LAYOUT_HEIGHT));
   text_layer_set_background_color(s_body_layer, GColorClear);
   text_layer_set_text_color(s_body_layer, app_theme_foreground_color());
-  text_layer_set_font(s_body_layer, get_body_font());
+  s_rendered_body_font = get_body_font();
+  text_layer_set_font(s_body_layer, s_rendered_body_font);
   text_layer_set_text_alignment(s_body_layer, GTextAlignmentLeft);
   text_layer_set_overflow_mode(s_body_layer, GTextOverflowModeWordWrap);
   text_layer_set_text(s_body_layer, s_text);
@@ -374,10 +386,12 @@ static void window_load(Window *window) {
       s_scroll_layer,
       GSize(bounds.size.w,
             content_height > bounds.size.h ? content_height : bounds.size.h));
+  restore_saved_position();
 }
 
 static void window_unload(Window *window) {
   stop_fast_scrolling();
+  if (!s_rebuilding) save_position();
 
   if (s_styled_body_layer) {
     layer_destroy(s_styled_body_layer);
@@ -422,97 +436,130 @@ void prayer_screen_deinit(void) {
   s_window = NULL;
 }
 
+void prayer_screen_show_entry(MainMenuEntryId entry_id, const char *title,
+                              const PrayerTranslation *translation, bool resume) {
+  if (!translation) return;
+  if (window_stack_contains_window(s_window)) window_stack_remove(s_window, false);
+  s_entry_id = entry_id;
+  s_resume = resume;
+  s_title = title;
+  s_text = translation->text;
+  s_paragraphs = translation->paragraph_count ? translation->paragraphs : NULL;
+  s_paragraph_count = s_paragraphs ? translation->paragraph_count : 0;
+  window_stack_push(s_window, true);
+}
 void prayer_screen_show(const char *title, const char *text) {
-  if (window_stack_contains_window(s_window)) {
-    window_stack_remove(s_window, false);
-  }
-
-  s_title = title;
-  s_text = text;
-  s_paragraphs = NULL;
-  s_paragraph_count = 0;
-  window_stack_push(s_window, true);
+  const PrayerTranslation translation = {.text = text};
+  prayer_screen_show_entry(MAIN_MENU_ENTRY_NONE, title, &translation, false);
+}
+void prayer_screen_show_translation(const char *title, const PrayerTranslation *translation) {
+  prayer_screen_show_entry(MAIN_MENU_ENTRY_NONE, title, translation, false);
 }
 
-void prayer_screen_show_translation(const char *title,
-                                     const PrayerTranslation *translation) {
-  if (!translation->paragraphs || !translation->paragraph_count) {
-    prayer_screen_show(title, translation->text);
-    return;
-  }
-  if (window_stack_contains_window(s_window)) {
-    window_stack_remove(s_window, false);
-  }
-  s_title = title;
-  s_text = NULL;
-  s_paragraphs = translation->paragraphs;
-  s_paragraph_count = translation->paragraph_count;
-  window_stack_push(s_window, true);
+// Measure prefixes only when saving/restoring, never during scrolling. The
+// original plain TextLayer is retained, preserving its exact line wrapping.
+static int32_t plain_boundary_y(char *copy, uint32_t boundary) {
+  if (!boundary) return 0;
+  const char saved = copy[boundary];
+  copy[boundary] = '\0';
+  const int16_t width = layer_get_bounds(scroll_layer_get_layer(s_scroll_layer)).size.w - 2 * HORIZONTAL_MARGIN;
+  const int32_t height = graphics_text_layout_get_content_size(copy, s_rendered_body_font,
+      GRect(0, 0, width, BODY_LAYOUT_HEIGHT), GTextOverflowModeWordWrap, GTextAlignmentLeft).h;
+  copy[boundary] = saved;
+  return height;
 }
-
-void prayer_screen_refresh(void) {
+static bool capture_position(ReadingPosition *position) {
+  if (!s_scroll_layer || (!s_body_layer && !s_styled_body_layer)) return false;
+  *position = (ReadingPosition){.entry = s_entry_id};
+  const int32_t y = -(s_styled_body_layer ? styled_scroll_offset() :
+      scroll_layer_get_content_offset(s_scroll_layer).y) - s_title_height - BODY_TOP_MARGIN;
+  if (y <= 0) return true;
   if (s_styled_body_layer) {
-    const int32_t old_offset = styled_scroll_offset();
-    // Unload both custom fonts before reloading either one. SDK font metrics
-    // can otherwise be stale when switching a mixed-font document in place.
-    window_unload(s_window);
-    window_load(s_window);
-    if (s_styled_body_layer) {
-      const int32_t range = styled_scroll_range();
-      const int32_t logical_offset = old_offset < -range ? -range : old_offset;
-      const int16_t native_offset = range
-          ? (int64_t)logical_offset * native_scroll_range() / range : 0;
-      scroll_layer_set_content_offset(s_scroll_layer,
-                                      GPoint(0, native_offset), false);
-      styled_offset_changed(s_scroll_layer, NULL);
+    int32_t start = 0;
+    for (uint16_t i = 0; i < s_paragraph_count; ++i) {
+      const int32_t end = start + s_paragraph_heights[i] +
+          (s_paragraphs[i].space_after ? PARAGRAPH_GAP : 0);
+      if (y < end || i + 1 == s_paragraph_count) {
+        position->kind = READING_POSITION_STYLED;
+        position->anchor = i;
+        position->fraction = reading_position_fraction(y, start, end);
+        return true;
+      }
+      start = end;
     }
-    return;
+    return false;
   }
-
-  if (!s_scroll_layer || !s_title_layer || !s_body_layer) {
-    return;
+  if (!s_text) return false;
+  const size_t length = strlen(s_text);
+  char *copy = malloc(length + 1);
+  uint32_t count = 1;
+  for (size_t i = 0; i < length; ++i) if (s_text[i] == '\n') ++count;
+  uint32_t *boundaries = malloc((count + 1) * sizeof(uint32_t));
+  if (!copy || !boundaries) { free(copy); free(boundaries); return false; }
+  memcpy(copy, s_text, length + 1);
+  uint32_t next = 0;
+  boundaries[next++] = 0;
+  for (size_t i = 0; i < length; ++i) if (s_text[i] == '\n') boundaries[next++] = i + 1;
+  boundaries[count] = length;
+  uint32_t low = 0, high = count;
+  while (low + 1 < high) {
+    const uint32_t middle = (low + high) / 2;
+    if (plain_boundary_y(copy, boundaries[middle]) <= y) low = middle;
+    else high = middle;
   }
-
-  const GRect viewport =
-      layer_get_bounds(scroll_layer_get_layer(s_scroll_layer));
-  const int16_t text_width = viewport.size.w - (2 * HORIZONTAL_MARGIN);
-  const int16_t body_y =
-      TITLE_TOP_MARGIN + s_title_height + BODY_TOP_MARGIN;
-  const int16_t old_offset =
-      scroll_layer_get_content_offset(s_scroll_layer).y;
-  const GFont body_font = get_body_font();
-
-  window_set_background_color(s_window, app_theme_background_color());
-  text_layer_set_background_color(s_title_layer,
-                                  app_theme_title_background_color());
-  text_layer_set_text_color(s_title_layer,
-                            app_theme_title_foreground_color());
-  text_layer_set_text_color(s_body_layer, app_theme_foreground_color());
-  text_layer_set_font(s_body_layer, body_font);
-
-  if (app_settings_get_text_size() == APP_TEXT_SIZE_LARGE &&
-      s_custom_body_font) {
-    fonts_unload_custom_font(s_custom_body_font);
-    s_custom_body_font = NULL;
+  position->kind = READING_POSITION_PLAIN;
+  position->anchor = boundaries[low];
+  position->fraction = reading_position_fraction(y,
+      plain_boundary_y(copy, boundaries[low]), plain_boundary_y(copy, boundaries[low + 1]));
+  free(copy);
+  free(boundaries);
+  return true;
+}
+static void restore_position(const ReadingPosition *position) {
+  int32_t y = 0;
+  if (position->kind == READING_POSITION_STYLED && s_styled_body_layer && position->anchor < s_paragraph_count) {
+    int32_t start = 0;
+    for (uint32_t i = 0; i < position->anchor; ++i) {
+      start += s_paragraph_heights[i] + (s_paragraphs[i].space_after ? PARAGRAPH_GAP : 0);
+    }
+    const int32_t end = start + s_paragraph_heights[position->anchor] +
+        (s_paragraphs[position->anchor].space_after ? PARAGRAPH_GAP : 0);
+    y = s_title_height + BODY_TOP_MARGIN + reading_position_offset(position->fraction, start, end);
+  } else if (position->kind == READING_POSITION_PLAIN && s_body_layer && s_text) {
+    const size_t length = strlen(s_text);
+    if (position->anchor > length || (position->anchor && s_text[position->anchor - 1] != '\n')) return;
+    char *copy = malloc(length + 1);
+    if (!copy) return;
+    memcpy(copy, s_text, length + 1);
+    const char *newline = strchr(s_text + position->anchor, '\n');
+    const uint32_t end = newline ? (uint32_t)(newline - s_text + 1) : length;
+    y = s_title_height + BODY_TOP_MARGIN + reading_position_offset(position->fraction,
+        plain_boundary_y(copy, position->anchor), plain_boundary_y(copy, end));
+    free(copy);
   }
-
-  layer_set_frame(text_layer_get_layer(s_body_layer),
-                  GRect(HORIZONTAL_MARGIN, body_y, text_width,
-                        BODY_LAYOUT_HEIGHT));
-  const GSize body_size = text_layer_get_content_size(s_body_layer);
-  layer_set_frame(text_layer_get_layer(s_body_layer),
-                  GRect(HORIZONTAL_MARGIN, body_y, text_width, body_size.h));
-
-  const int16_t content_height = body_y + body_size.h + BOTTOM_MARGIN;
-  const int16_t effective_height =
-      content_height > viewport.size.h ? content_height : viewport.size.h;
-  scroll_layer_set_content_size(
-      s_scroll_layer, GSize(viewport.size.w, effective_height));
-
-  const int16_t minimum_offset = viewport.size.h - effective_height;
-  const int16_t restored_offset =
-      old_offset < minimum_offset ? minimum_offset : old_offset;
-  scroll_layer_set_content_offset(s_scroll_layer,
-                                  GPoint(0, restored_offset), false);
-  layer_mark_dirty(scroll_layer_get_layer(s_scroll_layer));
+  const int32_t range = s_styled_body_layer ? styled_scroll_range() : native_scroll_range();
+  if (y > range) y = range;
+  const int16_t native_y = range ? (int64_t)y * native_scroll_range() / range : 0;
+  scroll_layer_set_content_offset(s_scroll_layer, GPoint(0, -native_y), false);
+  styled_offset_changed(s_scroll_layer, NULL);
+}
+static void save_position(void) {
+  ReadingPosition position;
+  if (s_entry_id != MAIN_MENU_ENTRY_NONE && capture_position(&position)) reading_position_save(&position);
+}
+static void restore_saved_position(void) {
+  if (!s_resume) return;
+  ReadingPosition position;
+  if (reading_position_get(&position) && position.entry == s_entry_id) restore_position(&position);
+  s_resume = false;
+}
+void prayer_screen_refresh(void) {
+  if (!s_scroll_layer) return;
+  ReadingPosition position;
+  const bool captured = capture_position(&position);
+  s_rebuilding = true;
+  window_unload(s_window);
+  window_load(s_window);
+  s_rebuilding = false;
+  if (captured) restore_position(&position);
 }

@@ -14,6 +14,7 @@ enum {
   SETTINGS_MENU_ITEM_ACCENT_COLOR,
   SETTINGS_MENU_ITEM_NOON_REMINDER,
   SETTINGS_MENU_ITEM_MAIN_MENU,
+  SETTINGS_MENU_ITEM_REMEMBER_PLACE,
   SETTINGS_MENU_ITEM_COUNT,
 };
 
@@ -61,9 +62,15 @@ static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
       "Accent Color",
       "Noon Reminder",
       "Prayer Shortcuts",
+      "Remember Place",
   };
   const char *label = labels[cell_index->row];
-  accessible_menu_draw_row(ctx, cell_layer, label);
+  if (cell_index->row == SETTINGS_MENU_ITEM_REMEMBER_PLACE) {
+    accessible_menu_draw_row_with_value(ctx, cell_layer, label,
+        app_settings_get_remember_place() ? "On" : "Off");
+  } else {
+    accessible_menu_draw_row(ctx, cell_layer, label);
+  }
 }
 
 static void settings_select_click(MenuLayer *menu_layer,
@@ -78,6 +85,10 @@ static void settings_select_click(MenuLayer *menu_layer,
     window_stack_push(s_noon_reminder_window, true);
   } else if (cell_index->row == SETTINGS_MENU_ITEM_MAIN_MENU) {
     window_stack_push(s_main_menu_slots_window, true);
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_REMEMBER_PLACE) {
+    if (app_settings_set_remember_place(!app_settings_get_remember_place())) {
+      phone_settings_send_current();
+    }
   }
 }
 
@@ -379,8 +390,10 @@ static void noon_reminder_select_click(MenuLayer *menu_layer,
     const AppNoonReminderDuration duration =
         (AppNoonReminderDuration)(cell_index->row -
                                   NOON_REMINDER_OPTION_DURATION_OFFSET);
-    saved = app_settings_set_noon_reminder_duration(duration) &&
-            noon_reminder_set_enabled(true);
+    AppSettings updated = app_settings_get();
+    updated.noon_reminder_duration = duration;
+    updated.noon_reminder_enabled = true;
+    saved = noon_reminder_apply_settings(&updated);
   }
 
   if (saved) {

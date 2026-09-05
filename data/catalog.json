@@ -1,0 +1,410 @@
+{
+  "categories": [
+    "Daily Prayer",
+    "Marian & Rosary",
+    "Confession",
+    "Psalms & Other",
+    "Prayer Cards"
+  ],
+  "defaults": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    0,
+    0
+  ],
+  "entries": [
+    {
+      "id": 0,
+      "symbol": "MAIN_MENU_ENTRY_NONE",
+      "name": "Empty",
+      "phone_name": "Empty",
+      "destination": "MAIN_MENU_DESTINATION_NONE",
+      "target": "0",
+      "item": 0,
+      "category": 0
+    },
+    {
+      "id": 1,
+      "symbol": "MAIN_MENU_ENTRY_PRECES",
+      "name": "Preces",
+      "phone_name": "Preces",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_PRECES",
+      "item": 0,
+      "category": 0
+    },
+    {
+      "id": 2,
+      "symbol": "MAIN_MENU_ENTRY_HOLY_ROSARY",
+      "name": "Holy Rosary",
+      "phone_name": "Holy Rosary",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_HOLY_ROSARY",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 3,
+      "symbol": "MAIN_MENU_ENTRY_REGINA_CAELI",
+      "name": "Regina Caeli",
+      "phone_name": "Regina Caeli",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_REGINA_CAELI",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 4,
+      "symbol": "MAIN_MENU_ENTRY_ANGELUS",
+      "name": "Angelus",
+      "phone_name": "Angelus",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_ANGELUS",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 5,
+      "symbol": "MAIN_MENU_ENTRY_MEMORARE",
+      "name": "Memorare",
+      "phone_name": "Memorare",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_MEMORARE",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 6,
+      "symbol": "MAIN_MENU_ENTRY_LITANY_OF_LORETO",
+      "name": "Litany of Loreto",
+      "phone_name": "Litany of Loreto",
+      "destination": "MAIN_MENU_DESTINATION_LITANY",
+      "target": "0",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 7,
+      "symbol": "MAIN_MENU_ENTRY_MORE_PRAYERS",
+      "name": "More Prayers",
+      "phone_name": "More Prayers",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION",
+      "target": "PRAYER_COLLECTION_DAILY",
+      "item": 0,
+      "category": 0
+    },
+    {
+      "id": 8,
+      "symbol": "MAIN_MENU_ENTRY_MENTAL_PRAYER",
+      "name": "Mental Prayer",
+      "phone_name": "Mental Prayer",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_DAILY",
+      "item": 0,
+      "category": 0
+    },
+    {
+      "id": 9,
+      "symbol": "MAIN_MENU_ENTRY_VISIT_AND_COMMUNION",
+      "name": "Visit & Communion",
+      "phone_name": "Visit & Communion",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_DAILY",
+      "item": 1,
+      "category": 0
+    },
+    {
+      "id": 10,
+      "symbol": "MAIN_MENU_ENTRY_BEFORE_WORK",
+      "name": "Before Work",
+      "phone_name": "Before Work",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_DAILY",
+      "item": 2,
+      "category": 0
+    },
+    {
+      "id": 11,
+      "symbol": "MAIN_MENU_ENTRY_NIGHT_EXAMINATION",
+      "name": "Night Examination",
+      "phone_name": "Night Examination",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_DAILY",
+      "item": 3,
+      "category": 0
+    },
+    {
+      "id": 12,
+      "symbol": "MAIN_MENU_ENTRY_CONFESSION",
+      "name": "Confession",
+      "phone_name": "Confession",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION",
+      "target": "PRAYER_COLLECTION_CONFESSION",
+      "item": 0,
+      "category": 2
+    },
+    {
+      "id": 13,
+      "symbol": "MAIN_MENU_ENTRY_CONFESSION_EXAMINATION",
+      "name": "Examination",
+      "phone_name": "Examination",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CONFESSION",
+      "item": 0,
+      "category": 2
+    },
+    {
+      "id": 14,
+      "symbol": "MAIN_MENU_ENTRY_ACT_OF_CONTRITION",
+      "name": "Act of Contrition",
+      "phone_name": "Act of Contrition",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CONFESSION",
+      "item": 1,
+      "category": 2
+    },
+    {
+      "id": 15,
+      "symbol": "MAIN_MENU_ENTRY_BEFORE_CONFESSION",
+      "name": "Before Confession",
+      "phone_name": "Before Confession",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CONFESSION",
+      "item": 2,
+      "category": 2
+    },
+    {
+      "id": 16,
+      "symbol": "MAIN_MENU_ENTRY_AFTER_CONFESSION",
+      "name": "After Confession",
+      "phone_name": "After Confession",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CONFESSION",
+      "item": 3,
+      "category": 2
+    },
+    {
+      "id": 17,
+      "symbol": "MAIN_MENU_ENTRY_PSALM_50",
+      "name": "Psalm 50 (51)",
+      "phone_name": "Psalm 50 (51)",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_PSALM_50",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 18,
+      "symbol": "MAIN_MENU_ENTRY_ACCEPTANCE_OF_DEATH",
+      "name": "Acceptance",
+      "phone_name": "Acceptance of Death",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_ACCEPTANCE_OF_DEATH",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 19,
+      "symbol": "MAIN_MENU_ENTRY_PRAYER_FOR_VOCATIONS",
+      "name": "Vocations",
+      "phone_name": "Prayer for Vocations",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_PRAYER_FOR_VOCATIONS",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 20,
+      "symbol": "MAIN_MENU_ENTRY_BLESSED_BE_YOUR_PURITY",
+      "name": "Blessed Purity",
+      "phone_name": "Blessed Be Your Purity",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_BLESSED_BE_YOUR_PURITY",
+      "item": 0,
+      "category": 1
+    },
+    {
+      "id": 21,
+      "symbol": "MAIN_MENU_ENTRY_CANTICLE_THREE_CHILDREN",
+      "name": "Three Children",
+      "phone_name": "Canticle of the Three Children",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_CANTICLE_THREE_CHILDREN",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 22,
+      "symbol": "MAIN_MENU_ENTRY_PSALM_2",
+      "name": "Psalm 2",
+      "phone_name": "Psalm 2",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_PSALM_2",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 23,
+      "symbol": "MAIN_MENU_ENTRY_ASPIRATIONS",
+      "name": "Aspirations",
+      "phone_name": "Aspirations",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_ASPIRATIONS",
+      "item": 0,
+      "category": 3
+    },
+    {
+      "id": 24,
+      "symbol": "MAIN_MENU_ENTRY_PRAYER_CARDS",
+      "name": "Prayer Cards",
+      "phone_name": "Prayer Cards",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 0,
+      "category": 4
+    },
+    {
+      "id": 25,
+      "symbol": "MAIN_MENU_ENTRY_CARD_JOSEMARIA",
+      "name": "St. Josemaría Escrivá",
+      "phone_name": "Card: St. Josemaría Escrivá",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 0,
+      "category": 4
+    },
+    {
+      "id": 26,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ALVARO",
+      "name": "Bl. Álvaro del Portillo",
+      "phone_name": "Card: Bl. Álvaro del Portillo",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 1,
+      "category": 4
+    },
+    {
+      "id": 27,
+      "symbol": "MAIN_MENU_ENTRY_CARD_GUADALUPE",
+      "name": "Bl. Guadalupe Ortiz de Landázuri",
+      "phone_name": "Card: Bl. Guadalupe Ortiz de Landázuri",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 2,
+      "category": 4
+    },
+    {
+      "id": 28,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ISIDORO",
+      "name": "Ven. Isidoro Zorzano",
+      "phone_name": "Card: Ven. Isidoro Zorzano",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 3,
+      "category": 4
+    },
+    {
+      "id": 29,
+      "symbol": "MAIN_MENU_ENTRY_CARD_MONTSE",
+      "name": "Ven. Montse Grases",
+      "phone_name": "Card: Ven. Montse Grases",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 4,
+      "category": 4
+    },
+    {
+      "id": 30,
+      "symbol": "MAIN_MENU_ENTRY_CARD_DORA",
+      "name": "Dora del Hoyo",
+      "phone_name": "Card: Dora del Hoyo",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 5,
+      "category": 4
+    },
+    {
+      "id": 31,
+      "symbol": "MAIN_MENU_ENTRY_CARD_JOSEPH",
+      "name": "Fr. Joseph Múzquiz",
+      "phone_name": "Card: Fr. Joseph Múzquiz",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 6,
+      "category": 4
+    },
+    {
+      "id": 32,
+      "symbol": "MAIN_MENU_ENTRY_CARD_HERNANDEZ_GARNICA",
+      "name": "Fr. José María Hernández Garnica",
+      "phone_name": "Card: Fr. José María Hernández Garnica",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 7,
+      "category": 4
+    },
+    {
+      "id": 33,
+      "symbol": "MAIN_MENU_ENTRY_CARD_TONI",
+      "name": "Toni Zweifel",
+      "phone_name": "Card: Toni Zweifel",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 8,
+      "category": 4
+    },
+    {
+      "id": 34,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ERNESTO",
+      "name": "Ernesto Cofiño",
+      "phone_name": "Card: Ernesto Cofiño",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 9,
+      "category": 4
+    },
+    {
+      "id": 35,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ENCARNITA",
+      "name": "Encarnita Ortega",
+      "phone_name": "Card: Encarnita Ortega",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 10,
+      "category": 4
+    },
+    {
+      "id": 36,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ALVIRA",
+      "name": "Tomás & Paquita Alvira",
+      "phone_name": "Card: Tomás & Paquita Alvira",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 11,
+      "category": 4
+    },
+    {
+      "id": 37,
+      "symbol": "MAIN_MENU_ENTRY_CARD_ORTIZ_DE_LANDAZURI",
+      "name": "Laura & Eduardo Ortiz de Landázuri",
+      "phone_name": "Card: Laura & Eduardo Ortiz de Landázuri",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 12,
+      "category": 4
+    },
+    {
+      "id": 38,
+      "symbol": "MAIN_MENU_ENTRY_CARD_PEDRO",
+      "name": "Pedro Ballester",
+      "phone_name": "Card: Pedro Ballester",
+      "destination": "MAIN_MENU_DESTINATION_COLLECTION_PRAYER",
+      "target": "PRAYER_COLLECTION_CARDS",
+      "item": 13,
+      "category": 4
+    }
+  ]
+}

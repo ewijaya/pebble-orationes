@@ -6,6 +6,7 @@
 #include "accessible_menu.h"
 #include "litany.h"
 #include "prayer_screen.h"
+#include "prayer_navigation.h"
 #include "rosary_data.h"
 
 enum {
@@ -85,7 +86,7 @@ static void rosary_menu_select_click(MenuLayer *menu_layer,
       window_stack_push(s_all_mysteries_window, true);
       break;
     case ROSARY_MENU_ITEM_LITANY:
-      prayer_screen_show("Litany of Loreto", litany_of_loreto_text());
+      prayer_navigation_open(MAIN_MENU_ENTRY_LITANY_OF_LORETO, false);
       break;
   }
 }

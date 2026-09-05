@@ -4,15 +4,15 @@
 
 #include "app_settings.h"
 #include "app_theme.h"
+#include "reminder_schedule.h"
 #include "liturgical_calendar.h"
-#include "prayer_screen.h"
+#include "prayer_navigation.h"
 #include "prayers.h"
 
 enum {
   PERSIST_KEY_WAKEUP_ID = 10,
   PERSIST_KEY_WAKEUP_TIME = 11,
   NOON_REMINDER_COOKIE = 0x4e4f4f4e,
-  MAX_MISSED_REMINDER_SECONDS = 15 * 60,
   SCHEDULE_TOLERANCE_SECONDS = 60,
   HORIZONTAL_MARGIN = 8,
 };
@@ -77,27 +77,6 @@ static void cancel_scheduled_wakeup(void) {
   clear_schedule_record();
 }
 
-static time_t get_next_local_noon(time_t now) {
-  const struct tm *current_time = localtime(&now);
-  if (!current_time) {
-    return 0;
-  }
-
-  struct tm noon = *current_time;
-  noon.tm_hour = 12;
-  noon.tm_min = 0;
-  noon.tm_sec = 0;
-  noon.tm_isdst = -1;
-
-  time_t next_noon = mktime(&noon);
-  if (next_noon <= now) {
-    noon.tm_mday += 1;
-    noon.tm_isdst = -1;
-    next_noon = mktime(&noon);
-  }
-  return next_noon;
-}
-
 static bool schedule_wakeup(time_t timestamp) {
   if (timestamp <= 0) {
     return false;
@@ -119,7 +98,7 @@ static bool schedule_wakeup(time_t timestamp) {
 
 static bool sync_scheduled_wakeup(void) {
   const time_t now = time(NULL);
-  const time_t expected_time = get_next_local_noon(now);
+  const time_t expected_time = reminder_schedule_next_noon(now);
   time_t actual_time = 0;
 
   if (s_wakeup_id >= 0 && wakeup_query(s_wakeup_id, &actual_time)) {
@@ -146,16 +125,6 @@ static void choose_current_prayer(time_t timestamp) {
   }
 }
 
-static bool reminder_is_timely(time_t now, time_t scheduled_time) {
-  if (scheduled_time <= 0) {
-    return true;
-  }
-
-  const int32_t delay = (int32_t)(now - scheduled_time);
-  return delay >= -SCHEDULE_TOLERANCE_SECONDS &&
-         delay <= MAX_MISSED_REMINDER_SECONDS;
-}
-
 static void open_prayer_handler(ClickRecognizerRef recognizer, void *context) {
   (void)recognizer;
   (void)context;
@@ -170,7 +139,7 @@ static void open_prayer_handler(ClickRecognizerRef recognizer, void *context) {
     return;
   }
 
-  prayer_screen_show(s_prayer->name, translation->text);
+  prayer_navigation_open(main_menu_catalog_find_prayer(s_prayer), false);
   window_stack_remove(s_window, false);
 }
 
@@ -306,7 +275,7 @@ bool noon_reminder_init(void) {
 
   if (!launched_by_reminder ||
       !app_settings_get_noon_reminder_enabled() ||
-      !reminder_is_timely(now, prior_scheduled_time) ||
+      !reminder_schedule_is_timely(now, prior_scheduled_time) ||
       quiet_time_is_active()) {
     return false;
   }
@@ -321,20 +290,19 @@ void noon_reminder_deinit(void) {
 }
 
 bool noon_reminder_set_enabled(bool enabled) {
-  if (!app_settings_set_noon_reminder_enabled(enabled)) {
+  AppSettings updated = app_settings_get();
+  updated.noon_reminder_enabled = enabled;
+  return noon_reminder_apply_settings(&updated);
+}
+
+bool noon_reminder_apply_settings(const AppSettings *settings) {
+  if (!app_settings_validate(settings)) return false;
+  const bool was_enabled = app_settings_get_noon_reminder_enabled();
+  if (settings->noon_reminder_enabled && !sync_scheduled_wakeup()) return false;
+  if (!app_settings_apply(settings)) {
+    if (!was_enabled) cancel_scheduled_wakeup();
     return false;
   }
-
-  if (!enabled) {
-    cancel_scheduled_wakeup();
-    return true;
-  }
-
-  if (sync_scheduled_wakeup()) {
-    return true;
-  }
-
-  app_settings_set_noon_reminder_enabled(false);
-  cancel_scheduled_wakeup();
-  return false;
+  if (!settings->noon_reminder_enabled) cancel_scheduled_wakeup();
+  return true;
 }

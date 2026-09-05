@@ -12,9 +12,12 @@
 #include "prayers.h"
 #include "rosary_menu.h"
 #include "settings_menu.h"
+#include "prayer_library.h"
+#include "prayer_navigation.h"
+#include "reading_position.h"
 
 enum {
-  MAIN_MENU_ITEM_SETTINGS_OFFSET = 1,
+  MAIN_MENU_FIXED_ITEMS = 2,
   MAIN_MENU_REPEAT_INTERVAL_MS = 100,
 };
 
@@ -46,10 +49,13 @@ static MainMenuEntryId configured_entry_for_row(uint16_t row) {
   return MAIN_MENU_ENTRY_NONE;
 }
 
+static bool has_continue(void) {
+  ReadingPosition position;
+  return reading_position_get(&position);
+}
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
                                   void *context) {
-  return configured_entry_count() +
-         MAIN_MENU_ITEM_SETTINGS_OFFSET;
+  return configured_entry_count() + MAIN_MENU_FIXED_ITEMS + (has_continue() ? 1 : 0);
 }
 
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
@@ -65,7 +71,10 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
     }
   }
 
-  accessible_menu_draw_row(ctx, cell_layer, "Settings");
+  row -= entry_count;
+  const bool resume = has_continue();
+  accessible_menu_draw_row(ctx, cell_layer,
+      resume && row == 0 ? "Continue" : row == (resume ? 1 : 0) ? "All Prayers" : "Settings");
 }
 
 static int16_t menu_get_cell_height(MenuLayer *menu_layer,
@@ -82,46 +91,16 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
   uint16_t row = cell_index->row;
   const uint16_t entry_count = configured_entry_count();
   if (row < entry_count) {
-    const MainMenuEntry *entry =
-        main_menu_catalog_get(configured_entry_for_row(row));
-    if (!entry) {
-      return;
-    }
-
-    if (entry->destination == MAIN_MENU_DESTINATION_PRAYER) {
-      const Prayer *prayer = prayers_get_by_id((PrayerId)entry->target);
-      if (prayer && prayer->destination == PRAYER_DESTINATION_ROSARY) {
-        rosary_menu_show();
-      } else if (prayer) {
-        const PrayerTranslation *translation =
-            prayer_get_translation(prayer, prayer->default_language);
-        if (translation) {
-          prayer_screen_show_translation(prayer->name, translation);
-        } else {
-          placeholder_screen_show(prayer->name);
-        }
-      }
-    } else if (entry->destination == MAIN_MENU_DESTINATION_LITANY) {
-      prayer_screen_show(entry->name, litany_of_loreto_text());
-    } else if (entry->destination == MAIN_MENU_DESTINATION_COLLECTION) {
-      prayer_collection_menu_show((PrayerCollectionId)entry->target);
-    } else if (entry->destination ==
-               MAIN_MENU_DESTINATION_COLLECTION_PRAYER) {
-      const PrayerCollection *collection = prayer_collections_get(
-          (PrayerCollectionId)entry->target);
-      if (collection && entry->item_index < collection->prayer_count) {
-        const Prayer *prayer = &collection->prayers[entry->item_index];
-        const PrayerTranslation *translation =
-            prayer_get_translation(prayer, prayer->default_language);
-        if (translation) {
-          prayer_screen_show_translation(prayer->name, translation);
-        }
-      }
-    }
+    prayer_navigation_open(configured_entry_for_row(row), false);
     return;
   }
-
-  settings_menu_show();
+  row -= entry_count;
+  if (has_continue()) {
+    if (row == 0) { prayer_library_continue(); return; }
+    --row;
+  }
+  if (row == 0) prayer_library_show();
+  else settings_menu_show();
 }
 
 static void menu_move_selection(bool up) {
@@ -213,6 +192,7 @@ static void menu_window_appear(Window *window) {
 }
 
 static void settings_changed_handler(void) {
+  if (!app_settings_get_remember_place()) reading_position_clear();
   if (s_menu_layer) {
     const uint16_t row_count = menu_get_num_rows(s_menu_layer, 0, NULL);
     const MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
@@ -230,6 +210,7 @@ static void settings_changed_handler(void) {
   settings_menu_refresh();
   rosary_menu_refresh();
   prayer_collection_menu_refresh();
+  prayer_library_refresh();
 }
 
 static void shortcut_saved_handler(uint8_t slot_index) {
@@ -261,6 +242,7 @@ static bool init(void) {
   rosary_menu_init();
   prayer_collection_menu_init();
   settings_menu_init(shortcut_saved_handler);
+  prayer_library_init(shortcut_saved_handler);
 
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){
@@ -289,6 +271,7 @@ static void deinit(void) {
   window_destroy(s_menu_window);
   s_menu_window = NULL;
 
+  prayer_library_deinit();
   settings_menu_deinit();
   prayer_collection_menu_deinit();
   rosary_menu_deinit();

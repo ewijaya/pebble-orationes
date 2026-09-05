@@ -3,7 +3,7 @@
 #include <pebble.h>
 
 #include "accessible_menu.h"
-#include "prayer_screen.h"
+#include "prayer_navigation.h"
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
@@ -47,11 +47,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
   }
 
   const Prayer *prayer = &s_collection->prayers[cell_index->row];
-  const PrayerTranslation *translation =
-      prayer_get_translation(prayer, prayer->default_language);
-  if (translation) {
-    prayer_screen_show_translation(prayer->name, translation);
-  }
+  prayer_navigation_open(main_menu_catalog_find_prayer(prayer), false);
 }
 
 static void cards_move_selection(bool up) {

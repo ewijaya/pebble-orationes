@@ -10,7 +10,6 @@ enum {
   APP_MESSAGE_OUTBOX_SIZE = 256,
 };
 
-static PhoneSettingsChangedHandler s_changed_handler;
 static bool s_app_message_open;
 
 static uint32_t main_menu_slot_message_key(uint8_t slot) {
@@ -33,76 +32,25 @@ static uint32_t main_menu_slot_message_key(uint8_t slot) {
   return MESSAGE_KEY_MainMenuSlot1;
 }
 
-static bool tuple_bool(const Tuple *tuple) {
-  return tuple && tuple->value->int32 != 0;
+static uint32_t s_ack;
+static uint8_t s_status;
+
+static bool read_value(const Tuple *tuple, uint32_t *value) {
+  if (!tuple || (tuple->type != TUPLE_UINT && tuple->type != TUPLE_INT)) return false;
+  switch (tuple->length) {
+    case 1: *value = tuple->value->uint8; return true;
+    case 2: *value = tuple->value->uint16; return true;
+    case 4: *value = tuple->value->uint32; return true;
+    default: return false;
+  }
 }
-
-static bool apply_text_size(const Tuple *tuple) {
-  if (!tuple) {
-    return false;
-  }
-  const AppTextSize value = (AppTextSize)tuple->value->int32;
-  return value != app_settings_get_text_size() &&
-         app_settings_set_text_size(value);
-}
-
-static bool apply_appearance(const Tuple *tuple) {
-  if (!tuple) {
-    return false;
-  }
-  const AppAppearance value = (AppAppearance)tuple->value->int32;
-  return value != app_settings_get_appearance() &&
-         app_settings_set_appearance(value);
-}
-
-static bool apply_accent_color(const Tuple *tuple) {
-  if (!tuple) {
-    return false;
-  }
-  const AppAccentColor value = (AppAccentColor)tuple->value->int32;
-  return value != app_settings_get_accent_color() &&
-         app_settings_set_accent_color(value);
-}
-
-static bool apply_noon_duration(const Tuple *tuple) {
-  if (!tuple) {
-    return false;
-  }
-  const AppNoonReminderDuration value =
-      (AppNoonReminderDuration)tuple->value->int32;
-  return value != app_settings_get_noon_reminder_duration() &&
-         app_settings_set_noon_reminder_duration(value);
-}
-
-static bool apply_noon_enabled(const Tuple *tuple) {
-  if (!tuple) {
-    return false;
-  }
-  const bool value = tuple_bool(tuple);
-  return value != app_settings_get_noon_reminder_enabled() &&
-         noon_reminder_set_enabled(value);
-}
-
-static bool apply_main_menu_slots(DictionaryIterator *iterator,
-                                  bool *received_slot) {
-  bool received_any_slot = false;
-  bool differs = false;
-  MainMenuEntryId slots[APP_MAIN_MENU_SLOT_COUNT];
-
-  for (uint8_t slot = 0; slot < APP_MAIN_MENU_SLOT_COUNT; ++slot) {
-    const MainMenuEntryId current = app_settings_get_main_menu_slot(slot);
-    const Tuple *tuple =
-        dict_find(iterator, main_menu_slot_message_key(slot));
-    slots[slot] = tuple ? (MainMenuEntryId)tuple->value->int32 : current;
-    received_any_slot |= tuple != NULL;
-    differs |= slots[slot] != current;
-  }
-
-  if (received_any_slot) {
-    *received_slot = true;
-  }
-  return received_any_slot && differs &&
-         app_settings_set_main_menu_slots(slots);
+static bool read_setting(DictionaryIterator *iterator, uint32_t key, uint8_t *value) {
+  const Tuple *tuple = dict_find(iterator, key);
+  if (!tuple) return true;
+  uint32_t incoming;
+  if (!read_value(tuple, &incoming) || incoming > UINT8_MAX) return false;
+  *value = incoming;
+  return true;
 }
 
 void phone_settings_send_current(void) {
@@ -118,6 +66,9 @@ void phone_settings_send_current(void) {
     return;
   }
 
+  dict_write_uint32(iterator, MESSAGE_KEY_SettingsAck, s_ack);
+  dict_write_uint8(iterator, MESSAGE_KEY_SettingsStatus, s_status);
+  dict_write_uint8(iterator, MESSAGE_KEY_RememberPlace, app_settings_get_remember_place());
   dict_write_uint8(iterator, MESSAGE_KEY_TextSize,
                    app_settings_get_text_size());
   dict_write_uint8(iterator, MESSAGE_KEY_Appearance,
@@ -140,30 +91,28 @@ void phone_settings_send_current(void) {
   }
 }
 
-static void inbox_received_handler(DictionaryIterator *iterator,
-                                   void *context) {
+static void inbox_received_handler(DictionaryIterator *iterator, void *context) {
   (void)context;
-
-  const bool is_request =
-      dict_find(iterator, MESSAGE_KEY_SettingsRequest) != NULL;
-  bool changed = false;
-  bool received_main_menu_slot = false;
-
-  changed |= apply_text_size(dict_find(iterator, MESSAGE_KEY_TextSize));
-  changed |= apply_appearance(dict_find(iterator, MESSAGE_KEY_Appearance));
-  changed |= apply_accent_color(dict_find(iterator, MESSAGE_KEY_AccentColor));
-  changed |= apply_noon_duration(
-      dict_find(iterator, MESSAGE_KEY_NoonReminderDuration));
-  changed |= apply_noon_enabled(
-      dict_find(iterator, MESSAGE_KEY_NoonReminderEnabled));
-  changed |= apply_main_menu_slots(iterator, &received_main_menu_slot);
-
-  if (changed && s_changed_handler) {
-    s_changed_handler();
-  }
-  if (changed || is_request || received_main_menu_slot) {
+  if (dict_find(iterator, MESSAGE_KEY_SettingsRequest)) {
     phone_settings_send_current();
+    return;
   }
+  AppSettings updated = app_settings_get();
+  bool valid = true;
+  valid &= read_setting(iterator, MESSAGE_KEY_TextSize, &updated.text_size);
+  valid &= read_setting(iterator, MESSAGE_KEY_Appearance, &updated.appearance);
+  valid &= read_setting(iterator, MESSAGE_KEY_AccentColor, &updated.accent_color);
+  valid &= read_setting(iterator, MESSAGE_KEY_NoonReminderEnabled, &updated.noon_reminder_enabled);
+  valid &= read_setting(iterator, MESSAGE_KEY_NoonReminderDuration, &updated.noon_reminder_duration);
+  valid &= read_setting(iterator, MESSAGE_KEY_RememberPlace, &updated.remember_place);
+  for (uint8_t i = 0; i < APP_MAIN_MENU_SLOT_COUNT; ++i) {
+    valid &= read_setting(iterator, main_menu_slot_message_key(i), &updated.slots[i]);
+  }
+  s_ack = 0;
+  const Tuple *transaction = dict_find(iterator, MESSAGE_KEY_SettingsTransaction);
+  if (transaction) valid &= read_value(transaction, &s_ack);
+  s_status = valid && noon_reminder_apply_settings(&updated) ? 0 : 1;
+  phone_settings_send_current();
 }
 
 static void inbox_dropped_handler(AppMessageResult reason, void *context) {
@@ -172,7 +121,7 @@ static void inbox_dropped_handler(AppMessageResult reason, void *context) {
 }
 
 void phone_settings_init(PhoneSettingsChangedHandler changed_handler) {
-  s_changed_handler = changed_handler;
+  app_settings_set_changed_handler(changed_handler);
   app_message_register_inbox_received(inbox_received_handler);
   app_message_register_inbox_dropped(inbox_dropped_handler);
 
@@ -187,6 +136,6 @@ void phone_settings_init(PhoneSettingsChangedHandler changed_handler) {
 
 void phone_settings_deinit(void) {
   s_app_message_open = false;
-  s_changed_handler = NULL;
+  app_settings_set_changed_handler(NULL);
   app_message_deregister_callbacks();
 }

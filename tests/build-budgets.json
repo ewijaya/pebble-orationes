@@ -1,0 +1,8 @@
+{
+  "baseline_ram_bytes": 59990,
+  "baseline_heap_bytes": 71082,
+  "max_resources_bytes": 30000,
+  "max_ram_bytes": 80000,
+  "min_heap_bytes": 51072,
+  "max_pbw_bytes": 850000
+}

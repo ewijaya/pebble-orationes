@@ -29,7 +29,14 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
 
+**Continue** offers **Resume** or **Start again** for your last saved prayer. Ordinary prayer openings start at the top. **Remember Place** can be disabled in watch or phone Settings. **All Prayers** lets you browse five categories and open any prayer or pin it to the main menu. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
+
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
+
+<p align="center">
+  <img src="docs/images/framed/continue.png" alt="Continue menu with Resume and Start again" width="31%">
+  <img src="docs/images/framed/all-prayers.png" alt="All Prayers category browser" width="31%">
+</p>
 
 Browse the [prayer directory](docs/prayer-list.md) for the complete library, languages, and shortcut names.
 
@@ -47,7 +54,7 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.6.0, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The latest GitHub release, **v0.7.0**, targets `emery`. The App Store currently offers v0.6.0; use GitHub for v0.7.0.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
@@ -71,6 +78,8 @@ The application bundle is written to `build/pebble-orationes.pbw`.
 pebble install --emulator emery
 pebble install --cloudpebble build/pebble-orationes.pbw
 ```
+
+See the [development guide](docs/development.md) for the generated catalog, regression tests, memory budgets, and emulator checks, and the [release verification](docs/verification.md) for results.
 
 ### Architecture
 

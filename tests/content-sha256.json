@@ -1,0 +1,9 @@
+{
+  "src/c/prayers.c": "a3dfa6d4906ae0f907cdd7b6f64fa09fcbe9b76fa4f53458e82a992a2495a9b7",
+  "src/c/prayer_collections.c": "848557b616af1048dcd6e452a4c774cbce978470e1eee811559814f5eef83b63",
+  "src/c/prayer_cards.c": "585edd70ecdbfb69278cd8ca5373e2ff1ec2c5c76ac8276425df6f70c3d0cb70",
+  "src/c/aspirations.c": "53b3c38e697e38ddfd3c90f54a337f5efbc0d8dcda8e600a08b9ea4d8d9d6975",
+  "src/c/litany.c": "37b6ac040b1ebaceafe6c085b4dd70bc15c1e1e4588b1f09dcd3663ecfda9a5e",
+  "src/c/rosary_data.c": "63eddc9d3e45572693d8b5139f8aa118ecaf582c7f82808040d3bafc93502596",
+  "src/c/liturgical_calendar.c": "75e7210699390065a8555f12dd7253ae9687956909c9991c25abf94746bea909"
+}

@@ -36,6 +36,24 @@ typedef enum {
   APP_NOON_REMINDER_DURATION_COUNT,
 } AppNoonReminderDuration;
 
+typedef struct {
+  uint8_t text_size;
+  uint8_t accent_color;
+  uint8_t appearance;
+  uint8_t noon_reminder_enabled;
+  uint8_t noon_reminder_duration;
+  uint8_t remember_place;
+  uint8_t slots[APP_MAIN_MENU_SLOT_COUNT];
+} AppSettings;
+
+typedef void (*AppSettingsChangedHandler)(void);
+void app_settings_set_changed_handler(AppSettingsChangedHandler handler);
+AppSettings app_settings_get(void);
+bool app_settings_validate(const AppSettings *settings);
+bool app_settings_apply(const AppSettings *settings);
+bool app_settings_get_remember_place(void);
+bool app_settings_set_remember_place(bool enabled);
+
 void app_settings_init(void);
 AppTextSize app_settings_get_text_size(void);
 bool app_settings_set_text_size(AppTextSize text_size);
