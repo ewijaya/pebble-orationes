@@ -9,9 +9,7 @@ Your Pebble tells time. Orationes helps you make time for prayer.
 Orationes is a personal native Pebble C app built specifically for Pebble Time 2 (`emery`). It favors readability on a small display through large bold text, strong contrast, touchscreen scrolling, and hardware-button navigation.
 
 <p align="center">
-  <img src="docs/images/framed/main-menu.png" alt="Orationes main menu on a Pebble Time 2-style frame" width="31%">
-  <img src="docs/images/framed/angelus.png" alt="Angelus prayer screen on a Pebble Time 2-style frame" width="31%">
-  <img src="docs/images/framed/rosary-menu.png" alt="Holy Rosary menu on a Pebble Time 2-style frame" width="31%">
+  <a href="https://github.com/ewijaya/pebble-orationes/releases/latest"><img src="docs/images/promo/orationes-og-1200x630.png" alt="Make time for prayer. Orationes for Pebble Time 2, showing its cyan-on-dark prayer screen." width="960"></a>
 </p>
 
 ## What's included
@@ -34,8 +32,14 @@ The default menu stays focused on the five core entries. On the watch or in the 
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 
 <p align="center">
-  <img src="docs/images/framed/continue.png" alt="Continue menu with Resume and Start again" width="31%">
-  <img src="docs/images/framed/all-prayers.png" alt="All Prayers category browser" width="31%">
+  <img src="docs/images/promo/01-read.png" alt="Read prayers in large, high-contrast text" width="24%">
+  <img src="docs/images/promo/02-continue.png" alt="Continue your saved prayer: Resume or Start again" width="24%">
+  <img src="docs/images/promo/03-library.png" alt="Browse All Prayers and pin a favorite" width="24%">
+  <img src="docs/images/promo/04-appearance.png" alt="Choose light or dark appearance and large or extra-large text" width="24%">
+</p>
+
+<p align="center">
+  <img src="docs/images/promo/category-guide.png" alt="Daily Prayer; Marian and Rosary; Confession; Psalms and Other; Prayer Cards" width="960">
 </p>
 
 Browse the [prayer directory](docs/prayer-list.md) for the complete library, languages, and shortcut names.

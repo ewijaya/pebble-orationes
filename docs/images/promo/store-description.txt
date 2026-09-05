@@ -1,0 +1,21 @@
+Make time for prayer. On your wrist. Available offline.
+
+Orationes is a Catholic prayer book for Pebble Time 2. Large text and clear contrast help you focus on the words. Your prayers stay on your watch, ready without a phone or internet connection.
+
+PRAY THROUGHOUT YOUR DAY
+Start with Latin Preces, Holy Rosary, Regina Caeli, Angelus, and Memorare. Explore 92 Aspirations, 14 Prayer Cards, the Litany of Loreto, psalms, prayers before work, preparation for Confession, and more. The Rosary mystery reference selects today’s mysteries using your watch’s local weekday.
+
+KEEP YOUR PRAYERS CLOSE
+Choose and arrange up to seven shortcuts to individual prayers or collections. Personalize them on the watch or through Settings in the Pebble mobile app.
+
+READ YOUR WAY
+Choose Large or Extra Large text, Light or Dark appearance, and an accent color. The Ocean accent offers cyan on dark. Prayer text retains strong black-and-white contrast.
+
+MOVE AT YOUR PACE
+Swipe to scroll, tap Up or Down, or hold either button to move faster. Double-press SELECT while reading to return to your watchface.
+
+PAUSE AT NOON
+Enable an optional vibration reminder for Angelus or Regina Caeli, selected automatically for the season.
+
+EXPLORE THE PRAYER DIRECTORY
+https://github.com/ewijaya/pebble-orationes/blob/main/docs/prayer-list.md
