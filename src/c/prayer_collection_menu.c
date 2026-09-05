@@ -8,6 +8,15 @@
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 static const PrayerCollection *s_collection;
+static bool s_is_cards;
+
+static int16_t menu_get_cell_height(MenuLayer *menu_layer,
+                                    MenuIndex *cell_index, void *context) {
+  return s_is_cards && s_collection && cell_index->row < s_collection->prayer_count
+      ? accessible_menu_wrapped_row_height(
+            menu_layer, s_collection->prayers[cell_index->row].name)
+      : ACCESSIBLE_MENU_ROW_HEIGHT;
+}
 
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer,
                                   uint16_t section_index, void *context) {
@@ -41,8 +50,39 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
   const PrayerTranslation *translation =
       prayer_get_translation(prayer, prayer->default_language);
   if (translation) {
-    prayer_screen_show(prayer->name, translation->text);
+    prayer_screen_show_translation(prayer->name, translation);
   }
+}
+
+static void cards_move_selection(bool up) {
+  const MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
+  const uint16_t count = s_collection->prayer_count;
+  if ((up && selected.row == 0) || (!up && selected.row == count - 1)) {
+    menu_layer_set_selected_index(
+        s_menu_layer, MenuIndex(0, up ? count - 1 : 0),
+        up ? MenuRowAlignBottom : MenuRowAlignTop, true);
+  } else {
+    menu_layer_set_selected_next(s_menu_layer, up, MenuRowAlignCenter, true);
+  }
+}
+
+static void cards_up_handler(ClickRecognizerRef recognizer, void *context) {
+  cards_move_selection(true);
+}
+
+static void cards_down_handler(ClickRecognizerRef recognizer, void *context) {
+  cards_move_selection(false);
+}
+
+static void cards_select_handler(ClickRecognizerRef recognizer, void *context) {
+  MenuIndex selected = menu_layer_get_selected_index(s_menu_layer);
+  menu_select_click(s_menu_layer, &selected, NULL);
+}
+
+static void cards_click_config_provider(void *context) {
+  window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, cards_up_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, cards_down_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, cards_select_handler);
 }
 
 static void window_load(Window *window) {
@@ -50,7 +90,7 @@ static void window_load(Window *window) {
   s_menu_layer = menu_layer_create(layer_get_bounds(window_layer));
   menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
       .get_num_rows = menu_get_num_rows,
-      .get_cell_height = accessible_menu_get_cell_height,
+      .get_cell_height = menu_get_cell_height,
       .get_header_height = accessible_menu_get_header_height,
       .draw_row = menu_draw_row,
       .draw_header = menu_draw_header,
@@ -58,6 +98,9 @@ static void window_load(Window *window) {
   });
   accessible_menu_apply_colors(s_menu_layer);
   menu_layer_set_click_config_onto_window(s_menu_layer, window);
+  if (s_is_cards) {
+    window_set_click_config_provider(window, cards_click_config_provider);
+  }
   layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
 
@@ -101,6 +144,7 @@ void prayer_collection_menu_show(PrayerCollectionId collection_id) {
   }
 
   s_collection = collection;
+  s_is_cards = collection_id == PRAYER_COLLECTION_CARDS;
   window_stack_push(s_window, true);
 }
 

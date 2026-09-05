@@ -1,4 +1,5 @@
 #include "prayers.h"
+#include "aspirations.h"
 
 #include <stddef.h>
 
@@ -516,6 +517,13 @@ static const Prayer s_prayers[] = {
         .translation_count =
             (uint8_t)(sizeof(s_psalm_2_translations) /
                       sizeof(s_psalm_2_translations[0])),
+    },
+    {
+        .name = "Aspirations",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = aspirations_translations,
+        .translation_count = 1,
     },
 };
 

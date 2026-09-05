@@ -24,8 +24,12 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **More Prayers** *(optional)* — prayers for Mental Prayer, Visit & Communion, Before Work, and Night Examination.
 - **Confession** *(optional)* — an examination of conscience, Act of Contrition, and prayers before and after Confession.
 - **Prayer library** — Psalm 50 (51), Psalm 2, Acceptance of Death, Prayer for Vocations, Blessed Be Your Purity, and the Canticle of the Three Children.
+- **Aspirations** *(optional)* — 92 short prayers, with italic Latin paired with English where supplied, and concise Scripture references.
+- **Prayer Cards** *(optional)* — a collection of 14 intercessory prayers, also available as individual shortcuts. Supplied private-use declarations are retained in small print.
 
 The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
+
+Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 
 ## On a physical Pebble Time 2
 
@@ -41,7 +45,7 @@ The default menu stays focused on the five core entries. On the watch or in the 
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-This installation path has been tested on a physical Pebble Time 2. The current release, v0.5.1, targets `emery`.
+This installation path has been tested on a physical Pebble Time 2. The current release, v0.6.0, targets `emery`.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 

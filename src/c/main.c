@@ -68,6 +68,15 @@ static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
   accessible_menu_draw_row(ctx, cell_layer, "Settings");
 }
 
+static int16_t menu_get_cell_height(MenuLayer *menu_layer,
+                                    MenuIndex *cell_index, void *context) {
+  const MainMenuEntryId entry_id = configured_entry_for_row(cell_index->row);
+  return main_menu_catalog_is_card(entry_id)
+      ? accessible_menu_wrapped_row_height(
+            menu_layer, main_menu_catalog_get(entry_id)->name)
+      : ACCESSIBLE_MENU_ROW_HEIGHT;
+}
+
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   uint16_t row = cell_index->row;
@@ -87,7 +96,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
         const PrayerTranslation *translation =
             prayer_get_translation(prayer, prayer->default_language);
         if (translation) {
-          prayer_screen_show(prayer->name, translation->text);
+          prayer_screen_show_translation(prayer->name, translation);
         } else {
           placeholder_screen_show(prayer->name);
         }
@@ -105,7 +114,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
         const PrayerTranslation *translation =
             prayer_get_translation(prayer, prayer->default_language);
         if (translation) {
-          prayer_screen_show(prayer->name, translation->text);
+          prayer_screen_show_translation(prayer->name, translation);
         }
       }
     }
@@ -179,7 +188,7 @@ static void menu_window_load(Window *window) {
   s_menu_layer = menu_layer_create(bounds);
   menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
       .get_num_rows = menu_get_num_rows,
-      .get_cell_height = accessible_menu_get_cell_height,
+      .get_cell_height = menu_get_cell_height,
       .draw_row = menu_draw_row,
       .select_click = menu_select_click,
   });
@@ -223,6 +232,24 @@ static void settings_changed_handler(void) {
   prayer_collection_menu_refresh();
 }
 
+static void shortcut_saved_handler(uint8_t slot_index) {
+  if (!s_menu_layer) {
+    return;
+  }
+
+  // Empty slots are hidden. Count preceding visible entries to locate the
+  // edited shortcut (or the next entry/Settings when this slot was cleared).
+  uint16_t row = 0;
+  for (uint8_t slot = 0; slot < slot_index; ++slot) {
+    if (app_settings_get_main_menu_slot(slot) != MAIN_MENU_ENTRY_NONE) {
+      ++row;
+    }
+  }
+  menu_layer_reload_data(s_menu_layer);
+  menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, row),
+                                MenuRowAlignCenter, false);
+}
+
 static bool init(void) {
 #if defined(PBL_TOUCH)
   app_touch_navigation_enable(true);
@@ -233,7 +260,7 @@ static bool init(void) {
   placeholder_screen_init();
   rosary_menu_init();
   prayer_collection_menu_init();
-  settings_menu_init();
+  settings_menu_init(shortcut_saved_handler);
 
   s_menu_window = window_create();
   window_set_window_handlers(s_menu_window, (WindowHandlers){

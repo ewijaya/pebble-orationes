@@ -8,6 +8,8 @@ enum {
 };
 
 void accessible_menu_apply_colors(MenuLayer *menu_layer);
+int16_t accessible_menu_wrapped_row_height(MenuLayer *menu_layer,
+                                           const char *text);
 int16_t accessible_menu_get_cell_height(MenuLayer *menu_layer,
                                         MenuIndex *cell_index, void *context);
 int16_t accessible_menu_get_header_height(MenuLayer *menu_layer,

@@ -45,6 +45,18 @@ int16_t accessible_menu_get_cell_height(MenuLayer *menu_layer,
   return ACCESSIBLE_MENU_ROW_HEIGHT;
 }
 
+int16_t accessible_menu_wrapped_row_height(MenuLayer *menu_layer,
+                                           const char *text) {
+  const int16_t width = layer_get_bounds(menu_layer_get_layer(menu_layer)).size.w -
+                        2 * ROW_HORIZONTAL_MARGIN;
+  const GSize size = graphics_text_layout_get_content_size(
+      text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
+      GRect(0, 0, width, 300), GTextOverflowModeWordWrap, GTextAlignmentLeft);
+  const int16_t padded_height = size.h + 12;
+  return padded_height > ACCESSIBLE_MENU_ROW_HEIGHT
+             ? padded_height : ACCESSIBLE_MENU_ROW_HEIGHT;
+}
+
 int16_t accessible_menu_get_header_height(MenuLayer *menu_layer,
                                           uint16_t section_index,
                                           void *context) {

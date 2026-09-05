@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -7,9 +8,27 @@ typedef enum {
   PRAYER_LANGUAGE_LATIN,
 } PrayerLanguage;
 
+typedef enum {
+  PRAYER_PARAGRAPH_PRIMARY,
+  PRAYER_PARAGRAPH_LATIN,
+  PRAYER_PARAGRAPH_TRANSLATION,
+  PRAYER_PARAGRAPH_REFERENCE,
+  PRAYER_PARAGRAPH_NOTE,
+} PrayerParagraphStyle;
+
+typedef struct {
+  const char *text;
+  // PrayerParagraphStyle, stored compactly for long collections.
+  uint8_t style;
+  bool space_after;
+} PrayerParagraph;
+
 typedef struct {
   PrayerLanguage language;
   const char *text;
+  // Optional styled content; when present, used instead of the plain string.
+  const PrayerParagraph *paragraphs;
+  uint16_t paragraph_count;
 } PrayerTranslation;
 
 typedef enum {
@@ -37,6 +56,7 @@ typedef enum {
   PRAYER_ID_BLESSED_BE_YOUR_PURITY,
   PRAYER_ID_CANTICLE_THREE_CHILDREN,
   PRAYER_ID_PSALM_2,
+  PRAYER_ID_ASPIRATIONS,
   PRAYER_ID_COUNT,
 } PrayerId;
 

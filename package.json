@@ -1,7 +1,7 @@
 {
   "name": "orationes",
   "author": "ewijaya",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "keywords": [
     "pebble-app"
   ],
@@ -57,7 +57,19 @@
           "type": "font",
           "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_34",
           "file": "fonts/DejaVuSansCondensed-Bold.ttf",
-          "characterRegex": "[ -~·ÁÓÚáæéëíóúœǽ✠‘’“”•]"
+          "characterRegex": "[ -~·ÁÓÚáæéëíñóúœǽ✠‘’“”…•]"
+        },
+        {
+          "type": "font",
+          "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_OBLIQUE_28",
+          "file": "fonts/DejaVuSansCondensed-BoldOblique.ttf",
+          "characterRegex": "[ -~]"
+        },
+        {
+          "type": "font",
+          "name": "FONT_DEJAVU_SANS_CONDENSED_BOLD_OBLIQUE_34",
+          "file": "fonts/DejaVuSansCondensed-BoldOblique.ttf",
+          "characterRegex": "[ -~]"
         }
       ]
     }

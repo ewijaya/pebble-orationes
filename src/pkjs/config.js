@@ -24,7 +24,23 @@ function mainMenuOptions() {
     { label: 'Prayer for Vocations', value: '19' },
     { label: 'Blessed Be Your Purity', value: '20' },
     { label: 'Canticle of the Three Children', value: '21' },
-    { label: 'Psalm 2', value: '22' }
+    { label: 'Psalm 2', value: '22' },
+    { label: 'Aspirations', value: '23' },
+    { label: 'Prayer Cards', value: '24' },
+    { label: "Card: St. Josemaría Escrivá", value: '25' },
+    { label: "Card: Bl. Álvaro del Portillo", value: '26' },
+    { label: "Card: Bl. Guadalupe Ortiz de Landázuri", value: '27' },
+    { label: "Card: Ven. Isidoro Zorzano", value: '28' },
+    { label: "Card: Ven. Montse Grases", value: '29' },
+    { label: "Card: Dora del Hoyo", value: '30' },
+    { label: "Card: Fr. Joseph Múzquiz", value: '31' },
+    { label: "Card: Fr. José María Hernández Garnica", value: '32' },
+    { label: "Card: Toni Zweifel", value: '33' },
+    { label: "Card: Ernesto Cofiño", value: '34' },
+    { label: "Card: Encarnita Ortega", value: '35' },
+    { label: "Card: Tomás & Paquita Alvira", value: '36' },
+    { label: "Card: Laura & Eduardo Ortiz de Landázuri", value: '37' },
+    { label: "Card: Pedro Ballester", value: '38' }
   ];
 }
 
@@ -107,7 +123,7 @@ module.exports = [
       },
       {
         type: 'text',
-        defaultValue: 'Choose up to seven shortcuts. Collections open a submenu; individual prayers open directly. Empty slots are omitted. Settings is always available.'
+        defaultValue: 'Choose up to seven shortcuts. Collections open a submenu; individual prayers open directly. Select Prayer Cards to browse all cards, or Card: followed by a name to open one directly. Empty slots are omitted. Settings is always available.'
       },
       mainMenuSlot(1, '1'),
       mainMenuSlot(2, '2'),

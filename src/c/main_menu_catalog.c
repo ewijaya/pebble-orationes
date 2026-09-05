@@ -49,10 +49,47 @@ static const MainMenuEntry s_entries[] = {
     ENTRY("Three Children", MAIN_MENU_DESTINATION_PRAYER,
           PRAYER_ID_CANTICLE_THREE_CHILDREN, 0),
     ENTRY("Psalm 2", MAIN_MENU_DESTINATION_PRAYER, PRAYER_ID_PSALM_2, 0),
+    ENTRY("Aspirations", MAIN_MENU_DESTINATION_PRAYER, PRAYER_ID_ASPIRATIONS, 0),
+    ENTRY("Prayer Cards", MAIN_MENU_DESTINATION_COLLECTION,
+          PRAYER_COLLECTION_CARDS, 0),
+    ENTRY("St. Josemaría Escrivá", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 0),
+    ENTRY("Bl. Álvaro del Portillo", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 1),
+    ENTRY("Bl. Guadalupe Ortiz de Landázuri", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 2),
+    ENTRY("Ven. Isidoro Zorzano", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 3),
+    ENTRY("Ven. Montse Grases", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 4),
+    ENTRY("Dora del Hoyo", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 5),
+    ENTRY("Fr. Joseph Múzquiz", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 6),
+    ENTRY("Fr. José María Hernández Garnica", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 7),
+    ENTRY("Toni Zweifel", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 8),
+    ENTRY("Ernesto Cofiño", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 9),
+    ENTRY("Encarnita Ortega", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 10),
+    ENTRY("Tomás & Paquita Alvira", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 11),
+    ENTRY("Laura & Eduardo Ortiz de Landázuri", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 12),
+    ENTRY("Pedro Ballester", MAIN_MENU_DESTINATION_COLLECTION_PRAYER,
+          PRAYER_COLLECTION_CARDS, 13),
 };
 
 uint16_t main_menu_catalog_count(void) {
   return (uint16_t)(sizeof(s_entries) / sizeof(s_entries[0]));
+}
+
+bool main_menu_catalog_is_card(MainMenuEntryId entry_id) {
+  const MainMenuEntry *entry = main_menu_catalog_get(entry_id);
+  return entry && entry->destination == MAIN_MENU_DESTINATION_COLLECTION_PRAYER &&
+         entry->target == PRAYER_COLLECTION_CARDS;
 }
 
 const MainMenuEntry *main_menu_catalog_get(MainMenuEntryId entry_id) {

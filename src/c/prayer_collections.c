@@ -1,4 +1,5 @@
 #include "prayer_collections.h"
+#include "prayer_cards.h"
 
 #include <stddef.h>
 
@@ -172,13 +173,18 @@ static const Prayer s_confession_prayers[] = {
 };
 
 static const PrayerCollection s_collections[] = {
-    {
+    [PRAYER_COLLECTION_CARDS] = {
+        .name = "Prayer Cards",
+        .prayers = prayer_cards,
+        .prayer_count = PRAYER_CARD_COUNT,
+    },
+    [PRAYER_COLLECTION_DAILY] = {
         .name = "More Prayers",
         .prayers = s_daily_prayers,
         .prayer_count =
             (uint8_t)(sizeof(s_daily_prayers) / sizeof(s_daily_prayers[0])),
     },
-    {
+    [PRAYER_COLLECTION_CONFESSION] = {
         .name = "Confession",
         .prayers = s_confession_prayers,
         .prayer_count = (uint8_t)(sizeof(s_confession_prayers) /
