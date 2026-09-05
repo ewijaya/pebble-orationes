@@ -1,4 +1,14 @@
-# Previous Chapel campaign
+# Promotional assets
+
+[orationes-whatsapp-flyer-minimal.png](orationes-whatsapp-flyer-minimal.png)
+is the approved square WhatsApp flyer, shared on 2026-09-05 and retained here
+for reuse. It features “A moment for prayer.” and the realistic watch mockup.
+The original PNG is preserved without resizing or editing.
+
+App link to accompany the flyer:
+https://apps.repebble.com/orationes_9882f741750c43eb8309777e
+
+## Previous Chapel campaign
 
 The original campaign images were archived during the 2026-09-05 cleanup.
 The README now uses the approved realistic banner; current retained artwork and
