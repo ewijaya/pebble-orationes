@@ -43,6 +43,9 @@ metrics['pbw'] = bundle.stat().st_size
 assert metrics['pbw'] <= budgets['max_pbw_bytes']
 with zipfile.ZipFile(bundle) as archive:
     info = json.loads(archive.read('appinfo.json'))
+    package = json.loads((ROOT / 'package.json').read_text())
+    assert info['versionLabel'] == package['version']
+    assert info['uuid'] == package['pebble']['uuid']
     assert info['targetPlatforms'] == ['emery']
     assert info['watchapp']['watchface'] is False
     assert 'pebble-js-app.js' in archive.namelist()
@@ -57,5 +60,5 @@ run('git', 'diff', '--check')
 if args.screenshots:
     run('pebble', 'install', '--emulator', 'emery')
     run(sys.executable, 'scripts/capture_prayers.py', 'build/regression-screenshots',
-        '--compare', 'tests/screenshots')
+        '--compare', 'tests/screenshots/reader-structure')
 print('Release checks passed:', metrics)

@@ -28,12 +28,14 @@ For screenshot regression, install Pillow and run:
 
 ```sh
 python3 scripts/check_release.py --screenshots
-python3 scripts/qa_flows.py
+python3 scripts/qa_reading.py --full
 python3 scripts/qa_appearance.py
 ```
 
 This installs into the local Emery emulator and changes its shortcuts, theme, font
-size, and reminder preferences. It compares prayer/title pixels in five screens against the original
+size, and reminder preferences. It compares prayer/title pixels in five screens.
+Preces and Angelus use reviewed response-layout references in
+`tests/screenshots/reader-structure/`; the unchanged styled prayers use the original
 `tests/screenshots/` baselines. The rightmost four pixels and bottom 28 pixels are
 excluded because the edge progress indicator intentionally replaces the dotted
 bottom shadow. All other pixels must match exactly.
@@ -41,10 +43,13 @@ It does not install on a physical watch. Re-capture baselines only after reviewi
 an intentional visual change; never update them simply to make a failing test pass.
 Start without firmware alerts covering the app; restart the emulator if necessary.
 
-The flow script checks scrolling, double-Select exit, relaunch, Continue, font-size
-round trips, and Start again for both Preces and Aspirations. It also exercises
-category wrapping and pinning a prayer card into an empty slot, leaving screenshots
-for visual review under `build/qa-flows/`.
+The reader script checks section jumps, scrolling, both clamps, double-Select exit,
+font-size round trips, Start again, and reopening for six representative prayers in
+both sizes and appearances. It also exercises direct library opening, held options,
+pinning, independent recent places, Continue, Continue First, and persistence across
+relaunch, leaving screenshots under `build/qa-reading/`. Use `--entries`, `--case`,
+`--matrix-only`, or `--flows-only` for focused checks. The earlier `qa_flows.py`
+script describes the pre-v0.10 navigation and is not the current release gate.
 
 These checks do not publish, tag, or bump a version. Physical touch behavior and
 phone configuration in the actual Pebble app require separate device QA;
@@ -78,7 +83,10 @@ The watch loads and caches those 3,712 bytes on first use. Come, Holy Spirit and
 Litany of Humility use the same loading mechanism, generated from their literals in
 `prayers.c` by the same script and checked against the compiled strings in host
 tests. Their resources add 1,959 bytes including NUL terminators, so the
-resource budget is 32,000 bytes; the executable and heap limits are unchanged.
+resource budget was 32,000 bytes for v0.9.0. In v0.10.0, Aspirations also loads from
+a generated raw resource, with paragraph text, style, and spacing checked against
+the compiled C data. The resource budget is now 43,000 bytes; the executable and
+heap limits are unchanged.
 This keeps the text outside Pebble's 16-bit loaded/virtual image limit while
 preserving offline use.
 Link-time optimization retains `__pbl_app_info` explicitly; the bundle gate checks
@@ -93,7 +101,9 @@ schedule must succeed before enabling is saved.
 
 `durable_store.c` alternates checksummed, versioned records between two keys. It
 keeps the prior valid record during a failed or partial write. Settings use keys
-44/45 (schema 2); the reading position uses 42/43. Schema 1 settings at
+44/45 (schema 2). The eight-prayer reading history uses 48/49; the older single
+position at 42/43 is an upgrade fallback. Watch-local Continue First uses 46/47
+without changing the phone settings record. Schema 1 settings at
 40/41 are read on upgrade and retained untouched. Navigation Highlight is appended
 to the record and defaults to Classic, preserving the previous selection colors. Old settings keys 1–7, 20–24, and 30–36
 are read for migration and are never repurposed. Wakeups retain keys 10/11.
@@ -109,24 +119,31 @@ swap an already assigned shortcut with the edited slot's former entry.
 ## Navigation and reading
 
 `prayer_navigation_open(id, resume)` resolves catalog destinations for the main
-menu, collections, library, and reminder. `navigation_menu.c` supplies the new
-library and Continue menus with wrapping buttons, measured rows, and shared colors.
+menu, collections, library, and reminder. `navigation_menu.c` supplies library,
+Recent Prayers, and reading-options menus with wrapping buttons, measured rows,
+and shared colors.
 Existing menus can migrate to it as future changes need them.
 
-The seven favorites are followed by Continue when a saved position exists, All
-Prayers, and Settings. All Prayers groups every catalog entry into a category;
-an entry offers Open and Pin to main menu. Pinning lets the user choose a slot and
-returns to the main menu with that shortcut selected.
+Up to seven shortcuts are followed by Continue and Recent Prayers when a saved
+position exists, then All Prayers and Settings. Continue First optionally moves
+Continue above the shortcuts. All Prayers groups every catalog entry into a
+category; Select opens directly, while held Select opens Open/Pin options on
+release. Pinning lets the user choose a slot and returns to the main menu with
+that shortcut selected.
 
-Normal prayer openings start at the top. Continue offers Resume and Start again.
+Normal prayer openings start at the top. Continue and Recent Prayers resume
+directly. Select while reading offers Start again and Jump to section when available.
 Remember Place is on by default and can be turned off on the watch or phone; turning
-it off clears the saved position. Only the most recently closed supported prayer is
-remembered. Rosary mystery lists are not bookmarked.
+it off clears both old and new saved positions. Up to eight distinct supported
+prayers are remembered; a ninth evicts the oldest. Rosary mystery lists are not
+bookmarked.
 
-The reader stores a plain-text line boundary or styled paragraph index plus a
+The reader stores a source-byte boundary or styled paragraph index plus a
 fraction within that paragraph. It reconstructs the offset after a font-size change.
-Plain text retains its original TextLayer rendering; styled text retains its existing
-viewport renderer. Bookmarks are written on leaving the reader, rather than on every
+`prayer_document.c` segments multiline text into display paragraphs while preserving
+source-byte order, adding response insets and stanza spacing. It uses the shared
+styled viewport renderer; single-block plain text retains TextLayer rendering.
+Bookmarks are written on leaving the reader, rather than on every
 scroll event. Abrupt loss of power before leaving can therefore retain the previous
 checkpoint. The double-Select exit still saves through window cleanup.
 
@@ -142,3 +159,11 @@ rebuilds cannot confuse cached metrics by reusing an unloaded font address.
 and independence from every existing Title Accent in both appearances.
 
 See [the UI refresh record](ui-refresh.md) for the complete change and verification.
+
+## Release workflow
+
+Use [releasing.md](releasing.md) and `scripts/release.py` for approved releases.
+Prepare from a clean, versioned commit; freeze the tested PBW and evidence; obtain
+physical approval; publish only the frozen artifact to approved destinations;
+verify public versions and hashes before synchronizing availability documentation.
+The `.release/` directory is local evidence and must remain ignored.

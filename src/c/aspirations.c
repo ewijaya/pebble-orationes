@@ -1,5 +1,7 @@
 #include "aspirations.h"
 
+#ifndef PBL_PLATFORM_EMERY
+
 // Canonical source: user-provided aspirations.json (92 entries, in file order).
 // Only formatting is added: paragraph separation and parentheses around citations.
 // Internal id/latin/source metadata is not displayed.
@@ -974,3 +976,35 @@ const PrayerTranslation aspirations_translations[1] = {
                            sizeof(s_aspirations_paragraphs[0]),
     },
 };
+#else
+#include <pebble.h>
+#include "aspirations_resource.h"
+PrayerTranslation aspirations_translations[1] = {{.language = PRAYER_LANGUAGE_ENGLISH}};
+bool aspirations_load(void) {
+  if (aspirations_translations[0].paragraphs) return true;
+  ResHandle handle = resource_get_handle(RESOURCE_ID_ASPIRATIONS_TEXT);
+  const size_t bytes = resource_size(handle);
+  if (bytes != ASPIRATIONS_RESOURCE_BYTES) return false;
+  uint8_t *data = malloc(bytes);
+  PrayerParagraph *paragraphs = calloc(ASPIRATIONS_PARAGRAPH_COUNT, sizeof(*paragraphs));
+  if (!data || !paragraphs) { free(data); free(paragraphs); return false; }
+  if (resource_load(handle, data, bytes) != bytes) { free(data); free(paragraphs); return false; }
+  size_t offset = 0;
+  for (unsigned i = 0; i < ASPIRATIONS_PARAGRAPH_COUNT; ++i) {
+    if (offset + 3 > bytes) goto invalid;
+    paragraphs[i].style = data[offset++];
+    paragraphs[i].space_after = data[offset++];
+    paragraphs[i].text = (char *)data + offset;
+    while (offset < bytes && data[offset]) ++offset;
+    if (offset == bytes || paragraphs[i].style > PRAYER_PARAGRAPH_NOTE) goto invalid;
+    ++offset;
+  }
+  if (offset != bytes) goto invalid;
+  // Retained for the app lifetime, as with the existing prayer resources.
+  aspirations_translations[0].paragraphs = paragraphs;
+  aspirations_translations[0].paragraph_count = ASPIRATIONS_PARAGRAPH_COUNT;
+  return true;
+invalid:
+  free(data); free(paragraphs); return false;
+}
+#endif

@@ -37,7 +37,12 @@ for name, entry, size, appearance in [
     if args.compare:
         from PIL import Image, ImageChops
         actual = Image.open(target).convert('RGB')
-        expected = Image.open(args.compare / target.name).convert('RGB')
+        baseline = args.compare / target.name
+        # Only the intentional plain-text response layout has new references.
+        # Styled Aspirations/card baselines remain the original v0.9 pixels.
+        if not baseline.exists() and name in ('aspirations-large', 'aspirations-extra-dark', 'card-extra-dark'):
+            baseline = args.compare.parent / target.name
+        expected = Image.open(baseline).convert('RGB')
         # The new edge indicator replaces the old 20px dotted bottom shadow.
         # Keep original reference images and require exact prayer/title pixels elsewhere.
         region = (0, 0, 196, 200)

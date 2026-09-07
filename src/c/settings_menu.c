@@ -17,6 +17,7 @@ enum {
   SETTINGS_MENU_ITEM_NOON_REMINDER,
   SETTINGS_MENU_ITEM_MAIN_MENU,
   SETTINGS_MENU_ITEM_REMEMBER_PLACE,
+  SETTINGS_MENU_ITEM_CONTINUE_FIRST,
   SETTINGS_MENU_ITEM_COUNT,
 };
 
@@ -55,6 +56,7 @@ static const char *const s_settings_labels[] = {
     "Title Accent",   "Navigation Highlight",
     "Noon Reminder",  "Prayer Shortcuts",
     "Remember Place",
+    "Continue First",
 };
 
 static const char *settings_value(uint16_t row) {
@@ -84,6 +86,9 @@ static const char *settings_value(uint16_t row) {
     break;
   case SETTINGS_MENU_ITEM_REMEMBER_PLACE:
     value = app_settings_get_remember_place() ? "On" : "Off";
+    break;
+  case SETTINGS_MENU_ITEM_CONTINUE_FIRST:
+    value = app_settings_get_continue_first() ? "On" : "Off";
     break;
   }
   return value;
@@ -122,6 +127,8 @@ static void settings_select_click(MenuLayer *menu_layer,
     if (app_settings_set_remember_place(!app_settings_get_remember_place())) {
       phone_settings_send_current();
     }
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_CONTINUE_FIRST) {
+    app_settings_set_continue_first(!app_settings_get_continue_first());
   }
 }
 

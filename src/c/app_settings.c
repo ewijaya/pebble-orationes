@@ -20,6 +20,9 @@ enum {
 
 enum { SETTINGS_RECORD_KEY = 44, SETTINGS_SCHEMA = 2, LEGACY_RECORD_KEY = 40 };
 static AppSettings s_state;
+// Watch-local preference: separate banks preserve the watch/phone settings schema.
+enum { CONTINUE_FIRST_KEY = 46 };
+static uint8_t s_continue_first;
 static AppSettingsChangedHandler s_changed_handler;
 static bool s_daily_prayers_enabled;
 static bool s_confession_enabled;
@@ -132,6 +135,9 @@ static void load_main_menu_slots(void) {
 }
 
 void app_settings_init(void) {
+  s_continue_first = 0;
+  if (!durable_store_read(CONTINUE_FIRST_KEY, 1, &s_continue_first, sizeof(s_continue_first)) || s_continue_first > 1)
+    s_continue_first = 0;
   s_state = (AppSettings){0};
   s_state.remember_place = true;
   s_state.text_size = APP_TEXT_SIZE_LARGE;
@@ -242,6 +248,15 @@ bool app_settings_apply(const AppSettings *settings) {
   return true;
 }
 bool app_settings_get_remember_place(void) { return s_state.remember_place; }
+bool app_settings_get_continue_first(void) { return s_continue_first; }
+bool app_settings_set_continue_first(bool enabled) {
+  uint8_t value = enabled;
+  if (value == s_continue_first) return true;
+  if (!durable_store_write(CONTINUE_FIRST_KEY, 1, &value, sizeof(value))) return false;
+  s_continue_first = value;
+  if (s_changed_handler) s_changed_handler();
+  return true;
+}
 bool app_settings_set_remember_place(bool enabled) {
   AppSettings updated = s_state;
   updated.remember_place = enabled;

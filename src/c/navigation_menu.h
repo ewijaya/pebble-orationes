@@ -7,9 +7,11 @@ struct NavigationMenu {
   Window *window;
   MenuLayer *layer;
   const char *title;
+  const char *hint;
   uint16_t (*count)(void *context);
   const char *(*label)(uint16_t row, void *context);
   void (*select)(uint16_t row, void *context);
+  void (*long_select)(uint16_t row, void *context);
   void *context;
   UiSymbol (*icon)(uint16_t row);
 };

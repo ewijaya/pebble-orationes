@@ -14,6 +14,8 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 ## What's included
 
+This checkout documents v0.10.0. See [Install](#install) for verified public availability.
+
 - **Preces** — complete Latin text in a large-print, scrollable view.
 - **Holy Rosary** — Today's Mysteries, All Mysteries, and the Litany of Loreto. The watch chooses Joyful (Mon/Sat), Sorrowful (Tue/Fri), Glorious (Wed/Sun), or Luminous (Thu) mysteries from its local weekday.
 - **Regina Caeli** — English text in a scrollable view.
@@ -28,11 +30,13 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
 
-**Continue** offers **Resume** or **Start again** for your last saved prayer. Ordinary prayer openings start at the top. **Remember Place** can be disabled in watch or phone Settings. **All Prayers** lets you browse five categories and open any prayer or pin it to the main menu. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
+**Continue** opens your last saved prayer directly. **Recent Prayers** keeps separate reading places for up to eight prayers. Ordinary library and shortcut openings start at the top. **Remember Place** can be disabled in watch or phone Settings; doing so clears the saved places. The watch-local **Continue First** setting can place Continue above your shortcuts and is Off by default.
 
-**New in v0.9.0:** Come, Holy Spirit and Litany of Humility are available in All Prayers → Daily Prayer and as watch or phone shortcuts. The Litany has a concise, small-print attribution. See [release verification](docs/verification.md).
+In **All Prayers**, select a prayer to open it directly; hold Select and release for Open/Pin options. While reading, Select opens **Reading Options**, with **Start again** and **Jump to section** where sections are available. Responses and stanzas have clearer spacing without changing prayer wording. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
-Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
+**New in v0.10.0:** direct opening and Continue, section jumps, response/stanza formatting, eight-prayer history, optional Continue First, and a one-candidate release workflow. See the [reading refresh](docs/reading-refresh.md), [release notes](docs/releases/0.10.0.md), and [release workflow](docs/releasing.md).
+
+Version 0.9.0 added Come, Holy Spirit and Litany of Humility, including its concise, small-print attribution. See [release verification](docs/verification.md). Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
 

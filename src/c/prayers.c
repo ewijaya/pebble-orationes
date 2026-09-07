@@ -689,6 +689,7 @@ const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
     const PrayerTranslation *translation = &prayer->translations[index];
     if (translation->language == language) {
 #ifdef PBL_PLATFORM_EMERY
+      if (translation == aspirations_translations && !aspirations_load()) return NULL;
       static const struct {
         PrayerTranslation *translation;
         uint32_t resource_id;

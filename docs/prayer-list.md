@@ -2,11 +2,16 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.9.0**. It lists what is available rather than reproducing the prayer texts. [Download v0.9.0](https://github.com/ewijaya/pebble-orationes/releases/tag/v0.9.0) · [Back to README](../README.md)
+This directory describes the library in **v0.10.0**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
-configuring a shortcut. Each entry offers **Open** and **Pin to main menu**.
-**Continue** reopens the last saved reading place, with a **Start again** option.
+configuring a shortcut. Select a prayer to open it directly; hold Select and
+release for **Open** and **Pin to main menu** options. **Continue** opens the last
+saved place directly; **Recent Prayers** remembers separate places for up to eight
+prayers. While reading, Select offers **Start again** and **Jump to section** where
+available. **Settings → Continue First** optionally puts Continue above shortcuts.
+The [reading refresh](reading-refresh.md) does not add, remove, or rewrite prayers
+in this directory. Disabling **Remember Place** clears the saved places.
 
 ## Choose what appears on your watch
 

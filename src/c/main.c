@@ -73,41 +73,47 @@ static bool has_continue(void) {
   ReadingPosition position;
   return reading_position_get(&position);
 }
+static uint16_t continue_row(void) {
+  return app_settings_get_continue_first() ? 0 : configured_entry_count();
+}
+static uint16_t shortcut_row(uint16_t row) {
+  return row - (has_continue() && app_settings_get_continue_first() ? 1 : 0);
+}
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
                                   void *context) {
-  return configured_entry_count() + MAIN_MENU_FIXED_ITEMS + (has_continue() ? 1 : 0);
+  return configured_entry_count() + MAIN_MENU_FIXED_ITEMS + (has_continue() ? 2 : 0);
 }
 
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
   uint16_t row = cell_index->row;
   const uint16_t entry_count = configured_entry_count();
-  if (row < entry_count) {
+  const bool resume = has_continue();
+  if (resume && row == continue_row()) {
+    accessible_menu_draw_detail(ctx, cell_layer, "Continue",
+                                saved_prayer_name(), UI_SYMBOL_BOOKMARK);
+    return;
+  }
+  if (shortcut_row(row) < entry_count) {
     const MainMenuEntry *entry =
-        main_menu_catalog_get(configured_entry_for_row(row));
+        main_menu_catalog_get(configured_entry_for_row(shortcut_row(row)));
     if (entry) {
       accessible_menu_draw_row(ctx, cell_layer, entry->name);
       return;
     }
   }
 
-  row -= entry_count;
-  const bool resume = has_continue();
-  if (resume && row == 0) {
-    accessible_menu_draw_detail(ctx, cell_layer, "Continue",
-                                saved_prayer_name(), UI_SYMBOL_BOOKMARK);
-    return;
-  }
+  row -= entry_count + (resume ? 1 : 0);
   accessible_menu_draw_row(ctx, cell_layer,
-      resume && row == 0 ? "Continue" : row == (resume ? 1 : 0) ? "All Prayers" : "Settings");
+      resume && row == 0 ? "Recent Prayers" : row == (resume ? 1 : 0) ? "All Prayers" : "Settings");
 }
 
 static int16_t menu_get_cell_height(MenuLayer *menu_layer,
                                     MenuIndex *cell_index, void *context) {
-  if (has_continue() && cell_index->row == configured_entry_count())
+  if (has_continue() && cell_index->row == continue_row())
     return accessible_menu_detail_height(
         menu_layer, "Continue", saved_prayer_name(), UI_SYMBOL_BOOKMARK);
-  const MainMenuEntryId entry_id = configured_entry_for_row(cell_index->row);
+  const MainMenuEntryId entry_id = configured_entry_for_row(shortcut_row(cell_index->row));
   return entry_id != MAIN_MENU_ENTRY_NONE
              ? accessible_menu_wrapped_row_height(
                    menu_layer, main_menu_catalog_get(entry_id)->name)
@@ -118,13 +124,14 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
                               void *context) {
   uint16_t row = cell_index->row;
   const uint16_t entry_count = configured_entry_count();
-  if (row < entry_count) {
-    prayer_navigation_open(configured_entry_for_row(row), false);
+  if (has_continue() && row == continue_row()) { prayer_library_continue(); return; }
+  if (shortcut_row(row) < entry_count) {
+    prayer_navigation_open(configured_entry_for_row(shortcut_row(row)), false);
     return;
   }
-  row -= entry_count;
+  row -= entry_count + (has_continue() ? 1 : 0);
   if (has_continue()) {
-    if (row == 0) { prayer_library_continue(); return; }
+    if (row == 0) { prayer_library_recent(); return; }
     --row;
   }
   if (row == 0) prayer_library_show();
@@ -258,6 +265,7 @@ static void shortcut_saved_handler(uint8_t slot_index) {
   // Empty slots are hidden. Count preceding visible entries to locate the
   // edited shortcut (or the next entry/Settings when this slot was cleared).
   uint16_t row = 0;
+  if (has_continue() && app_settings_get_continue_first()) ++row;
   for (uint8_t slot = 0; slot < slot_index; ++slot) {
     if (app_settings_get_main_menu_slot(slot) != MAIN_MENU_ENTRY_NONE) {
       ++row;

@@ -9,6 +9,9 @@ typedef struct {
   uint8_t entry;
 } ReadingPosition;
 bool reading_position_get(ReadingPosition *position);
+enum { READING_RECENT_COUNT = 8 };
+bool reading_position_get_entry(uint8_t entry, ReadingPosition *position);
+bool reading_position_recent(uint8_t index, ReadingPosition *position);
 bool reading_position_save(const ReadingPosition *position);
 void reading_position_clear(void);
 uint16_t reading_position_fraction(int32_t offset, int32_t start, int32_t end);

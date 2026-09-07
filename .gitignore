@@ -1,5 +1,7 @@
 # Pebble build output
 /build/
+/.release/
+__pycache__/
 /.lock-waf*
 /node_modules/
 

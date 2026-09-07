@@ -235,6 +235,8 @@ static void test_packaged_prayers(void) {
   }
 }
 int main(void) {
+  extern void run_reading_tests(void);
+  run_reading_tests();
   test_packaged_prayers();
   extern void run_phone_tests(void);
   test_settings();

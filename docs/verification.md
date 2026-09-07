@@ -1,5 +1,25 @@
 # Release verification
 
+## v0.10.0 — reading and navigation refresh
+
+The [release notes](releases/0.10.0.md) describe direct opening, clearer response
+and stanza layout, section jumps, eight-prayer history, and optional Continue
+First. The [reading refresh record](reading-refresh.md) preserves development
+test evidence separately from versioned release evidence. Prayer literals,
+Rosary data, liturgical calendar, cards, and collection content are unchanged
+from v0.9.0; only display structure and Aspirations resource packaging change.
+
+The versioned release uses the [one-candidate workflow](releasing.md). Its local
+`.release/0.10.0/manifest.json` records the source commit, exact PBW SHA-256 and
+bytes, build metrics, intended destinations, and physical installation. Emulator
+and screenshot evidence accompany the candidate. Installation and test success
+are not physical approval or proof of public publication.
+
+After selected public destinations verify, the workflow writes
+`docs/release-status.json` and updates the README availability line. Refer to
+[Install](../README.md#install) for that verified status. Existing store artwork
+is preserved; this release does not request screenshot replacement.
+
 ## v0.9.0 — 2026-09-07
 
 Come, Holy Spirit and Litany of Humility were transcribed from the user's two

@@ -6,13 +6,11 @@
 #include "reading_position.h"
 #include <stdio.h>
 
-static NavigationMenu s_categories, s_entries, s_actions, s_slots, s_continue;
+static NavigationMenu s_categories, s_entries, s_actions, s_slots, s_recent;
 static uint8_t s_category;
 static MainMenuEntryId s_entry;
-static MainMenuEntryId s_resume_entry;
 static SettingsShortcutSavedHandler s_saved_handler;
 static char s_slot_label[128];
-static char s_resume_label[128];
 
 static UiSymbol category_icon(uint16_t row) {
   static const UiSymbol icons[] = {UI_SYMBOL_SUN, UI_SYMBOL_CROSS,
@@ -48,8 +46,11 @@ static const char *action_label(uint16_t row, void *context) {
   return row == 0 ? "Open" : "Pin to main menu";
 }
 static void select_entry(uint16_t row, void *context) {
+  prayer_navigation_open(entry_at(row), false);
+}
+static void entry_options(uint16_t row, void *context) {
   s_entry = entry_at(row);
-  s_actions.title = "Prayer Options";
+  s_actions.title = main_menu_catalog_get(s_entry)->name;
   navigation_menu_show(&s_actions);
 }
 static uint16_t slot_count(void *context) { return APP_MAIN_MENU_SLOT_COUNT; }
@@ -87,35 +88,44 @@ static void select_slot(uint16_t row, void *context) {
   navigation_menu_hide(&s_categories);
   if (s_saved_handler) s_saved_handler(row);
 }
-static const char *continue_label(uint16_t row, void *context) {
-  return row == 0 ? s_resume_label : "Start again";
+static uint16_t recent_count(void *context) {
+  uint16_t count = 0;
+  ReadingPosition position;
+  while (count < READING_RECENT_COUNT && reading_position_recent(count, &position)) ++count;
+  return count;
 }
-static void select_continue(uint16_t row, void *context) {
-  prayer_navigation_open(s_resume_entry, row == 0);
+static const char *recent_label(uint16_t row, void *context) {
+  ReadingPosition position;
+  return reading_position_recent(row, &position) ? main_menu_catalog_get(position.entry)->name : "";
+}
+static void select_recent(uint16_t row, void *context) {
+  ReadingPosition position;
+  if (reading_position_recent(row, &position)) prayer_navigation_open(position.entry, true);
 }
 void prayer_library_init(SettingsShortcutSavedHandler saved_handler) {
   s_saved_handler = saved_handler;
   navigation_menu_init(&s_categories, "All Prayers", category_count, category_label, select_category, NULL);
   s_categories.icon = category_icon;
   navigation_menu_init(&s_entries, "Prayers", entry_count, entry_label, select_entry, NULL);
+  s_entries.long_select = entry_options;
+  s_entries.hint = "Select: open / Hold: options";
   navigation_menu_init(&s_actions, "Prayer Options", two_rows, action_label, select_action, NULL);
   navigation_menu_init(&s_slots, "Choose Slot", slot_count, slot_label, select_slot, NULL);
-  navigation_menu_init(&s_continue, "Continue", two_rows, continue_label, select_continue, NULL);
+  navigation_menu_init(&s_recent, "Recent Prayers", recent_count, recent_label, select_recent, NULL);
 }
 void prayer_library_show(void) { navigation_menu_show(&s_categories); }
 void prayer_library_continue(void) {
   ReadingPosition position;
   if (!reading_position_get(&position)) return;
-  s_resume_entry = (MainMenuEntryId)position.entry;
-  snprintf(s_resume_label, sizeof(s_resume_label), "Resume: %s", main_menu_catalog_get(s_resume_entry)->name);
-  navigation_menu_show(&s_continue);
+  prayer_navigation_open(position.entry, true);
 }
+void prayer_library_recent(void) { navigation_menu_show(&s_recent); }
 void prayer_library_refresh(void) {
-  if (!app_settings_get_remember_place()) navigation_menu_hide(&s_continue);
-  NavigationMenu *menus[] = {&s_categories, &s_entries, &s_actions, &s_slots, &s_continue};
+  if (!app_settings_get_remember_place()) navigation_menu_hide(&s_recent);
+  NavigationMenu *menus[] = {&s_categories, &s_entries, &s_actions, &s_slots, &s_recent};
   for (unsigned i = 0; i < sizeof(menus) / sizeof(menus[0]); ++i) navigation_menu_refresh(menus[i]);
 }
 void prayer_library_deinit(void) {
-  NavigationMenu *menus[] = {&s_slots, &s_actions, &s_entries, &s_categories, &s_continue};
+  NavigationMenu *menus[] = {&s_slots, &s_actions, &s_entries, &s_categories, &s_recent};
   for (unsigned i = 0; i < sizeof(menus) / sizeof(menus[0]); ++i) navigation_menu_deinit(menus[i]);
 }

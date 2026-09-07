@@ -64,6 +64,8 @@ bool app_settings_validate(const AppSettings *settings);
 bool app_settings_apply(const AppSettings *settings);
 bool app_settings_get_remember_place(void);
 bool app_settings_set_remember_place(bool enabled);
+bool app_settings_get_continue_first(void);
+bool app_settings_set_continue_first(bool enabled);
 
 void app_settings_init(void);
 AppTextSize app_settings_get_text_size(void);

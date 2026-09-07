@@ -5,6 +5,9 @@
 #include <limits.h>
 #include <string.h>
 #include "reading_position.h"
+#include "prayer_document.h"
+#include "navigation_menu.h"
+#include <stdio.h>
 
 #include "app_settings.h"
 #include "app_theme.h"
@@ -42,10 +45,18 @@ static int32_t s_styled_content_height;
 static MainMenuEntryId s_entry_id;
 static bool s_resume;
 static bool s_rebuilding;
+static PrayerDocument s_document;
+static const PrayerTranslation *s_translation;
+static PrayerTranslation s_translation_copy;
+static NavigationMenu s_options, s_sections;
+static char s_section_label[80];
 static bool capture_position(ReadingPosition *position);
 static void restore_position(const ReadingPosition *position);
 static void save_position(void);
 static void restore_saved_position(void);
+static int16_t paragraph_indent(const PrayerParagraph *paragraph) {
+  return paragraph->style == PRAYER_PARAGRAPH_RESPONSE ? 12 : 0;
+}
 
 // ScrollLayer uses int16 coordinates. Long styled documents keep int32 layout
 // positions and map their range onto the native range, drawing in the viewport.
@@ -131,7 +142,7 @@ static int32_t measure_styled_body(int16_t width) {
     const PrayerParagraph *paragraph = &s_paragraphs[i];
     const GSize size = graphics_text_layout_get_content_size(
         paragraph->text, paragraph_font(paragraph),
-        GRect(0, 0, width, BODY_LAYOUT_HEIGHT), GTextOverflowModeWordWrap,
+        GRect(0, 0, width - paragraph_indent(paragraph), BODY_LAYOUT_HEIGHT), GTextOverflowModeWordWrap,
         GTextAlignmentLeft);
     s_paragraph_heights[i] = size.h;
     total += size.h;
@@ -158,9 +169,14 @@ static void styled_body_update(Layer *layer, GContext *ctx) {
       break;
     }
     if (screen_y + height >= 0) {
+      const int16_t indent = paragraph_indent(paragraph);
+      if (indent) {
+        graphics_context_set_stroke_color(ctx, app_theme_foreground_color());
+        graphics_draw_line(ctx, GPoint(2, screen_y + 8), GPoint(2, screen_y + height - 2));
+      }
       graphics_draw_text(ctx, paragraph->text,
                          paragraph_font(paragraph),
-                         GRect(0, (int16_t)screen_y, bounds.size.w, height),
+                         GRect(indent, (int16_t)screen_y, bounds.size.w - indent, height),
                          GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     }
     y += height + (paragraph->space_after ? PARAGRAPH_GAP : 0);
@@ -268,6 +284,10 @@ static void exit_app_multi_click_handler(ClickRecognizerRef recognizer,
   window_stack_pop_all(false);
 }
 
+static void reader_options(ClickRecognizerRef recognizer, void *context) {
+  stop_fast_scrolling();
+  navigation_menu_show(&s_options);
+}
 static void prayer_click_config_provider(void *context) {
   (void)context;
 
@@ -287,6 +307,7 @@ static void prayer_click_config_provider(void *context) {
 
   window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, 0, true,
                                exit_app_multi_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, reader_options);
 }
 
 static void draw_progress(Layer *layer, GContext *ctx) {
@@ -311,6 +332,13 @@ static void draw_progress(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(0, y, 4, thumb), 1, GCornersAll);
 }
 static void window_load(Window *window) {
+  if (prayer_document_build(&s_document, s_entry_id, s_translation)) {
+    s_paragraphs = s_document.paragraphs;
+    s_paragraph_count = s_document.count;
+  } else {
+    s_paragraphs = s_translation->paragraphs;
+    s_paragraph_count = s_translation->paragraph_count;
+  }
   Layer *window_layer = window_get_root_layer(window);
   const GRect bounds = layer_get_bounds(window_layer);
   const int16_t text_width = bounds.size.w - (2 * HORIZONTAL_MARGIN);
@@ -409,6 +437,9 @@ static void window_unload(Window *window) {
   free(s_paragraph_heights);
   s_paragraph_heights = NULL;
   s_styled_content_height = 0;
+  prayer_document_free(&s_document);
+  s_paragraphs = NULL;
+  s_paragraph_count = 0;
 
   if (s_body_layer) {
     text_layer_destroy(s_body_layer);
@@ -425,7 +456,58 @@ static void window_unload(Window *window) {
   s_scroll_layer = NULL;
 }
 
+static uint16_t section_at(uint16_t row) {
+  for (uint16_t i = 0; i < s_paragraph_count; ++i)
+    if (prayer_document_section(s_entry_id, s_paragraphs, s_paragraph_count, i) && row-- == 0) return i;
+  return 0;
+}
+static uint16_t section_count(void *context) {
+  if (!s_styled_body_layer) return 0;
+  uint16_t count = 0;
+  for (uint16_t i = 0; i < s_paragraph_count; ++i)
+    if (prayer_document_section(s_entry_id, s_paragraphs, s_paragraph_count, i)) ++count;
+  return count;
+}
+static const char *section_label(uint16_t row, void *context) {
+  if (s_entry_id == MAIN_MENU_ENTRY_ASPIRATIONS) {
+    unsigned last = (row + 1) * 10;
+    snprintf(s_section_label, sizeof(s_section_label), "Aspirations %u-%u", row * 10 + 1, last > 92 ? 92 : last);
+  } else {
+    const char *text = s_paragraphs[section_at(row)].text;
+    size_t length = strlen(text);
+    if (length > 55) {
+      length = 55;
+      while (((unsigned char)text[length] & 0xc0) == 0x80) --length;
+    }
+    snprintf(s_section_label, sizeof(s_section_label), "%.*s%s", (int)length, text, text[length] ? "..." : "");
+  }
+  return s_section_label;
+}
+static void select_section(uint16_t row, void *context) {
+  ReadingPosition position = {.entry = s_entry_id, .kind = READING_POSITION_STYLED, .anchor = section_at(row)};
+  if (s_document.anchors) {
+    position.kind = READING_POSITION_PLAIN;
+    position.anchor = s_document.anchors[position.anchor];
+  }
+  restore_position(&position);
+  navigation_menu_hide(&s_sections);
+  navigation_menu_hide(&s_options);
+}
+static uint16_t option_count(void *context) { return section_count(NULL) > 1 ? 2 : 1; }
+static const char *option_label(uint16_t row, void *context) {
+  return section_count(NULL) > 1 && row == 0 ? "Jump to section" : "Start again";
+}
+static void select_option(uint16_t row, void *context) {
+  if (section_count(NULL) > 1 && row == 0) navigation_menu_show(&s_sections);
+  else {
+    ReadingPosition top = {0};
+    restore_position(&top);
+    navigation_menu_hide(&s_options);
+  }
+}
 void prayer_screen_init(void) {
+  navigation_menu_init(&s_options, "Reading Options", option_count, option_label, select_option, NULL);
+  navigation_menu_init(&s_sections, "Jump to section", section_count, section_label, select_section, NULL);
   s_window = window_create();
   window_set_background_color(s_window, GColorWhite);
   window_set_window_handlers(s_window, (WindowHandlers){
@@ -435,6 +517,8 @@ void prayer_screen_init(void) {
 }
 
 void prayer_screen_deinit(void) {
+  navigation_menu_deinit(&s_sections);
+  navigation_menu_deinit(&s_options);
   window_destroy(s_window);
   s_window = NULL;
 }
@@ -447,6 +531,9 @@ void prayer_screen_show_entry(MainMenuEntryId entry_id, const char *title,
   s_resume = resume;
   s_title = title;
   s_text = translation->text;
+  // Callers may pass a stack-local translation (e.g. Litany of Loreto).
+  s_translation_copy = *translation;
+  s_translation = &s_translation_copy;
   s_paragraphs = translation->paragraph_count ? translation->paragraphs : NULL;
   s_paragraph_count = s_paragraphs ? translation->paragraph_count : 0;
   window_stack_push(s_window, true);
@@ -483,8 +570,9 @@ static bool capture_position(ReadingPosition *position) {
       const int32_t end = start + s_paragraph_heights[i] +
           (s_paragraphs[i].space_after ? PARAGRAPH_GAP : 0);
       if (y < end || i + 1 == s_paragraph_count) {
-        position->kind = READING_POSITION_STYLED;
-        position->anchor = i;
+        position->kind = s_document.anchors ? READING_POSITION_PLAIN : READING_POSITION_STYLED;
+        position->anchor = s_document.anchors ? s_document.anchors[i] : i;
+        if (position->anchor == UINT32_MAX) { position->kind = READING_POSITION_TOP; position->anchor = 0; }
         position->fraction = reading_position_fraction(y, start, end);
         return true;
       }
@@ -520,13 +608,25 @@ static bool capture_position(ReadingPosition *position) {
 }
 static void restore_position(const ReadingPosition *position) {
   int32_t y = 0;
-  if (position->kind == READING_POSITION_STYLED && s_styled_body_layer && position->anchor < s_paragraph_count) {
+  uint32_t paragraph_index = position->anchor;
+  if (s_document.anchors && position->kind == READING_POSITION_PLAIN) {
+    paragraph_index = 0;
+    for (uint16_t i = 0; i < s_paragraph_count; ++i)
+      if (s_document.anchors[i] != UINT32_MAX && s_document.anchors[i] <= position->anchor) paragraph_index = i;
+  }
+  if (s_document.anchors && position->kind == READING_POSITION_STYLED && s_entry_id == MAIN_MENU_ENTRY_LITANY_OF_HUMILITY) {
+    // v0.9 stored a fraction of the single body paragraph, after its note.
+    y = position->anchor ? s_title_height + BODY_TOP_MARGIN + s_paragraph_heights[0] + PARAGRAPH_GAP +
+        reading_position_offset(position->fraction, 0, s_styled_content_height - s_title_height - BODY_TOP_MARGIN - s_paragraph_heights[0] - PARAGRAPH_GAP - BOTTOM_MARGIN) : 0;
+  } else if ((position->kind == READING_POSITION_STYLED ||
+              (position->kind == READING_POSITION_PLAIN && s_document.anchors)) &&
+             s_styled_body_layer && paragraph_index < s_paragraph_count) {
     int32_t start = 0;
-    for (uint32_t i = 0; i < position->anchor; ++i) {
+    for (uint32_t i = 0; i < paragraph_index; ++i) {
       start += s_paragraph_heights[i] + (s_paragraphs[i].space_after ? PARAGRAPH_GAP : 0);
     }
-    const int32_t end = start + s_paragraph_heights[position->anchor] +
-        (s_paragraphs[position->anchor].space_after ? PARAGRAPH_GAP : 0);
+    const int32_t end = start + s_paragraph_heights[paragraph_index] +
+        (s_paragraphs[paragraph_index].space_after ? PARAGRAPH_GAP : 0);
     y = s_title_height + BODY_TOP_MARGIN + reading_position_offset(position->fraction, start, end);
   } else if (position->kind == READING_POSITION_PLAIN && s_body_layer && s_text) {
     const size_t length = strlen(s_text);
@@ -553,7 +653,7 @@ static void save_position(void) {
 static void restore_saved_position(void) {
   if (!s_resume) return;
   ReadingPosition position;
-  if (reading_position_get(&position) && position.entry == s_entry_id) restore_position(&position);
+  if (reading_position_get_entry(s_entry_id, &position)) restore_position(&position);
   s_resume = false;
 }
 void prayer_screen_refresh(void) {
@@ -565,4 +665,6 @@ void prayer_screen_refresh(void) {
   window_load(s_window);
   s_rebuilding = false;
   if (captured) restore_position(&position);
+  navigation_menu_refresh(&s_options);
+  navigation_menu_refresh(&s_sections);
 }

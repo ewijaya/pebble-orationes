@@ -1,5 +1,6 @@
 #include "navigation_menu.h"
 #include "accessible_menu.h"
+#include "app_theme.h"
 
 static uint16_t count_rows(MenuLayer *layer, uint16_t section, void *context) {
   NavigationMenu *menu = context;
@@ -24,11 +25,22 @@ static void draw_row(GContext *ctx, const Layer *cell, MenuIndex *index, void *c
 static int16_t header_height(MenuLayer *layer, uint16_t section,
                              void *context) {
   NavigationMenu *menu = context;
-  return accessible_menu_get_header_height(layer, section, (void *)menu->title);
+  return accessible_menu_get_header_height(layer, section, (void *)menu->title) + (menu->hint ? 18 : 0);
 }
 static void draw_header(GContext *ctx, const Layer *cell, uint16_t section, void *context) {
   NavigationMenu *menu = context;
-  accessible_menu_draw_header(ctx, cell, section, (void *)menu->title);
+  if (menu->hint) {
+    const GRect bounds = layer_get_bounds(cell);
+    graphics_context_set_fill_color(ctx, app_theme_title_background_color());
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    graphics_context_set_text_color(ctx, app_theme_title_foreground_color());
+    graphics_draw_text(ctx, menu->title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
+                      GRect(8, 0, bounds.size.w - 16, bounds.size.h - 18),
+                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
+    graphics_draw_text(ctx, menu->hint, fonts_get_system_font(FONT_KEY_GOTHIC_14),
+                      GRect(4, bounds.size.h - 21, bounds.size.w - 8, 18),
+                      GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+  } else accessible_menu_draw_header(ctx, cell, section, (void *)menu->title);
 }
 static void move(NavigationMenu *menu, bool up) {
   const uint16_t count = menu->count(menu->context);
@@ -44,10 +56,19 @@ static void select(ClickRecognizerRef recognizer, void *context) {
   const uint16_t row = menu_layer_get_selected_index(menu->layer).row;
   if (row < menu->count(menu->context)) menu->select(row, menu->context);
 }
+static void long_select(ClickRecognizerRef recognizer, void *context) {
+  NavigationMenu *menu = context;
+  const uint16_t row = menu_layer_get_selected_index(menu->layer).row;
+  if (row < menu->count(menu->context) && menu->long_select)
+    menu->long_select(row, menu->context);
+}
 static void clicks(void *context) {
   window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, up);
   window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, down);
   window_single_click_subscribe(BUTTON_ID_SELECT, select);
+  NavigationMenu *menu = context;
+  if (menu->long_select)
+    window_long_click_subscribe(BUTTON_ID_SELECT, 600, NULL, long_select);
 }
 static void load(Window *window) {
   NavigationMenu *menu = window_get_user_data(window);
