@@ -40,3 +40,21 @@ route, inspect its screenshot/options before deciding on removal and re-addition
 Confirm on the actual phone that the image is back and Clay still shows
 **Orationes v0.10.1** and **Continue First**. API propagation alone does not prove
 that a sideloaded local entry or the phone's cache has changed.
+
+### Open the native store listing from a normal HTTPS link
+
+Send [the phone helper page](https://ewijaya.github.io/pebble-orationes/) to the
+phone, open it in Android Chrome, and tap **Open in Pebble**. The page uses an
+explicit user-tapped Android intent, with a direct `pebble://` link as an
+alternative. Pasting a custom scheme into Chrome or WhatsApp is not a reliable
+way to launch it; [Chrome documents the user-gesture requirement](https://developer.chrome.com/docs/android/intents).
+
+Both links specify the RePebble API as the `source`, so the mobile app opens
+the intended store entry rather than defaulting to the older Rebble feed.
+The [official deep-link handler](https://github.com/coredevices/mobileapp/blob/d52101ad3d8940c5aa392d6f224e774cb6f5ce84/pebble/src/commonMain/kotlin/coredevices/pebble/PebbleDeepLinkHandler.kt)
+routes this to a store listing without the local locker UUID. This is a recovery
+attempt, not proof that the phone's artwork has been restored. Confirm on the
+actual phone before recording success.
+
+The helper is a static, script-free page in `site/`. Its dedicated Pages workflow
+publishes only that directory; it does not build, install, or release the PBW.
