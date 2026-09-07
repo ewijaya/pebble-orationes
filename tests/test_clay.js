@@ -36,7 +36,15 @@ items['restore-main-menu'].click();
 catalog.defaults.forEach(function(value, index) { assert.equal(Number(items['MainMenuSlot' + (index + 1)].get()), value); });
 items.MainMenuSlot1.set('2');
 assert.equal(Number(items.MainMenuSlot2.get()), 1); // Previous values reset with defaults.
-assert.equal(catalog.options.length, 39);
+assert.equal(catalog.options.length, 41);
+assert.deepStrictEqual(catalog.options.slice(-2), [
+  {label: 'Come, Holy Spirit', value: '39'},
+  {label: 'Litany of Humility', value: '40'}
+]);
+items.MainMenuSlot6.set('39');
+items.MainMenuSlot7.set('40');
+items.MainMenuSlot6.set('40');
+assert.equal(Number(items.MainMenuSlot7.get()), 39);
 console.log('Phone shortcut swap and defaults regression tests passed');
 
 [0,1].forEach(function(appearance) {

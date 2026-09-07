@@ -165,6 +165,14 @@ module.exports = {
     {
       "label": "Card: Pedro Ballester",
       "value": "38"
+    },
+    {
+      "label": "Come, Holy Spirit",
+      "value": "39"
+    },
+    {
+      "label": "Litany of Humility",
+      "value": "40"
     }
   ]
 };

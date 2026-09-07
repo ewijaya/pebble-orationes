@@ -72,10 +72,15 @@ approved source and explicitly review the baseline update. Canonical local files
 
 Preces is packaged verbatim in `resources/data/preces.bin`, including its NUL
 terminator. Run `python3 scripts/generate_text_resource.py` after an authorized
-Preces edit; both build and host checks reject a stale resource. A host test compares
+resource-backed prayer edit; both build and host checks reject stale resources. A host test compares
 the resource against the C compiler's original string, not merely a second parser.
-The watch loads and caches those 3,712 bytes on first use. This keeps the text
-outside Pebble's 16-bit loaded/virtual image limit while preserving offline use.
+The watch loads and caches those 3,712 bytes on first use. Come, Holy Spirit and
+Litany of Humility use the same loading mechanism, generated from their literals in
+`prayers.c` by the same script and checked against the compiled strings in host
+tests. Their resources add 1,959 bytes including NUL terminators, so the
+resource budget is 32,000 bytes; the executable and heap limits are unchanged.
+This keeps the text outside Pebble's 16-bit loaded/virtual image limit while
+preserving offline use.
 Link-time optimization retains `__pbl_app_info` explicitly; the bundle gate checks
 its signature and image-size fields before any install.
 

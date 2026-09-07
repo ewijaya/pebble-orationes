@@ -19,6 +19,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 - **Regina Caeli** — English text in a scrollable view.
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
 - **Memorare** — English text in a scrollable view.
+- **Come, Holy Spirit** and **Litany of Humility** — English texts under All Prayers → Daily Prayer, also available as individual shortcuts.
 - **More Prayers** *(optional)* — prayers for Mental Prayer, Visit & Communion, Before Work, and Night Examination.
 - **Confession** *(optional)* — an examination of conscience, Act of Contrition, and prayers before and after Confession.
 - **Prayer library** — Psalm 50 (51), Psalm 2, Acceptance of Death, Prayer for Vocations, Blessed Be Your Purity, and the Canticle of the Three Children.
@@ -29,7 +30,7 @@ The default menu stays focused on the five core entries. On the watch or in the 
 
 **Continue** offers **Resume** or **Start again** for your last saved prayer. Ordinary prayer openings start at the top. **Remember Place** can be disabled in watch or phone Settings. **All Prayers** lets you browse five categories and open any prayer or pin it to the main menu. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
-**Fixed in v0.8.1:** Save Settings in the phone's Clay configuration page now sends changes to the watch correctly. Pending changes also resume after restarting Orationes. Verified with MyApp and a physical Pebble Time 2; see [release verification](docs/verification.md).
+**New in v0.9.0:** Come, Holy Spirit and Litany of Humility are available in All Prayers → Daily Prayer and as watch or phone shortcuts. The Litany has a concise, small-print attribution. See [release verification](docs/verification.md).
 
 Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 
@@ -45,7 +46,7 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-Orationes **v0.8.1** targets Pebble Time 2 (`emery`). Use the App Store installation flow above or download the PBW from GitHub Releases.
+Orationes **v0.9.0** targets Pebble Time 2 (`emery`) and is available from GitHub Releases. The Pebble App Store listing remains on v0.8.1.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 

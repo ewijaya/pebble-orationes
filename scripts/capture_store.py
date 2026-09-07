@@ -33,4 +33,13 @@ click('down');click('select');capture('all-prayers');click('back')
 click('down');click('select');click('down',3);click('select');click('down',2)
 capture('navigation-colors')
 click('back');click('back');click('back')
+click('select')  # Open the system launcher from the watchface.
 capture('launcher-icon')
+
+run('install','--emulator','emery')
+settings(**dict({f'MainMenuSlot{i}': 39 if i == 1 else 0 for i in range(1,8)},
+                Appearance=0,TextSize=0,AccentColor=0,NavigationHighlight=1,
+                RememberPlace=0,NoonReminderEnabled=0))
+click('select');capture('come-holy-spirit');click('back')
+settings(MainMenuSlot1=40)
+click('select');capture('litany-of-humility');click('back')

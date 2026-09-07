@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.0 — 2026-09-07
+
+- Add Come, Holy Spirit and Litany of Humility in All Prayers → Daily Prayer, with individual watch and phone shortcuts.
+- Show the Litany's concise attribution, “Cardinal Merry del Val · after Mass”, in a small 14 px note above the prayer.
+- Package the new texts as offline resources loaded on first use, keeping the executable within Pebble's image limit.
+- Extend content/resource and phone shortcut checks, and retain screenshots of both new prayers.
+
+Existing prayer wording, Rosary data, default shortcuts, and saved settings are preserved. See [release verification](docs/verification.md) for emulator checks and physical installation results.
+
+## v0.8.1 — 2026-09-05
+
+- Fix Save Settings in the mobile Clay configuration page so changes reach the watch.
+- Recover pending settings after restarting Orationes, and test the actual Clay parser with mobile timer behavior and watch acknowledgments.
+
 ## v0.8.0 — 2026-09-05
 
 - Choose Classic, Amber, Tangerine, Violet, Magenta, or Lime navigation highlights independently of the existing Title Accent palettes.

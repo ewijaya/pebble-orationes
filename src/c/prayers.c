@@ -6,6 +6,111 @@
 #ifdef PBL_PLATFORM_EMERY
 #include <pebble.h>
 #include "preces_resource.h"
+#include "additional_prayer_resources.h"
+#endif
+
+// Transcribed from the two screenshots supplied on 2026-09-07. The user requested
+// a shortened, small-print Litany attribution; prayer responses remain as shown.
+#ifndef PBL_PLATFORM_EMERY
+static const char s_come_holy_spirit_english[] =
+    "Come, Holy Spirit, come!\n"
+    "And from your celestial home\n"
+    "Shed a ray of light divine!\n"
+    "Come, Father of the poor!\n"
+    "Come, source of all our store!\n"
+    "Come, within our bosoms shine.\n"
+    "You, of comforters the best;\n"
+    "You, the soul’s most welcome guest;\n"
+    "Sweet refreshment here below;\n"
+    "In our labor, rest most sweet;\n"
+    "Grateful coolness in the heat;\n"
+    "Solace in the midst of woe.\n"
+    "O most blessed Light divine,\n"
+    "Shine within these hearts of yours,\n"
+    "And our inmost being fill!\n"
+    "Where you are not, we have naught,\n"
+    "Nothing good in deed or thought,\n"
+    "Nothing free from taint of ill.\n"
+    "Heal our wounds, our strength renew;\n"
+    "On our dryness pour your dew;\n"
+    "Wash the stains of guilt away:\n"
+    "Bend the stubborn heart and will;\n"
+    "Melt the frozen, warm the chill;\n"
+    "Guide the steps that go astray.\n"
+    "On the faithful, who adore\n"
+    "And confess you, evermore\n"
+    "In your sevenfold gift descend:\n"
+    "Give them virtue’s sure reward;\n"
+    "Give them your salvation, Lord;\n"
+    "Give them joys that never end.";
+
+static const char s_litany_of_humility_english[] =
+    "O Jesus! meek and humble of heart, Hear me\n"
+    "From the desire of being esteemed, Deliver me Jesus\n"
+    "From the desire of being loved,\n"
+    "From the desire of being extolled,\n"
+    "From the desire of being honored,\n"
+    "From the desire of being praised,\n"
+    "From the desire of being preferred to others,\n"
+    "From the desire of being consulted,\n"
+    "From the desire of being approved,\n"
+    "From the fear of being humiliated,\n"
+    "From the fear of being despised,\n"
+    "From the fear of suffering rebukes,\n"
+    "From the fear of being calumniated,\n"
+    "From the fear of being forgotten,\n"
+    "From the fear of being ridiculed,\n"
+    "From the fear of being wronged,\n"
+    "From the fear of being suspected,\n\n"
+    "That others may be loved more than I, Jesus grant me the grace to desire it\n"
+    "That others may be esteemed more than I,\n"
+    "That in the opinion of the world others may increase and I may decrease,\n"
+    "That others may be chosen and I set aside,\n"
+    "That others may be praised and I unnoticed,\n"
+    "That others may be preferred to me in everything,\n"
+    "That others become holier than I, provided that I may become as holy as I should.";
+#endif
+
+static PrayerParagraph s_litany_of_humility_paragraphs[] = {
+    {
+        .text = "Cardinal Merry del Val · after Mass",
+        .style = PRAYER_PARAGRAPH_NOTE,
+        .space_after = true,
+    },
+    {
+#ifdef PBL_PLATFORM_EMERY
+        .text = NULL,  // Filled when the prayer resource is first opened.
+#else
+        .text = s_litany_of_humility_english,
+#endif
+        .style = PRAYER_PARAGRAPH_PRIMARY,
+    },
+};
+
+#ifdef PBL_PLATFORM_EMERY
+static PrayerTranslation s_come_holy_spirit_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = NULL},
+};
+static PrayerTranslation s_litany_of_humility_translations[] = {
+    {
+        .language = PRAYER_LANGUAGE_ENGLISH,
+        .text = NULL,
+        .paragraphs = s_litany_of_humility_paragraphs,
+        .paragraph_count = 2,
+    },
+};
+#else
+static const PrayerTranslation s_come_holy_spirit_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = s_come_holy_spirit_english},
+};
+static const PrayerTranslation s_litany_of_humility_translations[] = {
+    {
+        .language = PRAYER_LANGUAGE_ENGLISH,
+        .text = s_litany_of_humility_english,
+        .paragraphs = s_litany_of_humility_paragraphs,
+        .paragraph_count = 2,
+    },
+};
 #endif
 
 static const char s_angelus_english[] =
@@ -540,6 +645,20 @@ static const Prayer s_prayers[] = {
         .translations = aspirations_translations,
         .translation_count = 1,
     },
+    {
+        .name = "Come, Holy Spirit",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_come_holy_spirit_translations,
+        .translation_count = 1,
+    },
+    {
+        .name = "Litany of Humility",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_litany_of_humility_translations,
+        .translation_count = 1,
+    },
 };
 
 uint16_t prayers_count(void) {
@@ -570,18 +689,33 @@ const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
     const PrayerTranslation *translation = &prayer->translations[index];
     if (translation->language == language) {
 #ifdef PBL_PLATFORM_EMERY
-      if (translation == &s_preces_translations[0] && !translation->text) {
-        const ResHandle handle = resource_get_handle(RESOURCE_ID_PRECES_TEXT);
-        if (resource_size(handle) != PRECES_RESOURCE_BYTES) return NULL;
-        char *text = malloc(PRECES_RESOURCE_BYTES);
+      static const struct {
+        PrayerTranslation *translation;
+        uint32_t resource_id;
+        size_t bytes;
+        PrayerParagraph *paragraph;
+      } resources[] = {
+          {s_preces_translations, RESOURCE_ID_PRECES_TEXT, PRECES_RESOURCE_BYTES, NULL},
+          {s_come_holy_spirit_translations, RESOURCE_ID_COME_HOLY_SPIRIT_TEXT,
+           COME_HOLY_SPIRIT_RESOURCE_BYTES, NULL},
+          {s_litany_of_humility_translations, RESOURCE_ID_LITANY_OF_HUMILITY_TEXT,
+           LITANY_OF_HUMILITY_RESOURCE_BYTES, &s_litany_of_humility_paragraphs[1]},
+      };
+      for (uint8_t i = 0; i < sizeof(resources) / sizeof(resources[0]); ++i) {
+        if (translation != resources[i].translation || translation->text) continue;
+        const ResHandle handle = resource_get_handle(resources[i].resource_id);
+        const size_t bytes = resources[i].bytes;
+        if (resource_size(handle) != bytes) return NULL;
+        char *text = malloc(bytes);
         if (!text) return NULL;
-        if (resource_load(handle, (uint8_t *)text, PRECES_RESOURCE_BYTES) != PRECES_RESOURCE_BYTES ||
-            text[PRECES_RESOURCE_BYTES-1] != '\0') {
+        if (resource_load(handle, (uint8_t *)text, bytes) != bytes ||
+            text[bytes - 1] != '\0') {
           free(text);
           return NULL;
         }
         // Cached for the app lifetime; the OS releases app heap on exit.
-        s_preces_translations[0].text = text;
+        resources[i].translation->text = text;
+        if (resources[i].paragraph) resources[i].paragraph->text = text;
       }
 #endif
       return translation;

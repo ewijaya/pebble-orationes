@@ -1,5 +1,68 @@
 # Release verification
 
+## v0.9.0 — 2026-09-07
+
+Come, Holy Spirit and Litany of Humility were transcribed from the user's two
+screenshots supplied on this date. Both appear in All Prayers → Daily Prayer
+and in the watch and phone shortcut pickers, with appended catalog IDs 39/40.
+Existing IDs, categories, and the five default shortcuts are unchanged.
+
+The prayer text retains the supplied spelling, punctuation, curly apostrophes,
+and responses shown once. At the user's request, the Litany introduction is
+shortened to "Cardinal Merry del Val · after Mass" in the reader's 14 px note
+style; the prayer uses its normal 28/34 px body font. No repeated responses or
+closing Amen were added. Display adaptations use the shared reader's line spacing,
+an ordinary initial O instead of the Litany's decorative drop capital, and a
+title-case heading. The Litany's wrapped final petitions are
+joined into logical lines; the paragraph break before "That others" remains.
+All ten prior prayer literal arrays and the six other guarded content files
+are unchanged. The local canonical files remain ignored, untracked, and unchanged.
+
+The two new NUL-terminated resources total 1,959 bytes and use the existing
+lazy-loading and lifetime caching approach. Host tests compare all three
+packaged prayer resources with the C compiler's strings. The clean Emery build,
+host regression suite, catalog/content checks, phone shortcut swap test, PBW
+metadata, and all five existing reader screenshot comparisons passed with
+Pebble Tool 5.0.40 and SDK 4.33.1. The SDK's established RWX linker warning remains.
+
+Build metrics: resources 30,645 B; static RAM 65,223 B; initial heap 65,849 B;
+loaded image 64,040 B; virtual image 65,224 B; PBW 779,517 B. The resource budget
+was raised from 30,000 to 32,000 B for the added texts; other limits are unchanged.
+The virtual image remains 311 B below the 16-bit limit. Metrics are identical
+before and after the version-only bump from 0.8.1 to 0.9.0.
+
+Both new prayers passed emulator checks in Large/Extra Large and Light/Dark:
+button scrolling, fast holds, complete text through the final line, top/bottom
+clamps, Back, and reopening at the top. Continue, Start again, font-size round
+trips, double-Select exit, relaunch, library Open, and Pin to main menu passed.
+The Litany checks were repeated after shortening and shrinking the attribution.
+Its note fits on one line and stays at 14 px in both body sizes. Screenshots are
+under `build/qa-added-prayers/`; `build/litany-small-note-preview.png` shows the
+revised opening. Existing Preces, Angelus, Aspirations, and card screenshot
+baselines also passed on the final build.
+
+The final candidate was installed successfully on the user's physical Pebble
+Time 2 over its developer connection. A captured screen confirms Orationes
+launched with the user's existing shortcuts (`build/pt2-two-prayers-installed.png`).
+
+Touch swipes and prayer navigation on the physical watch were not exercised: the installed CLI
+has no touchscreen injection command, and the computer-control tool could not
+access the QEMU window. The existing touch-navigation code is unchanged.
+
+Feature candidate PBW SHA-256 (before the version bump):
+`1172a6f45699c93e894851b8f9e000bc4e320cf9ca0a5ecb6661a9b539b952de`.
+
+The versioned v0.9.0 bundle passed the clean release gate and all five existing
+reader screenshot comparisons, and was installed successfully on Emery and the
+physical PT2. The launch capture is `build/pt2-v0.9.0-installed.png`. Current
+native documentation screenshots include both new prayers and their approved
+layout; all eight existing native captures remain byte-identical after refresh.
+GitHub is the publication destination; the public Pebble App Store was
+verified at v0.8.1 and was not updated for this release.
+
+Release PBW SHA-256:
+`49e68647f1afce27e5a3042ec7ba7f464103a9253514afb4ecc75658eb4a32b3`.
+
 ## v0.8.1 — 2026-09-05
 
 Saving Slot 3 as Aspirations in the actual mobile configuration page produced

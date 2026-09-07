@@ -2,7 +2,7 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.7.0**. It lists what is available rather than reproducing the prayer texts. [Install Orationes](https://apps.repebble.com/9882f741750c43eb8309777e) · [Back to README](../README.md)
+This directory describes the library in **v0.9.0**. It lists what is available rather than reproducing the prayer texts. [Download v0.9.0](https://github.com/ewijaya/pebble-orationes/releases/tag/v0.9.0) · [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
 configuring a shortcut. Each entry offers **Open** and **Pin to main menu**.
@@ -34,6 +34,12 @@ These English entries can be opened through the **More Prayers** collection or a
 | Visit & Communion | A visit to the Blessed Sacrament using abbreviated Our Father, Hail Mary, and Glory be references, followed by the Spiritual Communion prayer. |
 | Before Work | Prayer asking God's guidance and assistance in our actions and work. |
 | Night Examination | A brief examination of conscience, sorrow, and a resolution for tomorrow, with a closing instruction to pray three Hail Marys. |
+
+Two additional English prayers are available under **All Prayers → Daily Prayer**
+and as individual shortcuts:
+
+- **Come, Holy Spirit** — the supplied text beginning “Come, Holy Spirit, come!” and ending “Give them joys that never end.”
+- **Litany of Humility** — a small-print “Cardinal Merry del Val · after Mass” attribution, followed by the prayer beginning “O Jesus! meek and humble of heart, Hear me”. Responses appear once, as in the source screenshot.
 
 ## Marian prayers and Rosary
 

@@ -1,7 +1,7 @@
 # Current Orationes screenshots
 
-Refreshed 2026-09-05 from the final v0.8.0 release candidate, also installed on PT2.
-PBW SHA-256: `47dc0aa94b30dd61e95d4f906e248b59258486dac9628439dd77fef44c10aadd`.
+Refreshed 2026-09-07 from the final v0.9.0 release bundle, also installed on PT2.
+PBW SHA-256: `49e68647f1afce27e5a3042ec7ba7f464103a9253514afb4ecc75658eb4a32b3`.
 The demonstration menu uses Preces, Holy Rosary, Angelus, and Memorare; it does
 not change the app's five default shortcuts or physical watch preferences.
 
@@ -21,6 +21,8 @@ and lighting can differ from these digital screenshots.
 | 5 | [all-prayers.png](all-prayers.png) | Browse prayer categories with distinct icons. |
 | 6 | [navigation-colors.png](navigation-colors.png) | Violet selection and cyan title shown independently in the live picker. |
 | 7 | [angelus.png](angelus.png) | A clear English prayer screen in light mode. |
+| 8 | [come-holy-spirit.png](come-holy-spirit.png) | The new English prayer in Large text and light mode. |
+| 9 | [litany-of-humility.png](litany-of-humility.png) | The new Litany with a single small attribution line above the prayer. |
 
 If using only four images, choose main-menu, preces, rosary-menu, and
 navigation-colors. `launcher.png` is a current system-launcher reference for

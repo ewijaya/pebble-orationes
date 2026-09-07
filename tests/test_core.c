@@ -218,17 +218,24 @@ static void test_catalog_destinations(void) {
     }
   }
 }
-static void test_packaged_preces(void) {
-  const Prayer *prayer = prayers_get_by_id(PRAYER_ID_PRECES);
-  const char *text = prayer_get_translation(prayer, prayer->default_language)->text;
-  FILE *file = fopen("resources/data/preces.bin", "rb");
-  assert(file);
-  for (size_t i=0;i<=strlen(text);++i) assert(fgetc(file) == (unsigned char)text[i]);
-  assert(fgetc(file) == EOF);
-  fclose(file);
+static void test_packaged_prayers(void) {
+  const struct { PrayerId id; const char *path; } resources[] = {
+      {PRAYER_ID_PRECES, "resources/data/preces.bin"},
+      {PRAYER_ID_COME_HOLY_SPIRIT, "resources/data/come-holy-spirit.bin"},
+      {PRAYER_ID_LITANY_OF_HUMILITY, "resources/data/litany-of-humility.bin"},
+  };
+  for (unsigned r = 0; r < sizeof(resources) / sizeof(resources[0]); ++r) {
+    const Prayer *prayer = prayers_get_by_id(resources[r].id);
+    const char *text = prayer_get_translation(prayer, prayer->default_language)->text;
+    FILE *file = fopen(resources[r].path, "rb");
+    assert(file);
+    for (size_t i = 0; i <= strlen(text); ++i) assert(fgetc(file) == (unsigned char)text[i]);
+    assert(fgetc(file) == EOF);
+    fclose(file);
+  }
 }
 int main(void) {
-  test_packaged_preces();
+  test_packaged_prayers();
   extern void run_phone_tests(void);
   test_settings();
   test_navigation_migration();

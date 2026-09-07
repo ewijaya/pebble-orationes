@@ -405,6 +405,26 @@
       "target": "PRAYER_COLLECTION_CARDS",
       "item": 13,
       "category": 4
+    },
+    {
+      "id": 39,
+      "symbol": "MAIN_MENU_ENTRY_COME_HOLY_SPIRIT",
+      "name": "Come, Holy Spirit",
+      "phone_name": "Come, Holy Spirit",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_COME_HOLY_SPIRIT",
+      "item": 0,
+      "category": 0
+    },
+    {
+      "id": 40,
+      "symbol": "MAIN_MENU_ENTRY_LITANY_OF_HUMILITY",
+      "name": "Litany of Humility",
+      "phone_name": "Litany of Humility",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_LITANY_OF_HUMILITY",
+      "item": 0,
+      "category": 0
     }
   ]
 }
