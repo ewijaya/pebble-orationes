@@ -57,8 +57,11 @@ reader screenshot comparisons, and was installed successfully on Emery and the
 physical PT2. The launch capture is `build/pt2-v0.9.0-installed.png`. Current
 native documentation screenshots include both new prayers and their approved
 layout; all eight existing native captures remain byte-identical after refresh.
-GitHub is the publication destination; the public Pebble App Store was
-verified at v0.8.1 and was not updated for this release.
+After the initial GitHub release, the user approved Pebble App Store publication.
+The same v0.9.0 PBW was published on 2026-09-07; its public store download matches
+the tested bundle byte-for-byte. The canonical public listing now shows v0.9.0
+and names both new prayers. All seven existing screenshots, icons, banners,
+visibility, and unrelated listing fields were preserved.
 
 Release PBW SHA-256:
 `49e68647f1afce27e5a3042ec7ba7f464103a9253514afb4ecc75658eb4a32b3`.

@@ -46,7 +46,7 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 2. Add it to your apps.
 3. Install or sync it to your Pebble Time 2.
 
-Orationes **v0.9.0** targets Pebble Time 2 (`emery`) and is available from GitHub Releases. The Pebble App Store listing remains on v0.8.1.
+Orationes **v0.9.0** targets Pebble Time 2 (`emery`) and is available from GitHub Releases and the Pebble App Store.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
 
