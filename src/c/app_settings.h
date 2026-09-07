@@ -55,6 +55,7 @@ typedef struct {
   uint8_t remember_place;
   uint8_t slots[APP_MAIN_MENU_SLOT_COUNT];
   uint8_t navigation_highlight;
+  uint8_t continue_first;
 } AppSettings;
 
 typedef void (*AppSettingsChangedHandler)(void);

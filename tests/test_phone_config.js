@@ -6,13 +6,17 @@ var assert = require('assert');
 var fs = require('fs');
 var vm = require('vm');
 var config = require('../src/pkjs/config');
+assert.equal(config[0].defaultValue, 'Orationes v' + require('../package.json').version);
+// AppMessage keys are append-only: existing installed companions keep their IDs.
+assert.deepEqual(require('../package.json').pebble.messageKeys.slice(-2),
+  ['NavigationHighlight', 'ContinueFirst']);
 var keys = {};
 require('../package.json').pebble.messageKeys.forEach(function(name, index) {
   keys[name] = 10000 + index;
 });
 var stored = {};
 function start() {
-  var events = {}, messages = [], logs = [];
+  var events = {}, messages = [], logs = [], urls = [];
   var context = vm.createContext({
     console: {log: function(message) { logs.push(message); }},
     localStorage: {
@@ -27,7 +31,7 @@ function start() {
       getActiveWatchInfo: function() { return {platform: 'emery'}; },
       getAccountToken: function() { return ''; },
       getWatchToken: function() { return ''; },
-      openURL: function() {},
+      openURL: function(url) { urls.push(url); },
       sendAppMessage: function(message, success) { messages.push(message); success(); }
     }
   });
@@ -51,7 +55,7 @@ function start() {
   });
   function emit(name, event) { events[name].forEach(function(handler) { handler(event); }); }
   emit('ready');
-  return {emit: emit, messages: messages, logs: logs, context: context};
+  return {emit: emit, messages: messages, logs: logs, context: context, urls: urls};
 }
 var response = {};
 function defaults(items) {
@@ -63,6 +67,8 @@ function defaults(items) {
 }
 defaults(config);
 response.NavigationHighlight.value = 3;
+assert.strictEqual(response.ContinueFirst.value, false);
+response.ContinueFirst.value = true;
 response.MainMenuSlot3.value = 23; // Reported failure: Slot 3 -> Aspirations.
 var phone = start();
 phone.emit('webviewclosed', {response: encodeURIComponent(JSON.stringify(response))});
@@ -71,14 +77,18 @@ var sent = phone.messages[1];
 assert.equal(sent[keys.NavigationHighlight], 3);
 assert.equal(sent[keys.MainMenuSlot3], 23);
 assert.equal(sent[keys.RememberPlace], 1);
+assert.equal(sent[keys.ContinueFirst], 1);
+assert(1 + Object.keys(sent).length * 11 <= 256, 'Full settings must fit the watch inbox');
 assert(Object.keys(sent).every(function(key) { return typeof sent[key] === 'number'; }));
 assert(stored['orationes-pending-settings']);
 
 // Replacing a pending save exercises cancellation as well as scheduling.
 response.NavigationHighlight.value = 4;
+response.ContinueFirst.value = false;
 phone.emit('webviewclosed', {response: JSON.stringify(response)});
 assert.equal(phone.messages.length, 3);
 var latest = phone.messages[2];
+assert.equal(latest[keys.ContinueFirst], 0);
 assert.equal(Object.keys(phone.context.timers).length, 1);
 phone.emit('appmessage', {payload: {SettingsAck: sent[keys.SettingsTransaction], SettingsStatus: 0}});
 assert(stored['orationes-pending-settings']);
@@ -86,13 +96,22 @@ assert(stored['orationes-pending-settings']);
 // Unconfirmed settings survive a JS restart and are sent again.
 phone = start();
 assert.equal(phone.messages[0][keys.NavigationHighlight], 4);
+assert.equal(phone.messages[0][keys.ContinueFirst], 0);
 var ack = {};
 ack[keys.SettingsAck] = latest[keys.SettingsTransaction];
 ack[keys.SettingsStatus] = 0;
 ack[keys.NavigationHighlight] = 4;
+ack[keys.ContinueFirst] = 0;
 phone.emit('appmessage', {payload: ack});
 assert(!stored['orationes-pending-settings']);
 assert.equal(Object.keys(phone.context.timers).length, 0);
 assert.equal(JSON.parse(stored['clay-settings']).NavigationHighlight, 4);
+assert.equal(JSON.parse(stored['clay-settings']).ContinueFirst, 0);
+phone.emit('appmessage', {payload: {ContinueFirst: 1}});
+assert.equal(JSON.parse(stored['clay-settings']).ContinueFirst, 1);
+phone.emit('showConfiguration');
+var page = decodeURIComponent(phone.urls[0]);
+assert(page.includes('Orationes v' + require('../package.json').version));
+assert(page.includes('ContinueFirst'));
 assert.deepEqual(phone.logs, []);
 console.log('Clay save, mobile timers, restart, and watch confirmation integration passed');

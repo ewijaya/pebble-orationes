@@ -90,7 +90,7 @@ static void test_navigation_migration(void) {
   assert(!memcmp(old,restored,sizeof(old)));
   AppSettings invalid=app_settings_get();invalid.navigation_highlight=255;
   assert(!app_settings_apply(&invalid));
-  assert(durable_store_write(44,2,&invalid,sizeof(invalid)));
+  assert(durable_store_write(50,3,&invalid,sizeof(invalid)));
   app_settings_init();assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_CLASSIC);
   assert(app_settings_get_main_menu_slot(5)==23);
 }
@@ -120,6 +120,7 @@ static void test_recoverable_settings(void) {
     AppSettings before = app_settings_get();
     AppSettings after = before;
     after.appearance = APP_APPEARANCE_DARK;
+    after.continue_first = true;
     after.slots[0] = MAIN_MENU_ENTRY_PRAYER_CARDS;
     storage_fail_next_write(torn);
     assert(!app_settings_apply(&after));
@@ -133,7 +134,7 @@ static void test_recoverable_settings(void) {
   app_settings_init();
   assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
   assert(app_settings_set_appearance(APP_APPEARANCE_DARK));
-  storage_corrupt(45); // Newest bank is corrupt; recover previous settings.
+  storage_corrupt(51); // Newest bank is corrupt; recover previous settings.
   app_settings_init();
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
   assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT);

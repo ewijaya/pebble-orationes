@@ -97,6 +97,42 @@ void run_reading_tests(void) {
   assert(app_settings_apply(&settings));
   app_settings_init(); assert(app_settings_get_continue_first());
   const uint8_t invalid = 255;
+  storage_reset();
   assert(durable_store_write(46, 1, &invalid, 1));
   app_settings_init(); assert(!app_settings_get_continue_first());
+
+  // Upgrade v0.10's exact schema-2 bytes plus its separate Continue First.
+  const uint8_t old[] = {1,2,1,0,2,1, 5,2,3,4,1,23,24, 3};
+  const uint8_t enabled = 1;
+  for (int torn = 0; torn < 16 + sizeof(AppSettings); ++torn) {
+    storage_reset();
+    assert(durable_store_write(44, 2, old, sizeof(old)));
+    assert(durable_store_write(46, 1, &enabled, 1));
+    app_settings_init();
+    settings = app_settings_get();
+    assert(!memcmp(&settings, old, sizeof(old)) && settings.continue_first == 1);
+    AppSettings updated = settings;
+    updated.continue_first = 0;
+    updated.appearance = APP_APPEARANCE_LIGHT;
+    storage_fail_next_write(torn);
+    assert(!app_settings_apply(&updated));
+    app_settings_init();
+    AppSettings actual = app_settings_get();
+    assert(!memcmp(&settings, &actual, sizeof(settings)));
+    assert(app_settings_apply(&updated));
+    app_settings_init();
+    actual = app_settings_get();
+    assert(!memcmp(&updated, &actual, sizeof(updated)));
+    uint8_t restored[sizeof(old)], preference = 0;
+    assert(durable_store_read(44, 2, restored, sizeof(restored)));
+    assert(!memcmp(restored, old, sizeof(old)));
+    assert(durable_store_read(46, 1, &preference, 1) && preference == 1);
+  }
+  settings = app_settings_get();
+  settings.continue_first = 255;
+  assert(!app_settings_apply(&settings));
+  assert(durable_store_write(50, 3, &settings, sizeof(settings)));
+  app_settings_init();
+  assert(!app_settings_get_continue_first());
+  assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_VIOLET);
 }

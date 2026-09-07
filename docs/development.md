@@ -100,12 +100,14 @@ and phone edits. Reminder edits go through `noon_reminder_apply_settings()` so a
 schedule must succeed before enabling is saved.
 
 `durable_store.c` alternates checksummed, versioned records between two keys. It
-keeps the prior valid record during a failed or partial write. Settings use keys
-44/45 (schema 2). The eight-prayer reading history uses 48/49; the older single
-position at 42/43 is an upgrade fallback. Watch-local Continue First uses 46/47
-without changing the phone settings record. Schema 1 settings at
-40/41 are read on upgrade and retained untouched. Navigation Highlight is appended
-to the record and defaults to Classic, preserving the previous selection colors. Old settings keys 1–7, 20–24, and 30–36
+keeps the prior valid record during a failed or partial write. Settings now use keys
+50/51 (schema 3), including Continue First in the same atomic save as phone edits.
+On upgrade, schema 2 at 44/45 (or schema 1 at 40/41) and the v0.10.0 Continue First
+preference at 46/47 are read and retained untouched. Continue First defaults to Off
+if absent or invalid; a saved schema 3 record takes precedence over the old banks.
+The eight-prayer reading history uses 48/49; the older single position at 42/43 is
+an upgrade fallback. Navigation Highlight defaults to Classic, preserving the
+previous selection colors. Old settings keys 1–7, 20–24, and 30–36
 are read for migration and are never repurposed. Wakeups retain keys 10/11.
 Changing a record layout requires a schema migration.
 
@@ -115,6 +117,18 @@ keeps the draft pending but stops retries until the user saves again. The next p
 configuration page reports pending or failed saves. New submissions replace older
 pending drafts, and stale acknowledgments cannot clear them. Both watch and phone
 swap an already assigned shortcut with the edited slot's former entry.
+
+The post-v0.10.0 Clay update exposes Continue First in Reading settings and sends
+it in both directions using the appended `ContinueFirst` message key. Older phone
+payloads that omit this key preserve the watch value. Watch-side toggles send an
+updated snapshot to Clay. The Clay heading reads the package version directly,
+so no separate version label needs updating at release time. This change needs a
+newly installed PBW; it does not alter the already published v0.10.0 companion.
+
+Run `python3 scripts/qa_phone.py` with the Pebble Tool Python environment after
+building to check durable phone acknowledgments, native toggles, open Settings
+refresh, invalid batches, Back, and relaunch in both themes and text sizes. It
+installs only into the Emery emulator and writes captures to `build/qa-phone/`.
 
 ## Navigation and reading
 

@@ -48,7 +48,8 @@
       "SettingsTransaction",
       "SettingsAck",
       "SettingsStatus",
-      "NavigationHighlight"
+      "NavigationHighlight",
+      "ContinueFirst"
     ],
     "resources": {
       "media": [

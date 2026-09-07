@@ -128,7 +128,9 @@ static void settings_select_click(MenuLayer *menu_layer,
       phone_settings_send_current();
     }
   } else if (cell_index->row == SETTINGS_MENU_ITEM_CONTINUE_FIRST) {
-    app_settings_set_continue_first(!app_settings_get_continue_first());
+    if (app_settings_set_continue_first(!app_settings_get_continue_first())) {
+      phone_settings_send_current();
+    }
   }
 }
 

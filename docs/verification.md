@@ -1,5 +1,24 @@
 # Release verification
 
+## Unreleased — Clay settings synchronization
+
+Continue First is available in Clay and the heading derives its version from
+`package.json`. Schema 3 atomically saves Continue First with the other settings,
+migrating v0.10.0's separate preference without overwriting the older records.
+
+Host tests passed for schema 1/2 upgrades, interrupted writes at every byte,
+invalid-value fallback, mixed phone-save rejection, queue retry/restart,
+watch-to-Clay snapshots, and the generated Clay page's version and toggle.
+The clean Emery build passed with 40,318 resource bytes, 59,519 RAM bytes,
+71,553 heap bytes, and a 787,522-byte PBW (the established non-fatal RWX warning).
+`qa_reading.py --flows-only` passed navigation/history checks. `qa_phone.py`
+passed native and phone toggles, durable acknowledgments, invalid batches, Back,
+and relaunch in all four theme/text-size combinations. On/Off captures were
+visually checked in `build/qa-phone/`.
+
+This is local/emulator evidence, not physical-mobile verification or publication.
+The frozen v0.10.0 release artifact is unchanged.
+
 ## v0.10.0 — reading and navigation refresh
 
 The [release notes](releases/0.10.0.md) describe direct opening, clearer response

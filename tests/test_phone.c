@@ -40,6 +40,8 @@ void run_phone_tests(void) {
   storage_reset();
   app_settings_init();
   phone_settings_init(changed);
+  phone_settings_send_current();
+  assert(reply(MESSAGE_KEY_ContinueFirst) == 0);
   DictionaryIterator incoming = {0};
   dict_write_uint32(&incoming, MESSAGE_KEY_SettingsTransaction, 17);
   dict_write_uint8(&incoming, MESSAGE_KEY_TextSize, 1);
@@ -88,5 +90,57 @@ void run_phone_tests(void) {
   assert(reply(MESSAGE_KEY_SettingsStatus)==1);
   assert(app_settings_get_accent_color()==APP_ACCENT_COLOR_OCEAN);
   assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_VIOLET);
+
+  // Every phone choice, both text sizes and themes, survives watch relaunch.
+  for (uint8_t size = 0; size < APP_TEXT_SIZE_COUNT; ++size) {
+    for (uint8_t theme = 0; theme < APP_APPEARANCE_COUNT; ++theme) {
+      for (uint8_t enabled = 0; enabled <= 1; ++enabled) {
+        incoming.count = 0;
+        dict_write_uint32(&incoming, MESSAGE_KEY_SettingsTransaction, 30);
+        dict_write_uint8(&incoming, MESSAGE_KEY_TextSize, size);
+        dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, theme);
+        dict_write_uint8(&incoming, MESSAGE_KEY_ContinueFirst, enabled);
+        s_receiver(&incoming, NULL);
+        assert(reply(MESSAGE_KEY_SettingsAck) == 30 && reply(MESSAGE_KEY_SettingsStatus) == 0);
+        assert(reply(MESSAGE_KEY_ContinueFirst) == enabled);
+        app_settings_init();
+        assert(app_settings_get_continue_first() == enabled);
+        assert(app_settings_get_text_size() == size);
+        assert(app_settings_get_appearance() == theme);
+        assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_VIOLET);
+      }
+    }
+  }
+  // Watch-originated values and old phone payloads that omit the new key.
+  assert(app_settings_set_continue_first(false));
+  phone_settings_send_current();
+  assert(reply(MESSAGE_KEY_ContinueFirst) == 0);
+  assert(app_settings_set_continue_first(true));
+  incoming.count = 0;
+  dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_LIGHT);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus) == 0 && reply(MESSAGE_KEY_ContinueFirst) == 1);
+  // Reject an invalid field or a failed write without partially saving the batch.
+  const uint32_t invalid[] = {2, 255, 256, UINT32_MAX};
+  for (unsigned i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+    incoming.count = 0;
+    dict_write_uint32(&incoming, MESSAGE_KEY_ContinueFirst, invalid[i]);
+    dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_DARK);
+    s_receiver(&incoming, NULL);
+    assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
+    assert(app_settings_get_continue_first() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  }
+  incoming.count = 0;
+  dict_write_uint8(&incoming, MESSAGE_KEY_ContinueFirst, 0);
+  dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_DARK);
+  storage_fail_next_write(6);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
+  app_settings_init();
+  assert(app_settings_get_continue_first() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  dict_write_uint8(&incoming, MESSAGE_KEY_NoonReminderEnabled, 1);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus) == 1); // Reminder scheduling failure is atomic too.
+  assert(app_settings_get_continue_first() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
   phone_settings_deinit();
 }

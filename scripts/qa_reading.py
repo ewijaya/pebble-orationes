@@ -79,7 +79,7 @@ def start(entry, size=0, dark=0, remember=0):
     restart()
     settings(**dict({f'MainMenuSlot{i}': entry if i == 1 else 0 for i in range(1, 8)},
                     TextSize=size, Appearance=dark, RememberPlace=0, NoonReminderEnabled=0,
-                    AccentColor=0, NavigationHighlight=0))
+                    AccentColor=0, NavigationHighlight=0, ContinueFirst=0))
     settings(RememberPlace=remember)
 
 run('install', '--emulator', 'emery')

@@ -1,6 +1,7 @@
 'use strict';
 
 var catalog = require('./catalog');
+var version = require('../../package.json').version;
 function mainMenuOptions() { return catalog.options; }
 
 function mainMenuSlot(slotNumber, defaultValue) {
@@ -17,7 +18,7 @@ function mainMenuSlot(slotNumber, defaultValue) {
 module.exports = [
   {
     type: 'heading',
-    defaultValue: 'Orationes',
+    defaultValue: 'Orationes v' + version,
     size: 1
   },
   {
@@ -43,6 +44,11 @@ module.exports = [
         ]
       },
       {type: 'toggle', messageKey: 'RememberPlace', label: 'Remember reading place', defaultValue: true},
+      {
+        type: 'toggle', messageKey: 'ContinueFirst', label: 'Continue First',
+        description: 'Place Continue above your shortcuts when a saved reading place is available.',
+        defaultValue: false
+      },
       {
         type: 'select',
         messageKey: 'Appearance',

@@ -36,6 +36,8 @@ In **All Prayers**, select a prayer to open it directly; hold Select and release
 
 **New in v0.10.0:** direct opening and Continue, section jumps, response/stanza formatting, eight-prayer history, optional Continue First, and a one-candidate release workflow. See the [reading refresh](docs/reading-refresh.md), [release notes](docs/releases/0.10.0.md), and [release workflow](docs/releasing.md).
 
+**Unreleased Clay update:** Continue First is also available in phone Settings, with watch/phone synchronization and migration of your existing preference. Clay displays the bundled app version. These changes require an updated PBW; they are not part of the published v0.10.0 build.
+
 Version 0.9.0 added Come, Holy Spirit and Litany of Humility, including its concise, small-print attribution. See [release verification](docs/verification.md). Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 
 Selecting a prayer for a shortcut on the watch saves it and returns to the main menu with that prayer highlighted.
