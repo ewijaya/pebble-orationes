@@ -1,0 +1,20 @@
+{
+  "version": "0.10.1",
+  "commit": "e2360193f143cca1e1ddac49269adf6f35bf6973",
+  "artifact": {
+    "sha256": "0a417fcc7679174a9c4e29557f10df68dd0c2334578335ed0ccaa2a5290d9194",
+    "bytes": 787522
+  },
+  "metrics": {
+    "resources": 40318,
+    "ram": 59519,
+    "heap": 71553,
+    "pbw": 787522,
+    "load": 58216,
+    "virtual": 59520
+  },
+  "status": {
+    "github": "verified",
+    "appstore": "verified"
+  }
+}
