@@ -118,7 +118,7 @@ configuration page reports pending or failed saves. New submissions replace olde
 pending drafts, and stale acknowledgments cannot clear them. Both watch and phone
 swap an already assigned shortcut with the edited slot's former entry.
 
-The post-v0.10.0 Clay update exposes Continue First in Reading settings and sends
+The v0.10.1 Clay update exposes Continue First in Reading settings and sends
 it in both directions using the appended `ContinueFirst` message key. Older phone
 payloads that omit this key preserve the watch value. Watch-side toggles send an
 updated snapshot to Clay. The Clay heading reads the package version directly,

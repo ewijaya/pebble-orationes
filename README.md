@@ -14,7 +14,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 ## What's included
 
-This checkout documents v0.10.0. See [Install](#install) for verified public availability.
+This checkout documents v0.10.1. See [Install](#install) for verified public availability.
 
 - **Preces** — complete Latin text in a large-print, scrollable view.
 - **Holy Rosary** — Today's Mysteries, All Mysteries, and the Litany of Loreto. The watch chooses Joyful (Mon/Sat), Sorrowful (Tue/Fri), Glorious (Wed/Sun), or Luminous (Thu) mysteries from its local weekday.
@@ -30,13 +30,13 @@ This checkout documents v0.10.0. See [Install](#install) for verified public ava
 
 The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
 
-**Continue** opens your last saved prayer directly. **Recent Prayers** keeps separate reading places for up to eight prayers. Ordinary library and shortcut openings start at the top. **Remember Place** can be disabled in watch or phone Settings; doing so clears the saved places. The watch-local **Continue First** setting can place Continue above your shortcuts and is Off by default.
+**Continue** opens your last saved prayer directly. **Recent Prayers** keeps separate reading places for up to eight prayers. Ordinary library and shortcut openings start at the top. **Remember Place** can be disabled in watch or phone Settings; doing so clears the saved places. **Continue First**, available in watch and phone Settings, can place Continue above your shortcuts and is Off by default.
 
 In **All Prayers**, select a prayer to open it directly; hold Select and release for Open/Pin options. While reading, Select opens **Reading Options**, with **Start again** and **Jump to section** where sections are available. Responses and stanzas have clearer spacing without changing prayer wording. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
 **New in v0.10.0:** direct opening and Continue, section jumps, response/stanza formatting, eight-prayer history, optional Continue First, and a one-candidate release workflow. See the [reading refresh](docs/reading-refresh.md), [release notes](docs/releases/0.10.0.md), and [release workflow](docs/releasing.md).
 
-**Unreleased Clay update:** Continue First is also available in phone Settings, with watch/phone synchronization and migration of your existing preference. Clay displays the bundled app version. These changes require an updated PBW; they are not part of the published v0.10.0 build.
+**New in v0.10.1:** Continue First now synchronizes between Clay and the watch, preserving your existing preference. Clay displays the bundled app version automatically. See the [release notes](docs/releases/0.10.1.md). These changes require the v0.10.1 PBW; the earlier store build does not include them.
 
 Version 0.9.0 added Come, Holy Spirit and Litany of Humility, including its concise, small-print attribution. See [release verification](docs/verification.md). Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 
@@ -55,6 +55,10 @@ Browse the [prayer directory](docs/prayer-list.md) for the complete library, lan
 Orationes **v0.9.0** targets Pebble Time 2 (`emery`) and is available from GitHub Releases and the Pebble App Store.
 
 For manual installation, download `pebble-orationes.pbw` from [GitHub Releases](https://github.com/ewijaya/pebble-orationes/releases) and install it through the Pebble/RePebble app workflow.
+
+Developer-installed PBWs can appear without artwork in My Apps because the mobile
+app treats them as local entries rather than store-linked entries. See
+[My Apps artwork](docs/mobile-artwork.md) before removing a working installation.
 
 ## Development
 

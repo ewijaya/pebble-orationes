@@ -1,6 +1,6 @@
 # Release verification
 
-## Unreleased — Clay settings synchronization
+## v0.10.1 — Clay settings synchronization
 
 Continue First is available in Clay and the heading derives its version from
 `package.json`. Schema 3 atomically saves Continue First with the other settings,
@@ -16,8 +16,19 @@ passed native and phone toggles, durable acknowledgments, invalid batches, Back,
 and relaunch in all four theme/text-size combinations. On/Off captures were
 visually checked in `build/qa-phone/`.
 
-This is local/emulator evidence, not physical-mobile verification or publication.
-The frozen v0.10.0 release artifact is unchanged.
+These metrics and captures describe the development build before the v0.10.1
+version bump. Its PBW SHA-256 is
+`ec7375b972c6e3ed10ab12de44848db01864a83f4278a098e754c5f3720599f9`.
+The user subsequently confirmed the Clay heading/toggle on their mobile phone,
+Continue First On on PT2, Continue above shortcuts, and correct prayer resume.
+That is physical approval of the development build, not the final versioned PBW.
+
+The v0.10.1 candidate's manifest, metrics, and emulator captures belong under
+`.release/0.10.1/`; final physical approval and public verification are separate
+release gates. The frozen v0.10.0 release artifact is unchanged. The
+[artwork investigation](mobile-artwork.md) distinguishes healthy store images
+from the mobile client's local developer-install entry; no artwork replacement
+is part of this release.
 
 ## v0.10.0 — reading and navigation refresh
 

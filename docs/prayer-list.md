@@ -2,14 +2,16 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.10.0**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
+This directory describes the library in **v0.10.1**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
 configuring a shortcut. Select a prayer to open it directly; hold Select and
 release for **Open** and **Pin to main menu** options. **Continue** opens the last
 saved place directly; **Recent Prayers** remembers separate places for up to eight
 prayers. While reading, Select offers **Start again** and **Jump to section** where
-available. **Settings → Continue First** optionally puts Continue above shortcuts.
+available. **Settings → Continue First**, on the watch or in Clay on the phone,
+optionally puts Continue above shortcuts. Version 0.10.1 synchronizes this setting
+without adding, removing, or changing any prayers.
 The [reading refresh](reading-refresh.md) does not add, remove, or rewrite prayers
 in this directory. Disabling **Remember Place** clears the saved places.
 
