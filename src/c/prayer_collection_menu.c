@@ -52,7 +52,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
   }
 
   const Prayer *prayer = &s_collection->prayers[cell_index->row];
-  prayer_navigation_open(main_menu_catalog_find_prayer(prayer), false);
+  prayer_navigation_open(main_menu_catalog_find_prayer(prayer));
 }
 
 static void cards_move_selection(bool up) {

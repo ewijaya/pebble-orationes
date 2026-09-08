@@ -9,10 +9,13 @@ KEEP YOUR PRAYERS CLOSE
 Choose and arrange up to seven shortcuts to individual prayers or collections. Personalize them on the watch or through Settings in the Pebble mobile app. Browse All Prayers and press Select to open a prayer directly; hold Select and release for Open/Pin options.
 
 PICK UP WHERE YOU LEFT OFF
-Continue opens your last saved prayer directly. Recent Prayers keeps separate reading places for up to eight prayers. Enable Continue First in watch or phone Settings to put Continue above your shortcuts; the setting stays synchronized between both. Ordinary library and shortcut openings start at the top. Turn off Remember Place to clear the saved history. Phone Settings also displays the installed companion's version.
+With Remember Place On, opening a prayer from any menu resumes its saved position, or starts at the beginning if none exists. With it Off, prayers always start at the beginning and saved places are cleared. Continue opens your last saved prayer directly. Recent Prayers keeps separate places for up to eight prayers. Enable Continue First in watch or phone Settings to put Continue above your shortcuts; the setting stays synchronized between both. Both Settings pages show their bundled app version at the bottom.
 
 READ YOUR WAY
-Choose Large or Extra Large text, Light or Dark appearance, and an accent color. The Ocean accent offers cyan on dark. Prayer text retains strong black-and-white contrast, with clearer response blocks and stanza spacing. The Litany of Humility attribution stays in small print.
+New installations start with Dark appearance, Ocean title accent, and Lime navigation highlight. Choose Large or Extra Large text, Light or Dark appearance, and independent title and navigation colors. Existing preferences are preserved on upgrade. Prayer text retains strong black-and-white contrast, with clearer response blocks and stanza spacing. The Litany of Humility attribution stays in small print.
+
+RESTORE YOUR DEFAULTS
+One Restore Defaults action resets shortcuts and all preferences: Dark/Ocean/Lime colors, Large text, Remember Place On, Continue First Off, and the noon reminder Off with a 10-second duration. Saved prayer positions are kept. On the phone, tap Save Settings to apply the reset.
 
 MOVE AT YOUR PACE
 Swipe to scroll, tap Up or Down, or hold either button to move faster. Press Select while reading for Start again or Jump to section where available. Aspirations offers ten jump groups covering all 92 entries. Double-press Select while reading to return to your watchface.

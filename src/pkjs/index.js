@@ -5,7 +5,10 @@ var messageKeys = require('message_keys');
 var config = require('./config');
 var customClay = require('./custom-clay');
 
-var clay = new Clay(config, customClay, { autoHandleEvents: false, userData: {defaultSlots: require('./catalog').defaults} });
+var clay = new Clay(config, customClay, { autoHandleEvents: false, userData: {
+  defaultSlots: require('./catalog').defaults,
+  settingsDefaults: require('./settings-defaults')
+} });
 function sendSettings(settings) {
   Pebble.sendAppMessage(settings, function() {}, function(error) {
     console.log('Could not send Orationes settings: ' + JSON.stringify(error));

@@ -18,12 +18,13 @@ enum {
   SETTINGS_MENU_ITEM_MAIN_MENU,
   SETTINGS_MENU_ITEM_REMEMBER_PLACE,
   SETTINGS_MENU_ITEM_CONTINUE_FIRST,
+  SETTINGS_MENU_ITEM_RESTORE_DEFAULTS,
+  SETTINGS_MENU_ITEM_VERSION,
   SETTINGS_MENU_ITEM_COUNT,
 };
 
 enum {
-  MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS = APP_MAIN_MENU_SLOT_COUNT,
-  MAIN_MENU_SLOT_ITEM_COUNT,
+  MAIN_MENU_SLOT_ITEM_COUNT = APP_MAIN_MENU_SLOT_COUNT,
 };
 
 enum {
@@ -57,6 +58,8 @@ static const char *const s_settings_labels[] = {
     "Noon Reminder",  "Prayer Shortcuts",
     "Remember Place",
     "Continue First",
+    "Restore Defaults",
+    "Orationes",
 };
 
 static const char *settings_value(uint16_t row) {
@@ -89,6 +92,12 @@ static const char *settings_value(uint16_t row) {
     break;
   case SETTINGS_MENU_ITEM_CONTINUE_FIRST:
     value = app_settings_get_continue_first() ? "On" : "Off";
+    break;
+  case SETTINGS_MENU_ITEM_RESTORE_DEFAULTS:
+    value = "Reset all settings";
+    break;
+  case SETTINGS_MENU_ITEM_VERSION:
+    value = "v" ORATIONES_VERSION;
     break;
   }
   return value;
@@ -131,6 +140,12 @@ static void settings_select_click(MenuLayer *menu_layer,
     if (app_settings_set_continue_first(!app_settings_get_continue_first())) {
       phone_settings_send_current();
     }
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_RESTORE_DEFAULTS) {
+    const AppSettings defaults = app_settings_get_defaults();
+    if (noon_reminder_apply_settings(&defaults)) {
+      phone_settings_send_current();
+      window_stack_remove(s_settings_window, true);
+    }
   }
 }
 
@@ -159,11 +174,6 @@ static void main_menu_slots_draw_row(GContext *ctx,
                                      const Layer *cell_layer,
                                      MenuIndex *cell_index,
                                      void *context) {
-  if (cell_index->row == MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS) {
-    accessible_menu_draw_row(ctx, cell_layer, "Restore Defaults");
-    return;
-  }
-
   const MainMenuEntry *entry = main_menu_catalog_get(
       app_settings_get_main_menu_slot((uint8_t)cell_index->row));
   if (entry) {
@@ -177,15 +187,6 @@ static void main_menu_slots_draw_row(GContext *ctx,
 static void main_menu_slots_select_click(MenuLayer *menu_layer,
                                          MenuIndex *cell_index,
                                          void *context) {
-  if (cell_index->row == MAIN_MENU_SLOT_ITEM_RESTORE_DEFAULTS) {
-    if (app_settings_restore_main_menu_defaults()) {
-      menu_layer_reload_data(menu_layer);
-      layer_mark_dirty(menu_layer_get_layer(menu_layer));
-      phone_settings_send_current();
-    }
-    return;
-  }
-
   s_editing_slot_index = (uint8_t)cell_index->row;
   window_stack_push(s_main_menu_entry_window, true);
 }

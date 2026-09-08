@@ -126,7 +126,7 @@ static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
   const uint16_t entry_count = configured_entry_count();
   if (has_continue() && row == continue_row()) { prayer_library_continue(); return; }
   if (shortcut_row(row) < entry_count) {
-    prayer_navigation_open(configured_entry_for_row(shortcut_row(row)), false);
+    prayer_navigation_open(configured_entry_for_row(shortcut_row(row)));
     return;
   }
   row -= entry_count + (has_continue() ? 1 : 0);
@@ -223,6 +223,7 @@ static void menu_window_unload(Window *window) {
 }
 
 static void menu_window_appear(Window *window) {
+  window_set_background_color(window, app_theme_background_color());
   if (!s_menu_layer) {
     return;
   }
@@ -234,6 +235,8 @@ static void menu_window_appear(Window *window) {
 }
 
 static void settings_changed_handler(void) {
+  if (s_menu_window)
+    window_set_background_color(s_menu_window, app_theme_background_color());
   if (s_brand_layer)
     layer_mark_dirty(s_brand_layer);
   if (!app_settings_get_remember_place()) reading_position_clear();

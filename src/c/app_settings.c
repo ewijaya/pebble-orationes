@@ -135,16 +135,23 @@ static void load_main_menu_slots(void) {
   migrate_legacy_main_menu_settings();
 }
 
+AppSettings app_settings_get_defaults(void) {
+  AppSettings defaults = {
+    .remember_place = true,
+    .text_size = APP_TEXT_SIZE_LARGE,
+    .accent_color = APP_DEFAULT_ACCENT_COLOR,
+    .appearance = APP_DEFAULT_APPEARANCE,
+    .navigation_highlight = APP_DEFAULT_NAVIGATION_HIGHLIGHT,
+    .noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS,
+  };
+  memcpy(defaults.slots, main_menu_default_slots, sizeof(defaults.slots));
+  return defaults;
+}
+
 void app_settings_init(void) {
-  s_state = (AppSettings){0};
-  s_state.remember_place = true;
-  s_state.text_size = APP_TEXT_SIZE_LARGE;
-  s_state.accent_color = APP_ACCENT_COLOR_OCEAN;
-  s_state.appearance = APP_APPEARANCE_LIGHT;
-  s_state.noon_reminder_enabled = false;
+  s_state = app_settings_get_defaults();
   s_daily_prayers_enabled = false;
   s_confession_enabled = false;
-  s_state.noon_reminder_duration = APP_NOON_REMINDER_DURATION_10_SECONDS;
   for (PrayerId prayer_id = PRAYER_ID_PRECES;
        prayer_id <= PRAYER_ID_MEMORARE; ++prayer_id) {
     s_legacy_main_prayer_visible[prayer_id] = true;
@@ -396,12 +403,6 @@ bool app_settings_set_main_menu_slot(uint8_t slot_index,
   }
   updated[slot_index] = entry_id;
   return app_settings_set_main_menu_slots(updated);
-}
-
-bool app_settings_restore_main_menu_defaults(void) {
-  AppSettings updated = s_state;
-  memcpy(updated.slots, main_menu_default_slots, sizeof(updated.slots));
-  return app_settings_apply(&updated);
 }
 
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void) {

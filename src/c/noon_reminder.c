@@ -139,7 +139,7 @@ static void open_prayer_handler(ClickRecognizerRef recognizer, void *context) {
     return;
   }
 
-  prayer_navigation_open(main_menu_catalog_find_prayer(s_prayer), false);
+  prayer_navigation_open(main_menu_catalog_find_prayer(s_prayer));
   window_stack_remove(s_window, false);
 }
 

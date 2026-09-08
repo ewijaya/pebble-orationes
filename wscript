@@ -1,4 +1,5 @@
 import os.path
+import json
 import subprocess
 import sys
 
@@ -20,9 +21,11 @@ def build(ctx):
 
     binaries = []
     cached_env = ctx.env
+    version = json.loads(ctx.path.find_node('package.json').read())['version']
 
     for platform in ctx.env.TARGET_PLATFORMS:
         ctx.env = ctx.all_envs[platform]
+        ctx.env.append_value('DEFINES', ['ORATIONES_VERSION="' + version + '"'])
         # Cross-module size optimization keeps the loaded image below Pebble's
         # 16-bit load_size limit while preserving the bundled prayer library.
         ctx.env.append_value('CFLAGS', ['-flto'])

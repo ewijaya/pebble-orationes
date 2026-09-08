@@ -14,6 +14,9 @@ static void test_settings(void) {
   storage_reset();
   app_settings_init();
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_LARGE);
+  assert(app_settings_get_appearance() == APP_APPEARANCE_DARK);
+  assert(app_settings_get_accent_color() == APP_ACCENT_COLOR_OCEAN);
+  assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_LIME);
   assert(!app_settings_get_noon_reminder_enabled());
   for (int i = 0; i < 5; ++i) assert(app_settings_get_main_menu_slot(i) == i + 1);
   assert(app_settings_get_main_menu_slot(6) == MAIN_MENU_ENTRY_NONE);
@@ -56,7 +59,8 @@ static void test_settings(void) {
     app_settings_init();
     assert(app_settings_get_noon_reminder_duration() == duration);
   }
-  assert(app_settings_restore_main_menu_defaults());
+  const AppSettings defaults = app_settings_get_defaults();
+  assert(app_settings_apply(&defaults));
   app_settings_init();
   for (int i = 0; i < 5; ++i) assert(app_settings_get_main_menu_slot(i) == i + 1);
 }
@@ -119,7 +123,7 @@ static void test_recoverable_settings(void) {
     assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
     AppSettings before = app_settings_get();
     AppSettings after = before;
-    after.appearance = APP_APPEARANCE_DARK;
+    after.appearance = APP_APPEARANCE_LIGHT;
     after.continue_first = true;
     after.slots[0] = MAIN_MENU_ENTRY_PRAYER_CARDS;
     storage_fail_next_write(torn);
@@ -133,11 +137,11 @@ static void test_recoverable_settings(void) {
   storage_reset();
   app_settings_init();
   assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
-  assert(app_settings_set_appearance(APP_APPEARANCE_DARK));
+  assert(app_settings_set_appearance(APP_APPEARANCE_LIGHT));
   storage_corrupt(51); // Newest bank is corrupt; recover previous settings.
   app_settings_init();
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
-  assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  assert(app_settings_get_appearance() == APP_APPEARANCE_DARK);
   AppSettings invalid = app_settings_get();
   invalid.slots[1] = invalid.slots[0];
   assert(!app_settings_apply(&invalid));
@@ -235,7 +239,48 @@ static void test_packaged_prayers(void) {
     fclose(file);
   }
 }
+static void test_restore_defaults(void) {
+  for (int torn = 0; torn < 16 + sizeof(AppSettings); ++torn) {
+    storage_reset(); app_settings_init();
+    const AppSettings defaults = app_settings_get_defaults();
+    AppSettings before = app_settings_get();
+    assert(!memcmp(&before, &defaults, sizeof(before)));
+    ReadingPosition bookmark = {.entry = MAIN_MENU_ENTRY_PRECES, .anchor = 40,
+      .kind = READING_POSITION_PLAIN};
+    assert(reading_position_save(&bookmark));
+    before.appearance = APP_APPEARANCE_LIGHT;
+    before.accent_color = APP_ACCENT_COLOR_BURGUNDY;
+    before.navigation_highlight = APP_NAVIGATION_VIOLET;
+    before.text_size = APP_TEXT_SIZE_EXTRA_LARGE;
+    before.continue_first = true;
+    before.noon_reminder_enabled = true;
+    before.noon_reminder_duration = APP_NOON_REMINDER_DURATION_30_SECONDS;
+    before.remember_place = false;
+    before.slots[0] = MAIN_MENU_ENTRY_LITANY_OF_HUMILITY;
+    assert(app_settings_apply(&before));
+    app_settings_init();
+    AppSettings actual = app_settings_get();
+    assert(!memcmp(&actual, &before, sizeof(before))); // Preserve installed choices.
+    storage_fail_next_write(torn);
+    assert(!app_settings_apply(&defaults));
+    actual = app_settings_get();
+    assert(!memcmp(&actual, &before, sizeof(before)));
+    app_settings_init(); actual = app_settings_get();
+    assert(!memcmp(&actual, &before, sizeof(before)));
+    assert(app_settings_apply(&defaults));
+    app_settings_init(); actual = app_settings_get();
+    assert(!memcmp(&actual, &defaults, sizeof(defaults)));
+    ReadingPosition restored;
+    assert(reading_position_get(&restored) && restored.anchor == bookmark.anchor);
+    assert(app_settings_get_appearance() == APP_APPEARANCE_DARK);
+    assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_LIME);
+  }
+}
+
 int main(void) {
+  test_restore_defaults();
+  extern void run_prayer_navigation_tests(void);
+  run_prayer_navigation_tests();
   extern void run_reading_tests(void);
   run_reading_tests();
   test_packaged_prayers();

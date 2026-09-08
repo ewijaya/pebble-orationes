@@ -97,7 +97,7 @@ static void rosary_menu_select_click(MenuLayer *menu_layer,
       window_stack_push(s_all_mysteries_window, true);
       break;
     case ROSARY_MENU_ITEM_LITANY:
-      prayer_navigation_open(MAIN_MENU_ENTRY_LITANY_OF_LORETO, false);
+      prayer_navigation_open(MAIN_MENU_ENTRY_LITANY_OF_LORETO);
       break;
   }
 }

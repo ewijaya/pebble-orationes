@@ -7,6 +7,8 @@ var fs = require('fs');
 var vm = require('vm');
 var config = require('../src/pkjs/config');
 assert.equal(config[0].defaultValue, 'Orationes v' + require('../package.json').version);
+assert.equal(config[config.length - 1].id, 'app-version');
+assert.equal(config[config.length - 1].defaultValue, config[0].defaultValue);
 // AppMessage keys are append-only: existing installed companions keep their IDs.
 assert.deepEqual(require('../package.json').pebble.messageKeys.slice(-2),
   ['NavigationHighlight', 'ContinueFirst']);
@@ -66,6 +68,22 @@ function defaults(items) {
   });
 }
 defaults(config);
+var resetButtons = [];
+function collectButtons(items) {
+  items.forEach(function(item) {
+    if (item.items) collectButtons(item.items);
+    if (item.type === 'button') resetButtons.push(item);
+  });
+}
+collectButtons(config);
+assert.deepEqual(resetButtons.map(function(item) { return item.id; }), ['restore-defaults']);
+assert.equal(resetButtons[0].defaultValue, 'Restore Defaults');
+Object.keys(require('../src/pkjs/settings-defaults')).forEach(function(key) {
+  assert.strictEqual(response[key].value, require('../src/pkjs/settings-defaults')[key]);
+});
+assert.equal(response.Appearance.value, 1);
+assert.equal(response.AccentColor.value, 0);
+assert.equal(response.NavigationHighlight.value, 5);
 response.NavigationHighlight.value = 3;
 assert.strictEqual(response.ContinueFirst.value, false);
 response.ContinueFirst.value = true;
@@ -113,5 +131,6 @@ phone.emit('showConfiguration');
 var page = decodeURIComponent(phone.urls[0]);
 assert(page.includes('Orationes v' + require('../package.json').version));
 assert(page.includes('ContinueFirst'));
+assert(page.includes('Resume saved prayers wherever you open them.'));
 assert.deepEqual(phone.logs, []);
 console.log('Clay save, mobile timers, restart, and watch confirmation integration passed');

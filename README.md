@@ -14,7 +14,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 ## What's included
 
-This checkout documents v0.10.1. See [Install](#install) for verified public availability.
+This checkout documents v0.11.0. See [Install](#install) for verified public availability.
 
 - **Preces** — complete Latin text in a large-print, scrollable view.
 - **Holy Rosary** — Today's Mysteries, All Mysteries, and the Litany of Loreto. The watch chooses Joyful (Mon/Sat), Sorrowful (Tue/Fri), Glorious (Wed/Sun), or Luminous (Thu) mysteries from its local weekday.
@@ -30,13 +30,17 @@ This checkout documents v0.10.1. See [Install](#install) for verified public ava
 
 The default menu stays focused on the five core entries. On the watch or in the Pebble app, **Prayer Shortcuts** can fill up to seven main-menu slots from the wider library while preserving those defaults until changed. Settings also offer Large or Extra Large text, light and dark appearances, adaptive accents, and an optional noon Angelus/Regina Caeli reminder. Holding Up or Down moves quickly through long prayers; double-clicking Select exits directly to the watchface, and long menus wrap in both directions.
 
-**Continue** opens your last saved prayer directly. **Recent Prayers** keeps separate reading places for up to eight prayers. Ordinary library and shortcut openings start at the top. **Remember Place** can be disabled in watch or phone Settings; doing so clears the saved places. **Continue First**, available in watch and phone Settings, can place Continue above your shortcuts and is Off by default.
+With **Remember Place On**, opening a prayer from any menu resumes its saved place, or starts at the top if none exists. With it **Off**, prayers always start at the beginning and saved places are cleared. **Continue** remains a shortcut to your last saved prayer. **Recent Prayers** keeps separate places for up to eight prayers. **Continue First**, available in watch and phone Settings, can place Continue above your shortcuts and is Off by default. **Reading Options → Start again** explicitly restarts a prayer.
+
+New installations start with **Dark** appearance, **Ocean** title accent, and **Lime** navigation highlight on the watch and in Clay. A single **Restore Defaults** action in either Settings interface resets all preferences: original shortcuts, those colors, Large text, Remember Place On, Continue First Off, and the noon reminder Off (10-second duration). Saved prayer positions are kept. Tap **Save Settings** to apply the reset in Clay; on the watch it applies immediately. Saved preferences survive upgrades unless you choose to reset them. The bottom of both Settings pages shows the bundled app version.
 
 In **All Prayers**, select a prayer to open it directly; hold Select and release for Open/Pin options. While reading, Select opens **Reading Options**, with **Start again** and **Jump to section** where sections are available. Responses and stanzas have clearer spacing without changing prayer wording. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
 **New in v0.10.0:** direct opening and Continue, section jumps, response/stanza formatting, eight-prayer history, optional Continue First, and a one-candidate release workflow. See the [reading refresh](docs/reading-refresh.md), [release notes](docs/releases/0.10.0.md), and [release workflow](docs/releasing.md).
 
-**New in v0.10.1:** Continue First now synchronizes between Clay and the watch, preserving your existing preference. Clay displays the bundled app version automatically. See the [release notes](docs/releases/0.10.1.md). These changes require the v0.10.1 PBW; the earlier store build does not include them.
+Version 0.10.1 added Continue First synchronization between Clay and the watch and the version heading in Clay. See the [release notes](docs/releases/0.10.1.md).
+
+**New in v0.11.0:** automatic resume from any prayer menu, Dark/Ocean/Lime defaults, one Restore Defaults action for all preferences, and version information at the bottom of watch and phone Settings. See the [release notes](docs/releases/0.11.0.md). These changes require the v0.11.0 PBW.
 
 Version 0.9.0 added Come, Holy Spirit and Litany of Humility, including its concise, small-print attribution. See [release verification](docs/verification.md). Version 0.8.0 introduced independent navigation highlights, appearance previews, a cleaner reading progress indicator, and refreshed menus. See the [UI changes](docs/ui-refresh.md).
 

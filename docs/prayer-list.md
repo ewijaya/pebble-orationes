@@ -2,7 +2,7 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.10.1**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
+This directory describes the library in **v0.11.0**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
 configuring a shortcut. Select a prayer to open it directly; hold Select and
@@ -10,8 +10,10 @@ release for **Open** and **Pin to main menu** options. **Continue** opens the la
 saved place directly; **Recent Prayers** remembers separate places for up to eight
 prayers. While reading, Select offers **Start again** and **Jump to section** where
 available. **Settings → Continue First**, on the watch or in Clay on the phone,
-optionally puts Continue above shortcuts. Version 0.10.1 synchronizes this setting
-without adding, removing, or changing any prayers.
+optionally puts Continue above shortcuts. With **Remember Place On**, opening a
+prayer from any menu resumes its saved position, or starts at the beginning if
+none exists. With it Off, prayers always start at the beginning. Version 0.11.0
+does not add, remove, or change any prayers.
 The [reading refresh](reading-refresh.md) does not add, remove, or rewrite prayers
 in this directory. Disabling **Remember Place** clears the saved places.
 
@@ -20,6 +22,11 @@ in this directory. Disabling **Remember Place** clears the saved places.
 Open **Settings → Prayer Shortcuts** on the watch, or Orationes **Settings** in the Pebble mobile app. Choose and arrange up to seven entries: individual prayers, Prayer Cards, or collections. Choose **Empty** to leave a slot unused. All Prayers and Settings stay available.
 
 The default shortcuts are **Preces, Holy Rosary, Regina Caeli, Angelus, and Memorare**, in that order. Everything else is optional; adding a shortcut does not download anything. All prayer content is already on the watch.
+
+**Restore Defaults** in watch or phone Settings restores these shortcuts and all
+other preferences, including Dark appearance, Ocean title accent, and Lime
+navigation highlight. Saved prayer positions are kept. In phone Settings, tap
+**Save Settings** to apply the reset.
 
 ## Ready on your watch
 

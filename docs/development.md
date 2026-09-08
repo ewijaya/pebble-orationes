@@ -51,6 +51,15 @@ relaunch, leaving screenshots under `build/qa-reading/`. Use `--entries`, `--cas
 `--matrix-only`, or `--flows-only` for focused checks. The earlier `qa_flows.py`
 script describes the pre-v0.10 navigation and is not the current release gate.
 
+For v0.11.0 automatic-resume behavior, run
+`python3 scripts/qa_reading.py --resume --full --entries 1 6 25 40`.
+This verifies shortcut resume across relaunch, explicit Start again, Remember
+Place Off, and cleared history after re-enabling in both sizes and appearances.
+It also checks shared bookmarks through All Prayers (direct and held Open),
+More Prayers, Prayer Cards, and Holy Rosary → Litany of Loreto. Host tests exercise
+every catalog destination with Remember Place On/Off, including failed preference
+saves. No prayer wording or persistent schema is changed.
+
 These checks do not publish, tag, or bump a version. Physical touch behavior and
 phone configuration in the actual Pebble app require separate device QA;
 [release verification](verification.md) records what was completed.
@@ -106,8 +115,9 @@ On upgrade, schema 2 at 44/45 (or schema 1 at 40/41) and the v0.10.0 Continue Fi
 preference at 46/47 are read and retained untouched. Continue First defaults to Off
 if absent or invalid; a saved schema 3 record takes precedence over the old banks.
 The eight-prayer reading history uses 48/49; the older single position at 42/43 is
-an upgrade fallback. Navigation Highlight defaults to Classic, preserving the
-previous selection colors. Old settings keys 1–7, 20–24, and 30–36
+an upgrade fallback. Fresh development installations now use Dark/Ocean/Lime.
+Valid saved settings retain their colors, including Classic for migrated schema-1
+records that predate Navigation Highlight. Old settings keys 1–7, 20–24, and 30–36
 are read for migration and are never repurposed. Wakeups retain keys 10/11.
 Changing a record layout requires a schema migration.
 
@@ -145,8 +155,13 @@ category; Select opens directly, while held Select opens Open/Pin options on
 release. Pinning lets the user choose a slot and returns to the main menu with
 that shortcut selected.
 
-Normal prayer openings start at the top. Continue and Recent Prayers resume
-directly. Select while reading offers Start again and Jump to section when available.
+In v0.11.0, every catalog prayer opening follows
+Remember Place: shortcuts, library Open/Pin routes, collections, Loreto in the
+Rosary menu, Continue, Recent Prayers, and opening the noon-reminder prayer.
+When On, an existing bookmark is restored; when Off or no bookmark exists, the
+prayer starts at the top. Continue remains a shortcut to the last saved prayer.
+The shared `prayer_navigation_open` API no longer accepts a caller-specific
+resume flag. Select while reading offers Start again and Jump to section when available.
 Remember Place is on by default and can be turned off on the watch or phone; turning
 it off clears both old and new saved positions. Up to eight distinct supported
 prayers are remembered; a ninth evicts the oldest. Rosary mystery lists are not
@@ -161,7 +176,85 @@ Bookmarks are written on leaving the reader, rather than on every
 scroll event. Abrupt loss of power before leaving can therefore retain the previous
 checkpoint. The double-Select exit still saves through window cleanup.
 
+### Automatic-resume development verification — 8 September 2026
+
+This records the automatic-resume build before the color-default changes below.
+
+The host regression suite passes, including every catalog destination with both
+Remember Place values, failed preference writes, storage recovery, Clay integration,
+and unchanged prayer-content hashes. A clean Emery build using Pebble Tool 5.0.40 /
+SDK 4.33.1 passes with 40,318 bytes of resources, 59,519 bytes of RAM, and 71,553
+bytes of free heap, unchanged from v0.10.1. The development PBW is 787,870 bytes;
+the established SDK RWX linker warning remains non-fatal.
+
+Emery checks passed for Preces in all four size/appearance combinations, Loreto
+in Large/Light, and St. Josemaría's card and Humility in Extra Large/Dark. Each
+checks direct shortcut resume, app relaunch, Start again, Off openings, and cleared
+history after re-enabling. Shared bookmarks also passed through All Prayers
+(direct and held Open), More Prayers, Prayer Cards, and Rosary → Loreto; submenu
+openings with Remember Place Off returned to the top.
+The existing `--flows-only` regression also passed: library Open/Pin, independent
+saved positions, Continue, Recent Prayers, Continue First, and persistence across
+relaunch remain working.
+
+The initial broad run stopped when its Loreto re-enable capture showed the main
+menu rather than the reader. The focused Loreto rerun passed. The harness now
+checks app run-state responses around stop/start instead of relying solely on
+fixed delays; subsequent card, Humility, and menu-route checks passed with it.
+The full 16-case cross-product was not completed. Physical touch, noon-alert
+activation, and the actual phone Settings page were not exercised in this pass.
+No physical installation, version bump, commit, or publication was performed.
+
+Development PBW SHA-256:
+`dd808cae234793346a4a750227327dfab9018870fe8d6da2fc87c14d957ee898`.
+
 ## UI appearance
+
+Version 0.11.0 defaults are Dark appearance, Ocean title accent and Lime navigation
+highlight. C initialization and reset share `app_settings_get_defaults()`;
+`src/pkjs/settings-defaults.js` supplies Clay defaults and its reset button.
+Native Settings has one Restore Defaults action; the shortcuts submenu has none.
+The reset restores every preference: original shortcuts, Dark/Ocean/Lime,
+Large text, Remember Place On, Continue First Off, noon reminder Off and duration
+10 seconds. It preserves saved prayer positions. The native action commits through
+`noon_reminder_apply_settings()` so a successful reset also cancels a scheduled
+reminder, sends a phone snapshot, and returns to the preceding screen. Failed
+persistence leaves settings and reminder scheduling unchanged. Clay resets all
+draft fields and the preview; Save Settings applies them through the same atomic
+phone protocol. Closing Clay without saving does not apply the reset.
+Empty space below a short main-menu list now follows the selected appearance too.
+Both Settings pages end with the bundled version. The native read-only row uses
+`ORATIONES_VERSION`, supplied by `wscript` from `package.json`; Clay's final text
+item reads the same package version. No separately maintained version string or
+persisted version setting is needed.
+
+Run `python3 scripts/qa_defaults.py` in the Pebble tool Python environment
+for native reset, phone synchronization, color-pixel and relaunch checks in both
+text sizes. Fresh-storage defaults, existing-record preservation, interrupted
+reset writes and bookmark preservation are covered by `python3 scripts/test.py`.
+
+Single-reset verification on 8 September 2026: host tests and the clean Emery build
+pass. `qa_defaults.py` passes native reset and full phone reset from both text sizes,
+checking every setting in watch snapshots, cyan/lime/black/white pixels, and
+persistence after relaunch. Native reset was exercised with the noon reminder
+enabled; it becomes Off. Cancellation of the firmware wakeup is confirmed by the
+reset's `noon_reminder_apply_settings()` code path, not a timed noon test.
+The native reset row was visually inspected. Resources: 40,318 bytes; RAM: 59,577
+bytes; free heap: 71,495 bytes; PBW: 790,255 bytes. The known SDK RWX warning is
+non-fatal. No physical installation or publication was performed in this pass.
+Development PBW SHA-256:
+`f8e45d43e0cdbc2e4f90dc4b9bdc789c5e1032d47143479dafa56cb50f90efc3`.
+
+Historical color-only verification on 8 September 2026 (before consolidation): the host suite and Emery reset
+checks pass in Large and Extra Large, including watch-to-phone snapshots, exact
+cyan/lime/black/white pixels, the empty menu background, unchanged unrelated
+preferences, and persistence across relaunch. Reset labels and the resulting
+menu were visually inspected. The build reports 40,318 resource bytes, 59,725
+RAM bytes, 71,347 free heap bytes, and a 790,430-byte PBW (the SDK's known RWX
+warning remains non-fatal). This is local development verification, not a
+physical-phone test or publication. The frozen v0.10.1 release is unchanged.
+Historical development PBW SHA-256:
+`af156db3980620aa981ee82a65d2ae6ff9071525ce4832db5cceb8712d69c5d4`.
 
 Title Accent controls title bands; Navigation Highlight controls selected menu rows.
 The latter has Classic, Amber, Tangerine, Violet, Magenta, and Lime choices, with

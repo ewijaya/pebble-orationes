@@ -4,7 +4,7 @@ module.exports = function() {
   var clayConfig = this;
 
   clayConfig.on(clayConfig.EVENTS.AFTER_BUILD, function() {
-    var restoreButton = clayConfig.getItemById('restore-main-menu');
+    var restoreButton = clayConfig.getItemById('restore-defaults');
     var restoringDefaults = false;
     var slotKeys = [
       'MainMenuSlot1',
@@ -87,6 +87,11 @@ module.exports = function() {
       });
       priorValues = defaultSlots.slice();
       restoringDefaults = false;
+      var defaults = clayConfig.meta.userData.settingsDefaults;
+      Object.keys(defaults).forEach(function(key) {
+        clayConfig.getItemByMessageKey(key).set(defaults[key]);
+      });
+      updateAccentPreview();
     });
 
     navigation.on('change', updateAccentPreview);

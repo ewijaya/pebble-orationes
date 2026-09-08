@@ -12,7 +12,7 @@ from PIL import Image, ImageChops
 from pebble_tool.sdk.emulator import get_emulator_info
 from libpebble2.communication import PebbleConnection
 from libpebble2.communication.transports.websocket import WebsocketTransport
-from libpebble2.protocol.apps import AppRunState, AppRunStateStart, AppRunStateStop
+from libpebble2.protocol.apps import AppRunState, AppRunStateStart, AppRunStateStop, AppRunStateRequest
 from libpebble2.services.appmessage import AppMessageService, Int32
 from libpebble2.services.screenshot import Screenshot
 from libpebble2.communication.transports.qemu.protocol import QemuButton
@@ -28,6 +28,7 @@ parser.add_argument('--case', action='append', choices=case_settings,
 parser.add_argument('--entries', nargs='+', type=int, default=[1, 4, 6, 23, 39, 40])
 parser.add_argument('--matrix-only', action='store_true', help='Skip the separate navigation/history flows')
 parser.add_argument('--flows-only', action='store_true', help='Only navigation/history checks')
+parser.add_argument('--resume', action='store_true', help='Automatic-resume regression checks only')
 args = parser.parse_args()
 out = Path('build/qa-reading')
 out.mkdir(parents=True, exist_ok=True)
@@ -36,11 +37,23 @@ def run(*command):
     result = subprocess.run(['pebble', *command], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     if result.returncode:
         raise RuntimeError(f'{command[0]} failed: {result.stderr.strip()}')
+def wait_running(expected):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        state = pebble.send_and_read(AppRunState(data=AppRunStateRequest()), AppRunState, timeout=5)
+        running = isinstance(state.data, AppRunStateStart) and state.data.uuid == app_uuid
+        if running == expected:
+            return
+        time.sleep(.2)
+    raise AssertionError(f'Emulator did not reach app running={expected}')
+
 def restart():
     # Relaunch the installed artifact, rather than repeatedly rewriting emulator flash.
     pebble.send_packet(AppRunState(data=AppRunStateStop(uuid=app_uuid)))
+    wait_running(False)
     time.sleep(.4)
     pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid)))
+    wait_running(True)
     time.sleep(.8)
 def click(button, repeat=1, duration=100):
     for i in range(repeat):
@@ -88,6 +101,63 @@ pebble = PebbleConnection(WebsocketTransport(f'ws://localhost:{port}/'))
 pebble.connect(); pebble.run_async()
 atexit.register(pebble.transport.ws.close)
 app_uuid = UUID('9f17d477-cef1-4512-8536-f01d50bb07a3')
+if args.resume:
+    combinations = ([case_settings[name] for name in args.case] if args.case else
+                    list(case_settings.values()) if args.full else [(0, 0)])
+    for entry in args.entries:
+        for size, dark in combinations:
+            label = f'resume-{entry}-{size}-{dark}'
+            start(entry, size, dark, remember=1)
+            click('select'); top = capture(label + '-new-top')
+            click('down', repeat=7); middle = capture(label + '-saved'); click('back')
+            assert not same(top, middle), label + ': test prayer did not scroll'
+            click('select')
+            assert same_anchor(middle, capture(label + '-shortcut')), label + ': shortcut lost bookmark'
+            click('select', repeat=2); restart(); click('select')
+            assert same_anchor(middle, capture(label + '-relaunched')), label + ': relaunch lost bookmark'
+            # The final Reading Options row is Start again (also for one-row menus).
+            click('select'); click('up'); click('select')
+            assert same(top, capture(label + '-start-again')), label + ': explicit restart failed'
+            click('back'); click('select')
+            assert same(top, capture(label + '-restart-saved')), label + ': explicit restart was not saved'
+            click('down', repeat=7); click('back')
+            settings(RememberPlace=0); restart(); click('select')
+            assert same(top, capture(label + '-disabled')), label + ': Off resumed old history'
+            click('down', repeat=7); click('back'); click('select')
+            assert same(top, capture(label + '-disabled-reopen')), label + ': Off saved new history'
+            click('back'); settings(RememberPlace=1); restart(); click('select')
+            assert same(top, capture(label + '-reenabled')), label + ': cleared bookmark returned'
+            print(label + ': direct resume, relaunch, Start again, Off and history clearing passed', flush=True)
+
+    # A bookmark saved through a shortcut must also work through library Open.
+    start(1, remember=1)
+    click('select'); click('down', repeat=7); saved = capture('resume-library-saved'); click('back')
+    click('down', repeat=3); click('select')  # All Prayers, after Continue and Recent.
+    click('select'); click('select')  # Daily Prayer -> Preces.
+    assert same_anchor(saved, capture('resume-library-direct')), 'Library did not reuse shortcut bookmark'
+    click('back'); click('select', duration=800); click('select')
+    assert same_anchor(saved, capture('resume-library-options')), 'Library Open action lost bookmark'
+    print('All Prayers direct and held Open share the shortcut bookmark', flush=True)
+
+    # Collection children and the Rosary's Loreto entry use the same saved identity.
+    for entry, parent, row in [(8, 7, 0), (25, 24, 0), (6, 2, 2)]:
+        start(entry, remember=1)
+        click('select'); top = capture(f'resume-submenu-{entry}-top')
+        click('down', repeat=7); saved = capture(f'resume-submenu-{entry}-saved'); click('back')
+        assert not same(top, saved), 'Submenu test prayer did not scroll'
+        settings(MainMenuSlot1=parent)
+        click('select')
+        if row: click('down', repeat=row)
+        click('select')
+        assert same_anchor(saved, capture(f'resume-submenu-{entry}-restored')), 'Submenu lost bookmark'
+        click('back'); click('back'); settings(RememberPlace=0); restart()
+        click('select')
+        if row: click('down', repeat=row)
+        click('select')
+        assert same(top, capture(f'resume-submenu-{entry}-off')), 'Submenu resumed with Remember Place Off'
+    print('More Prayers, Prayer Cards and Rosary/Loreto obey Remember Place On/Off', flush=True)
+    raise SystemExit(0)
+
 for entry in ([] if args.flows_only else args.entries):
     combinations = ([case_settings[name] for name in args.case] if args.case else
                     list(case_settings.values()) if args.full else [(0, 0)])

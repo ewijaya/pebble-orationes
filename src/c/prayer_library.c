@@ -46,7 +46,7 @@ static const char *action_label(uint16_t row, void *context) {
   return row == 0 ? "Open" : "Pin to main menu";
 }
 static void select_entry(uint16_t row, void *context) {
-  prayer_navigation_open(entry_at(row), false);
+  prayer_navigation_open(entry_at(row));
 }
 static void entry_options(uint16_t row, void *context) {
   s_entry = entry_at(row);
@@ -61,7 +61,7 @@ static const char *slot_label(uint16_t row, void *context) {
 }
 static void select_action(uint16_t row, void *context) {
   if (row == 0) {
-    prayer_navigation_open(s_entry, false);
+    prayer_navigation_open(s_entry);
   } else {
     s_slots.title = "Choose Slot";
     navigation_menu_show(&s_slots);
@@ -100,7 +100,7 @@ static const char *recent_label(uint16_t row, void *context) {
 }
 static void select_recent(uint16_t row, void *context) {
   ReadingPosition position;
-  if (reading_position_recent(row, &position)) prayer_navigation_open(position.entry, true);
+  if (reading_position_recent(row, &position)) prayer_navigation_open(position.entry);
 }
 void prayer_library_init(SettingsShortcutSavedHandler saved_handler) {
   s_saved_handler = saved_handler;
@@ -117,7 +117,7 @@ void prayer_library_show(void) { navigation_menu_show(&s_categories); }
 void prayer_library_continue(void) {
   ReadingPosition position;
   if (!reading_position_get(&position)) return;
-  prayer_navigation_open(position.entry, true);
+  prayer_navigation_open(position.entry);
 }
 void prayer_library_recent(void) { navigation_menu_show(&s_recent); }
 void prayer_library_refresh(void) {

@@ -1,4 +1,5 @@
 #include "prayer_navigation.h"
+#include "app_settings.h"
 #include "litany.h"
 #include "placeholder_screen.h"
 #include "prayer_collection_menu.h"
@@ -6,9 +7,10 @@
 #include "rosary_menu.h"
 #include <stddef.h>
 
-void prayer_navigation_open(MainMenuEntryId entry_id, bool resume) {
+void prayer_navigation_open(MainMenuEntryId entry_id) {
   const MainMenuEntry *entry = main_menu_catalog_get(entry_id);
   if (!entry) return;
+  const bool resume = app_settings_get_remember_place();
   const Prayer *prayer = NULL;
   switch (entry->destination) {
     case MAIN_MENU_DESTINATION_PRAYER:

@@ -42,6 +42,9 @@ void run_phone_tests(void) {
   phone_settings_init(changed);
   phone_settings_send_current();
   assert(reply(MESSAGE_KEY_ContinueFirst) == 0);
+  assert(reply(MESSAGE_KEY_Appearance) == APP_APPEARANCE_DARK);
+  assert(reply(MESSAGE_KEY_AccentColor) == APP_ACCENT_COLOR_OCEAN);
+  assert(reply(MESSAGE_KEY_NavigationHighlight) == APP_NAVIGATION_LIME);
   DictionaryIterator incoming = {0};
   dict_write_uint32(&incoming, MESSAGE_KEY_SettingsTransaction, 17);
   dict_write_uint8(&incoming, MESSAGE_KEY_TextSize, 1);
@@ -54,11 +57,11 @@ void run_phone_tests(void) {
   assert(app_settings_get_main_menu_slot(0) == MAIN_MENU_ENTRY_MEMORARE);
   incoming.count = 0;
   dict_write_uint32(&incoming, MESSAGE_KEY_SettingsTransaction, 18);
-  dict_write_uint32(&incoming, MESSAGE_KEY_Appearance, 1);
+  dict_write_uint32(&incoming, MESSAGE_KEY_Appearance, 0);
   dict_write_uint32(&incoming, MESSAGE_KEY_MainMenuSlot2, MAIN_MENU_ENTRY_MEMORARE);
   s_receiver(&incoming, NULL);
   assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
-  assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT); // Reject whole duplicate batch.
+  assert(app_settings_get_appearance() == APP_APPEARANCE_DARK); // Reject whole duplicate batch.
   incoming.count = 0;
   dict_write_uint32(&incoming, MESSAGE_KEY_TextSize, 256);
   s_receiver(&incoming, NULL);
@@ -72,11 +75,11 @@ void run_phone_tests(void) {
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
   incoming.count = 0;
   dict_write_uint32(&incoming, MESSAGE_KEY_NoonReminderEnabled, 1);
-  dict_write_uint32(&incoming, MESSAGE_KEY_Appearance, 1);
+  dict_write_uint32(&incoming, MESSAGE_KEY_Appearance, 0);
   s_can_schedule = false;
   s_receiver(&incoming, NULL);
   assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
-  assert(app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  assert(app_settings_get_appearance() == APP_APPEARANCE_DARK);
   incoming.count=0;
   dict_write_uint32(&incoming,MESSAGE_KEY_NavigationHighlight,APP_NAVIGATION_VIOLET);
   s_receiver(&incoming,NULL);

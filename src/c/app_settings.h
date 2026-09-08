@@ -39,6 +39,10 @@ typedef enum {
   APP_APPEARANCE_COUNT,
 } AppAppearance;
 
+#define APP_DEFAULT_APPEARANCE APP_APPEARANCE_DARK
+#define APP_DEFAULT_ACCENT_COLOR APP_ACCENT_COLOR_OCEAN
+#define APP_DEFAULT_NAVIGATION_HIGHLIGHT APP_NAVIGATION_LIME
+
 typedef enum {
   APP_NOON_REMINDER_DURATION_5_SECONDS,
   APP_NOON_REMINDER_DURATION_10_SECONDS,
@@ -61,6 +65,7 @@ typedef struct {
 typedef void (*AppSettingsChangedHandler)(void);
 void app_settings_set_changed_handler(AppSettingsChangedHandler handler);
 AppSettings app_settings_get(void);
+AppSettings app_settings_get_defaults(void);
 bool app_settings_validate(const AppSettings *settings);
 bool app_settings_apply(const AppSettings *settings);
 bool app_settings_get_remember_place(void);
@@ -85,7 +90,6 @@ bool app_settings_set_main_menu_slot(uint8_t slot_index,
                                      MainMenuEntryId entry_id);
 bool app_settings_set_main_menu_slots(
     const MainMenuEntryId slots[APP_MAIN_MENU_SLOT_COUNT]);
-bool app_settings_restore_main_menu_defaults(void);
 AppNoonReminderDuration app_settings_get_noon_reminder_duration(void);
 bool app_settings_set_noon_reminder_duration(
     AppNoonReminderDuration duration);

@@ -2,6 +2,7 @@
 
 var catalog = require('./catalog');
 var version = require('../../package.json').version;
+var defaults = require('./settings-defaults');
 function mainMenuOptions() { return catalog.options; }
 
 function mainMenuSlot(slotNumber, defaultValue) {
@@ -36,24 +37,28 @@ module.exports = [
         type: 'select',
         messageKey: 'TextSize',
         label: 'Text size',
-        defaultValue: '0',
+        defaultValue: String(defaults.TextSize),
         serializeValueAs: 'integer',
         options: [
           { label: 'Large', value: '0' },
           { label: 'Extra Large', value: '1' }
         ]
       },
-      {type: 'toggle', messageKey: 'RememberPlace', label: 'Remember reading place', defaultValue: true},
+      {
+        type: 'toggle', messageKey: 'RememberPlace', label: 'Remember reading place',
+        description: 'Resume saved prayers wherever you open them. When off, prayers start at the beginning and saved places are cleared.',
+        defaultValue: defaults.RememberPlace
+      },
       {
         type: 'toggle', messageKey: 'ContinueFirst', label: 'Continue First',
         description: 'Place Continue above your shortcuts when a saved reading place is available.',
-        defaultValue: false
+        defaultValue: defaults.ContinueFirst
       },
       {
         type: 'select',
         messageKey: 'Appearance',
         label: 'Appearance',
-        defaultValue: '0',
+        defaultValue: String(defaults.Appearance),
         serializeValueAs: 'integer',
         options: [
           { label: 'Light', value: '0' },
@@ -64,7 +69,7 @@ module.exports = [
         type: 'select',
         messageKey: 'AccentColor',
         label: 'Title accent',
-        defaultValue: '0',
+        defaultValue: String(defaults.AccentColor),
         serializeValueAs: 'integer',
         options: [
           { label: 'Ocean', value: '0' },
@@ -75,7 +80,7 @@ module.exports = [
       },
       {
         type: 'select', messageKey: 'NavigationHighlight', label: 'Navigation highlight',
-        defaultValue: '0', serializeValueAs: 'integer',
+        defaultValue: String(defaults.NavigationHighlight), serializeValueAs: 'integer',
         options: [
           {label: 'Classic', value: '0'}, {label: 'Amber', value: '1'},
           {label: 'Tangerine', value: '2'}, {label: 'Violet', value: '3'},
@@ -106,12 +111,7 @@ module.exports = [
       mainMenuSlot(4, String(catalog.defaults[3])),
       mainMenuSlot(5, String(catalog.defaults[4])),
       mainMenuSlot(6, String(catalog.defaults[5])),
-      mainMenuSlot(7, String(catalog.defaults[6])),
-      {
-        type: 'button',
-        id: 'restore-main-menu',
-        defaultValue: 'Restore Main Menu Defaults'
-      }
+      mainMenuSlot(7, String(catalog.defaults[6]))
     ]
   },
   {
@@ -125,13 +125,13 @@ module.exports = [
         type: 'toggle',
         messageKey: 'NoonReminderEnabled',
         label: 'Noon reminder',
-        defaultValue: false
+        defaultValue: defaults.NoonReminderEnabled
       },
       {
         type: 'select',
         messageKey: 'NoonReminderDuration',
         label: 'Reminder duration',
-        defaultValue: '1',
+        defaultValue: String(defaults.NoonReminderDuration),
         serializeValueAs: 'integer',
         options: [
           { label: '5 seconds', value: '0' },
@@ -142,7 +142,19 @@ module.exports = [
     ]
   },
   {
+    type: 'button', id: 'restore-defaults',
+    defaultValue: 'Restore Defaults'
+  },
+  {
+    type: 'text',
+    defaultValue: 'Reset all settings and shortcuts, including Dark appearance, Ocean title accent, and Lime navigation highlight. Saved prayer positions are kept. Tap Save Settings to apply.'
+  },
+  {
     type: 'submit',
     defaultValue: 'Save Settings'
+  },
+  {
+    type: 'text', id: 'app-version',
+    defaultValue: 'Orationes v' + version
   }
 ];
