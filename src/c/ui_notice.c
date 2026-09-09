@@ -69,3 +69,11 @@ void ui_notice_deinit(void) {
   window_destroy(s_window);
   s_window = NULL;
 }
+
+void ui_notice_show_help(void) {
+  ui_notice_show("Menu Help", "Hold Select for options\n\nSelect: dismiss");
+  if (s_timer) {
+    app_timer_cancel(s_timer);
+    s_timer = NULL;
+  }
+}

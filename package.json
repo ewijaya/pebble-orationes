@@ -1,7 +1,7 @@
 {
   "name": "orationes",
   "author": "ewijaya",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "keywords": [
     "pebble-app"
   ],
@@ -96,6 +96,12 @@
           "type": "raw",
           "name": "LITANY_OF_HUMILITY_TEXT",
           "file": "data/litany-of-humility.bin"
+        },
+        {
+          "type": "font",
+          "name": "FONT_BLESSING_28",
+          "file": "fonts/DejaVuSansCondensed-Bold.ttf",
+          "characterRegex": "[\\ ,\\.DFPSabcdeilmnprstuváíó✠]"
         }
       ]
     }

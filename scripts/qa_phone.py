@@ -89,7 +89,6 @@ try:
             assert data[keys['ContinueFirst']] == 0
             click('down')
             click('select')  # Settings after All Prayers, no shortcuts/history.
-            click('down', 7)
             capture(f'{size}-{dark}-off')
             click('select')  # Actual native toggle must proactively update phone.
             wait_for(lambda data: data.get(keys['ContinueFirst']) == 1)

@@ -15,7 +15,7 @@ static int16_t menu_get_cell_height(MenuLayer *menu_layer,
   return s_collection && cell_index->row < s_collection->prayer_count
              ? accessible_menu_wrapped_row_height(
                    menu_layer, s_collection->prayers[cell_index->row].name)
-             : ACCESSIBLE_MENU_ROW_HEIGHT;
+             : accessible_menu_min_row_height();
 }
 
 static uint16_t menu_get_num_rows(MenuLayer *menu_layer,
@@ -88,8 +88,8 @@ static void cards_click_config_provider(void *context) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
-  s_menu_layer = menu_layer_create(layer_get_bounds(window_layer));
-  menu_layer_set_callbacks(s_menu_layer, NULL,
+  s_menu_layer = accessible_menu_create(layer_get_bounds(window_layer));
+  accessible_menu_set_callbacks(s_menu_layer, NULL,
                            (MenuLayerCallbacks){
                                .get_num_rows = menu_get_num_rows,
                                .get_cell_height = menu_get_cell_height,
@@ -103,7 +103,7 @@ static void window_load(Window *window) {
   if (s_is_cards) {
     window_set_click_config_provider(window, cards_click_config_provider);
   }
-  layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+  accessible_menu_add_to_layer(window_layer, s_menu_layer);
 }
 
 static void window_appear(Window *window) {
@@ -116,7 +116,7 @@ static void window_appear(Window *window) {
 }
 
 static void window_unload(Window *window) {
-  menu_layer_destroy(s_menu_layer);
+  accessible_menu_destroy(s_menu_layer);
   s_menu_layer = NULL;
 }
 

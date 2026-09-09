@@ -60,6 +60,7 @@ typedef struct {
   uint8_t slots[APP_MAIN_MENU_SLOT_COUNT];
   uint8_t navigation_highlight;
   uint8_t continue_first;
+  uint8_t compact_menus;
 } AppSettings;
 
 typedef void (*AppSettingsChangedHandler)(void);
@@ -101,3 +102,6 @@ AppNavigationHighlight app_settings_get_navigation_highlight(void);
 bool app_settings_set_navigation_highlight(AppNavigationHighlight value);
 const char *
 app_settings_navigation_highlight_label(AppNavigationHighlight value);
+
+bool app_settings_get_compact_menus(void);
+bool app_settings_set_compact_menus(bool enabled);

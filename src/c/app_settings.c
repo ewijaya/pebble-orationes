@@ -19,7 +19,8 @@ enum {
 };
 
 enum {
-  SETTINGS_RECORD_KEY = 50, SETTINGS_SCHEMA = 3,
+  SETTINGS_RECORD_KEY = 52, SETTINGS_SCHEMA = 4,
+  V3_RECORD_KEY = 50,
   PREVIOUS_RECORD_KEY = 44, LEGACY_RECORD_KEY = 40,
   LEGACY_CONTINUE_FIRST_KEY = 46,
 };
@@ -212,16 +213,22 @@ void app_settings_init(void) {
   }
   load_main_menu_slots();
   AppSettings saved = {0};
-  const bool loaded = durable_store_read(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA,
+  bool loaded = durable_store_read(SETTINGS_RECORD_KEY, SETTINGS_SCHEMA,
                                          &saved, sizeof(saved));
+  if (!loaded) {
+    saved = (AppSettings){0};
+    loaded = durable_store_read(V3_RECORD_KEY, 3, &saved,
+                                offsetof(AppSettings, compact_menus));
+  }
+  if (saved.compact_menus > 1) saved.compact_menus = false;
   if (saved.navigation_highlight >= APP_NAVIGATION_COUNT)
     saved.navigation_highlight = APP_NAVIGATION_CLASSIC;
   if (saved.continue_first > 1) saved.continue_first = 0;
   if (loaded && app_settings_validate(&saved)) {
     s_state = saved;
   } else {
-    // Schemas 1/2 are exact 13/14-byte prefixes. Schema 3 uses new banks
-    // so a failed first save never overwrites either migration source.
+    // Schemas 1/2 are exact 13/14-byte prefixes. Each newer schema uses
+    // fresh banks so a failed first save never overwrites its migration source.
     saved = (AppSettings){0};
     bool previous = durable_store_read(PREVIOUS_RECORD_KEY, 2, &saved,
                                        offsetof(AppSettings, continue_first));
@@ -255,6 +262,7 @@ bool app_settings_validate(const AppSettings *settings) {
          settings->noon_reminder_enabled <= 1 &&
          settings->remember_place <= 1 &&
          settings->continue_first <= 1 &&
+         settings->compact_menus <= 1 &&
          main_menu_slots_are_valid(settings->slots) &&
          settings->navigation_highlight < APP_NAVIGATION_COUNT;
 }
@@ -462,4 +470,11 @@ app_settings_navigation_highlight_label(AppNavigationHighlight value) {
   static const char *const labels[] = {"Classic", "Amber",   "Tangerine",
                                        "Violet",  "Magenta", "Lime"};
   return (unsigned)value < APP_NAVIGATION_COUNT ? labels[value] : labels[0];
+}
+
+bool app_settings_get_compact_menus(void) { return s_state.compact_menus; }
+bool app_settings_set_compact_menus(bool enabled) {
+  AppSettings updated = s_state;
+  updated.compact_menus = enabled;
+  return app_settings_apply(&updated);
 }

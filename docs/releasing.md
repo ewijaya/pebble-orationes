@@ -24,7 +24,7 @@ python3 scripts/release.py prepare 0.10.0 \
 ```
 
 The version above is an example, not a release authorization. Preparation requires
-a clean tree, runs a clean build, host tests, screenshot comparisons and the full
+a clean tree, runs a clean build, host tests, screenshot comparisons, menu/header regressions and the full
 reader emulator suite, the automatic-resume matrix, and the single-reset/version
 footer checks, then installs the exact PBW on the connected PT2. It copies
 the PBW, evidence, metrics, source commit, notes, description, and digest into the

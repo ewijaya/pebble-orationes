@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -15,6 +16,12 @@ subprocess.run(["python3", "scripts/generate_text_resource.py", "--check"], chec
 for filename, expected in json.loads(Path("tests/content-sha256.json").read_text()).items():
     actual = hashlib.sha256(Path(filename).read_bytes()).hexdigest()
     assert actual == expected, f"Prayer source changed: {filename}; review wording before updating baseline"
+# The Large-mode cross fallback must cover the whole paragraph, not just ✠.
+media = json.loads(Path("package.json").read_text())["pebble"]["resources"]["media"]
+blessing_font = next(item for item in media if item["name"] == "FONT_BLESSING_28")
+for paragraph in Path("resources/data/preces.bin").read_bytes().decode().splitlines():
+    if "✠" in paragraph:
+        assert all(re.fullmatch(blessing_font["characterRegex"], char) for char in paragraph), "Blessing font subset is missing a character"
 with tempfile.TemporaryDirectory(prefix="orationes-tests-") as directory:
     executable = str(Path(directory) / "core")
     keys = Path(directory) / 'message_keys.h'

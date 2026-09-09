@@ -8,8 +8,11 @@
 #include "main_menu_catalog.h"
 #include "noon_reminder.h"
 #include "phone_settings.h"
+#include "ui_notice.h"
 
 enum {
+  SETTINGS_MENU_ITEM_CONTINUE_FIRST,
+  SETTINGS_MENU_ITEM_COMPACT_MENUS,
   SETTINGS_MENU_ITEM_TEXT_SIZE,
   SETTINGS_MENU_ITEM_APPEARANCE,
   SETTINGS_MENU_ITEM_ACCENT_COLOR,
@@ -17,7 +20,7 @@ enum {
   SETTINGS_MENU_ITEM_NOON_REMINDER,
   SETTINGS_MENU_ITEM_MAIN_MENU,
   SETTINGS_MENU_ITEM_REMEMBER_PLACE,
-  SETTINGS_MENU_ITEM_CONTINUE_FIRST,
+  SETTINGS_MENU_ITEM_HELP,
   SETTINGS_MENU_ITEM_RESTORE_DEFAULTS,
   SETTINGS_MENU_ITEM_VERSION,
   SETTINGS_MENU_ITEM_COUNT,
@@ -53,11 +56,12 @@ static uint16_t settings_get_num_rows(MenuLayer *menu_layer,
 }
 
 static const char *const s_settings_labels[] = {
+    "Continue First", "Compact Menus",
     "Text Size",      "Appearance",
     "Title Accent",   "Navigation Highlight",
     "Noon Reminder",  "Prayer Shortcuts",
     "Remember Place",
-    "Continue First",
+    "Menu Help",
     "Restore Defaults",
     "Orationes",
 };
@@ -90,8 +94,14 @@ static const char *settings_value(uint16_t row) {
   case SETTINGS_MENU_ITEM_REMEMBER_PLACE:
     value = app_settings_get_remember_place() ? "On" : "Off";
     break;
+  case SETTINGS_MENU_ITEM_COMPACT_MENUS:
+    value = app_settings_get_compact_menus() ? "On" : "Off";
+    break;
+  case SETTINGS_MENU_ITEM_HELP:
+    value = "Hold Select for options";
+    break;
   case SETTINGS_MENU_ITEM_CONTINUE_FIRST:
-    value = app_settings_get_continue_first() ? "On" : "Off";
+    value = app_settings_get_continue_first() ? "On · Resume at top" : "Off · Resume below";
     break;
   case SETTINGS_MENU_ITEM_RESTORE_DEFAULTS:
     value = "Reset all settings";
@@ -140,6 +150,12 @@ static void settings_select_click(MenuLayer *menu_layer,
     if (app_settings_set_continue_first(!app_settings_get_continue_first())) {
       phone_settings_send_current();
     }
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_COMPACT_MENUS) {
+    if (app_settings_set_compact_menus(!app_settings_get_compact_menus()))
+      window_stack_remove(s_settings_window, true);
+    else ui_notice_show("Save failed", "Please try again.");
+  } else if (cell_index->row == SETTINGS_MENU_ITEM_HELP) {
+    ui_notice_show_help();
   } else if (cell_index->row == SETTINGS_MENU_ITEM_RESTORE_DEFAULTS) {
     const AppSettings defaults = app_settings_get_defaults();
     if (noon_reminder_apply_settings(&defaults)) {
@@ -167,7 +183,7 @@ static int16_t main_menu_slots_get_cell_height(MenuLayer *menu_layer,
       return accessible_menu_wrapped_row_height(menu_layer, label);
     }
   }
-  return ACCESSIBLE_MENU_ROW_HEIGHT;
+  return accessible_menu_min_row_height();
 }
 
 static void main_menu_slots_draw_row(GContext *ctx,
@@ -386,8 +402,8 @@ static MenuLayer *create_menu(Window *window, const char *header,
                               MenuLayerSelectCallback select_click,
                               MenuLayerGetCellHeightCallback get_height) {
   Layer *window_layer = window_get_root_layer(window);
-  MenuLayer *menu_layer = menu_layer_create(layer_get_bounds(window_layer));
-  menu_layer_set_callbacks(menu_layer, (void *)header, (MenuLayerCallbacks){
+  MenuLayer *menu_layer = accessible_menu_create(layer_get_bounds(window_layer));
+  accessible_menu_set_callbacks(menu_layer, (void *)header, (MenuLayerCallbacks){
       .get_num_rows = get_rows,
       .get_cell_height = get_height ? get_height : accessible_menu_get_cell_height,
       .get_header_height = accessible_menu_get_header_height,
@@ -397,7 +413,7 @@ static MenuLayer *create_menu(Window *window, const char *header,
   });
   accessible_menu_apply_colors(menu_layer);
   menu_layer_set_click_config_onto_window(menu_layer, window);
-  layer_add_child(window_layer, menu_layer_get_layer(menu_layer));
+  accessible_menu_add_to_layer(window_layer, menu_layer);
   return menu_layer;
 }
 
@@ -408,7 +424,7 @@ static void settings_window_load(Window *window) {
 }
 
 static void settings_window_unload(Window *window) {
-  menu_layer_destroy(s_settings_menu_layer);
+  accessible_menu_destroy(s_settings_menu_layer);
   s_settings_menu_layer = NULL;
 }
 
@@ -427,7 +443,7 @@ static void noon_reminder_window_load(Window *window) {
 }
 
 static void noon_reminder_window_unload(Window *window) {
-  menu_layer_destroy(s_noon_reminder_menu_layer);
+  accessible_menu_destroy(s_noon_reminder_menu_layer);
   s_noon_reminder_menu_layer = NULL;
 }
 
@@ -445,7 +461,7 @@ static void main_menu_entry_window_load(Window *window) {
 }
 
 static void main_menu_entry_window_unload(Window *window) {
-  menu_layer_destroy(s_main_menu_entry_menu_layer);
+  accessible_menu_destroy(s_main_menu_entry_menu_layer);
   s_main_menu_entry_menu_layer = NULL;
 }
 
@@ -459,7 +475,7 @@ static void main_menu_slots_window_load(Window *window) {
 }
 
 static void main_menu_slots_window_unload(Window *window) {
-  menu_layer_destroy(s_main_menu_slots_menu_layer);
+  accessible_menu_destroy(s_main_menu_slots_menu_layer);
   s_main_menu_slots_menu_layer = NULL;
 }
 

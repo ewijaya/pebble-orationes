@@ -8,6 +8,8 @@ static uint16_t count_rows(MenuLayer *layer, uint16_t section, void *context) {
 }
 static int16_t row_height(MenuLayer *layer, MenuIndex *index, void *context) {
   NavigationMenu *menu = context;
+  if (menu->opens_menu && menu->opens_menu(index->row, menu->context) && !menu->icon)
+    return accessible_menu_submenu_height(layer, menu->label(index->row, menu->context));
   if (menu->icon)
     return accessible_menu_icon_height(layer,
                                        menu->label(index->row, menu->context));
@@ -19,28 +21,19 @@ static void draw_row(GContext *ctx, const Layer *cell, MenuIndex *index, void *c
     accessible_menu_draw_icon_row(ctx, cell,
                                   menu->label(index->row, menu->context),
                                   menu->icon(index->row));
+  else if (menu->opens_menu && menu->opens_menu(index->row, menu->context))
+    accessible_menu_draw_submenu(ctx, cell, menu->label(index->row, menu->context));
   else
     accessible_menu_draw_row(ctx, cell, menu->label(index->row, menu->context));
 }
 static int16_t header_height(MenuLayer *layer, uint16_t section,
                              void *context) {
   NavigationMenu *menu = context;
-  return accessible_menu_get_header_height(layer, section, (void *)menu->title) + (menu->hint ? 18 : 0);
+  return accessible_menu_get_header_height(layer, section, (void *)menu->title);
 }
 static void draw_header(GContext *ctx, const Layer *cell, uint16_t section, void *context) {
   NavigationMenu *menu = context;
-  if (menu->hint) {
-    const GRect bounds = layer_get_bounds(cell);
-    graphics_context_set_fill_color(ctx, app_theme_title_background_color());
-    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    graphics_context_set_text_color(ctx, app_theme_title_foreground_color());
-    graphics_draw_text(ctx, menu->title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
-                      GRect(8, 0, bounds.size.w - 16, bounds.size.h - 18),
-                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
-    graphics_draw_text(ctx, menu->hint, fonts_get_system_font(FONT_KEY_GOTHIC_14),
-                      GRect(4, bounds.size.h - 21, bounds.size.w - 8, 18),
-                      GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
-  } else accessible_menu_draw_header(ctx, cell, section, (void *)menu->title);
+  accessible_menu_draw_header(ctx, cell, section, (void *)menu->title);
 }
 static void move(NavigationMenu *menu, bool up) {
   const uint16_t count = menu->count(menu->context);
@@ -73,8 +66,8 @@ static void clicks(void *context) {
 static void load(Window *window) {
   NavigationMenu *menu = window_get_user_data(window);
   Layer *root = window_get_root_layer(window);
-  menu->layer = menu_layer_create(layer_get_bounds(root));
-  menu_layer_set_callbacks(menu->layer, menu,
+  menu->layer = accessible_menu_create(layer_get_bounds(root));
+  accessible_menu_set_callbacks(menu->layer, menu,
                            (MenuLayerCallbacks){
                                .get_num_rows = count_rows,
                                .get_cell_height = row_height,
@@ -84,11 +77,11 @@ static void load(Window *window) {
                            });
   accessible_menu_apply_colors(menu->layer);
   window_set_click_config_provider_with_context(window, clicks, menu);
-  layer_add_child(root, menu_layer_get_layer(menu->layer));
+  accessible_menu_add_to_layer(root, menu->layer);
 }
 static void unload(Window *window) {
   NavigationMenu *menu = window_get_user_data(window);
-  menu_layer_destroy(menu->layer);
+  accessible_menu_destroy(menu->layer);
   menu->layer = NULL;
 }
 static void appear(Window *window) { navigation_menu_refresh(window_get_user_data(window)); }

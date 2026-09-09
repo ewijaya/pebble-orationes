@@ -80,6 +80,12 @@ def capture(name):
     result = Image.frombytes('RGB', (len(rows[0]) // 3, len(rows)), bytes(v for row in rows for v in row))
     result.save(path)
     return result
+def dismiss_library_help():
+    # On fresh storage, dismiss the first-use notice before selecting a prayer.
+    image = capture('library-first-use-check')
+    if image.getpixel((0, 0)) in ((0, 0, 0), (255, 255, 255)):
+        click('select')
+
 def same(a, b):
     return ImageChops.difference(a, b).getbbox() is None
 def same_anchor(a, b):
@@ -133,7 +139,7 @@ if args.resume:
     start(1, remember=1)
     click('select'); click('down', repeat=7); saved = capture('resume-library-saved'); click('back')
     click('down', repeat=3); click('select')  # All Prayers, after Continue and Recent.
-    click('select'); click('select')  # Daily Prayer -> Preces.
+    click('select'); dismiss_library_help(); click('select')  # Daily Prayer -> Preces.
     assert same_anchor(saved, capture('resume-library-direct')), 'Library did not reuse shortcut bookmark'
     click('back'); click('select', duration=800); click('select')
     assert same_anchor(saved, capture('resume-library-options')), 'Library Open action lost bookmark'
@@ -189,7 +195,7 @@ if args.matrix_only:
 
 # Direct opening and release-of-hold pinning are different actions.
 start(0)
-click('select'); click('select'); capture('library-header'); click('up')
+click('select'); click('select'); dismiss_library_help(); capture('library-header'); click('up')
 capture('library-humility-selected')
 click('select'); capture('library-direct-open'); click('back')
 click('select', duration=800); capture('library-held-options')
@@ -209,13 +215,13 @@ click('select', repeat=2); restart()
 click('down', repeat=2); click('select'); capture('recent-list'); click('down'); click('select')
 assert same(preces, capture('recent-preces-resumed'))
 click('back'); click('back')
-# Settings is last; toggle the appended Continue First option.
-click('down', repeat=2); click('select'); click('down', repeat=7); capture('continue-first-off'); click('select'); capture('continue-first-on')
+# Settings is last; toggle the first Continue First option.
+click('down', repeat=2); click('select'); capture('continue-first-off'); click('select'); capture('continue-first-on')
 click('back'); click('down')  # Wrap Settings to the newly first Continue row.
 capture('continue-first-home'); click('select')
 assert same(preces, capture('continue-first-resumed'))
 click('select', repeat=2); restart()
 capture('continue-first-relaunched'); click('select')
 assert same(preces, capture('continue-first-persisted'))
-click('back'); click('up'); click('select'); click('down', repeat=7); click('select'); click('back')
+click('back'); click('up'); click('select'); click('select'); click('back')
 print('Independent history, direct Continue, recent selection, Continue First and persistence passed', flush=True)

@@ -77,7 +77,7 @@ try:
                         Appearance=0, AccentColor=2, NavigationHighlight=3, TextSize=size,
                         RememberPlace=0, ContinueFirst=1, NoonReminderEnabled=1,
                         NoonReminderDuration=2))
-        click('up'); click('select'); click('down', 9)
+        click('up'); click('select'); click('down', 11)
         footer = capture(f'{size}-version-footer')
         click('select')  # Version is read-only, not another reset action.
         assert capture(f'{size}-version-selected').tobytes() == footer.tobytes()

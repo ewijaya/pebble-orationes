@@ -3,5 +3,7 @@
 
 GFont app_fonts_body(bool extra_large);
 GFont app_fonts_italic(bool extra_large);
+// The system Gothic body font does not contain the blessing cross (U+2720).
+GFont app_fonts_blessing(bool extra_large);
 // Call after every window has been destroyed.
 void app_fonts_deinit(void);

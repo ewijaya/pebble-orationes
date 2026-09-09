@@ -4,7 +4,10 @@
 #include "phone_settings.h"
 #include "prayer_navigation.h"
 #include "reading_position.h"
+#include "ui_notice.h"
 #include <stdio.h>
+
+enum { PINNING_HINT_SEEN_KEY = 54 };
 
 static NavigationMenu s_categories, s_entries, s_actions, s_slots, s_recent;
 static uint8_t s_category;
@@ -36,10 +39,19 @@ static MainMenuEntryId entry_at(uint16_t row) {
 static const char *entry_label(uint16_t row, void *context) {
   return main_menu_catalog_get(entry_at(row))->name;
 }
+static bool entry_opens_menu(uint16_t row, void *context) {
+  return entry_at(row) == MAIN_MENU_ENTRY_HOLY_ROSARY ||
+      main_menu_catalog_get(entry_at(row))->destination == MAIN_MENU_DESTINATION_COLLECTION;
+}
 static void select_category(uint16_t row, void *context) {
   s_category = row;
   s_entries.title = category_label(row, NULL);
   navigation_menu_show(&s_entries);
+  // Separate onboarding key: showing help never changes prayer/settings records.
+  if (!persist_read_bool(PINNING_HINT_SEEN_KEY)) {
+    ui_notice_show_help();
+    persist_write_bool(PINNING_HINT_SEEN_KEY, true);
+  }
 }
 static uint16_t two_rows(void *context) { return 2; }
 static const char *action_label(uint16_t row, void *context) {
@@ -108,7 +120,7 @@ void prayer_library_init(SettingsShortcutSavedHandler saved_handler) {
   s_categories.icon = category_icon;
   navigation_menu_init(&s_entries, "Prayers", entry_count, entry_label, select_entry, NULL);
   s_entries.long_select = entry_options;
-  s_entries.hint = "Select: open / Hold: options";
+  s_entries.opens_menu = entry_opens_menu;
   navigation_menu_init(&s_actions, "Prayer Options", two_rows, action_label, select_action, NULL);
   navigation_menu_init(&s_slots, "Choose Slot", slot_count, slot_label, select_slot, NULL);
   navigation_menu_init(&s_recent, "Recent Prayers", recent_count, recent_label, select_recent, NULL);

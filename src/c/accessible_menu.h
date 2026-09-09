@@ -5,7 +5,7 @@
 
 enum {
   ACCESSIBLE_MENU_ROW_HEIGHT = 54,
-  ACCESSIBLE_MENU_HEADER_HEIGHT = 40,
+  ACCESSIBLE_MENU_HEADER_HEIGHT = 32,
 };
 
 void accessible_menu_apply_colors(MenuLayer *menu_layer);
@@ -33,3 +33,15 @@ int16_t accessible_menu_detail_height(MenuLayer *menu, const char *title,
 void accessible_menu_draw_icon_row(GContext *ctx, const Layer *cell,
                                    const char *text, UiSymbol icon);
 int16_t accessible_menu_icon_height(MenuLayer *menu, const char *text);
+
+int16_t accessible_menu_min_row_height(void);
+MenuLayer *accessible_menu_create(GRect frame);
+void accessible_menu_destroy(MenuLayer *menu);
+void accessible_menu_selection_changed(MenuLayer *menu, MenuIndex index,
+                                       MenuIndex old, void *context);
+void accessible_menu_draw_submenu(GContext *ctx, const Layer *cell, const char *text);
+int16_t accessible_menu_submenu_height(MenuLayer *menu, const char *text);
+void accessible_menu_draw_divider(GContext *ctx, const Layer *cell);
+
+void accessible_menu_add_to_layer(Layer *parent, MenuLayer *menu);
+void accessible_menu_set_callbacks(MenuLayer *menu, void *context, MenuLayerCallbacks callbacks);

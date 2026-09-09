@@ -30,7 +30,7 @@ run('install','--emulator','emery')
 settings(**dict({f'MainMenuSlot{i}':1 if i==1 else 0 for i in range(1,8)},
                 TextSize=0,Appearance=0,AccentColor=0,NavigationHighlight=0,RememberPlace=0,NoonReminderEnabled=0))
 capture('home-classic')
-click('up');click('select');click('down',3)
+click('up');click('select');click('down',5)
 before=capture('navigation-before-cancel')
 click('select');click('down',5);capture('lime-unsaved');click('back')
 after=capture('navigation-after-cancel')
@@ -50,7 +50,7 @@ for dark in (0,1):
     print(f'All six navigation previews passed in {"dark" if dark else "light"} mode',flush=True)
 click('down',5);click('select')  # Commit Lime; settings closes to home.
 run('install','--emulator','emery')
-open_setting(3)
+open_setting(5)
 assert capture('lime-persisted').getpixel((12,160)) == colors[5], 'Navigation did not persist'
 # Existing title palettes can all change without changing selected-row color.
 for dark in (0,1):
@@ -60,7 +60,7 @@ for dark in (0,1):
 click('back');click('back')
 run('install','--emulator','emery')
 settings(Appearance=0,AccentColor=0,NavigationHighlight=1)
-open_setting(0)
+open_setting(2)
 click('down');capture('extra-large-preview');click('back');capture('size-cancelled')
 click('select');click('down');click('select')
 run('install','--emulator','emery')
@@ -70,7 +70,7 @@ print('Cancel, save, relaunch persistence, accent independence, and font preview
 # Settings shortcut editing uses the same notice and must return to a usable home.
 run('install','--emulator','emery')
 settings(TextSize=0)
-open_setting(5)
+open_setting(7)
 click('select')  # Edit slot 1 (Preces).
 click('up')     # None.
 click('select')

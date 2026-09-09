@@ -94,9 +94,49 @@ static void test_navigation_migration(void) {
   assert(!memcmp(old,restored,sizeof(old)));
   AppSettings invalid=app_settings_get();invalid.navigation_highlight=255;
   assert(!app_settings_apply(&invalid));
-  assert(durable_store_write(50,3,&invalid,sizeof(invalid)));
+  assert(durable_store_write(52,4,&invalid,sizeof(invalid)));
   app_settings_init();assert(app_settings_get_navigation_highlight()==APP_NAVIGATION_CLASSIC);
   assert(app_settings_get_main_menu_slot(5)==23);
+}
+
+static void test_compact_menus(void) {
+  // Schema 3 must migrate without changing installed choices or its source banks.
+  const uint8_t old[] = {1,2,0,0,2,1, 5,2,3,4,1,23,24, 3,1};
+  storage_reset();
+  assert(durable_store_write(50, 3, old, sizeof(old)));
+  app_settings_init();
+  assert(!app_settings_get_compact_menus());
+  assert(app_settings_get_continue_first());
+  assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_VIOLET);
+  for (int torn = 0; torn < 16 + sizeof(AppSettings); ++torn) {
+    storage_fail_next_write(torn);
+    assert(!app_settings_set_compact_menus(true));
+    app_settings_init();
+    assert(!app_settings_get_compact_menus());
+    assert(app_settings_get_main_menu_slot(5) == 23);
+  }
+  assert(app_settings_set_compact_menus(true));
+  app_settings_init();
+  assert(app_settings_get_compact_menus());
+  assert(app_settings_set_appearance(APP_APPEARANCE_DARK));
+  app_settings_init();
+  assert(app_settings_get_compact_menus());
+  AppSettings invalid = app_settings_get();
+  invalid.compact_menus = 255;
+  assert(!app_settings_apply(&invalid));
+  assert(durable_store_write(52, 4, &invalid, sizeof(invalid)));
+  app_settings_init();
+  assert(!app_settings_get_compact_menus());
+  assert(app_settings_get_continue_first());
+  assert(app_settings_get_main_menu_slot(5) == 23);
+  assert(app_settings_set_compact_menus(true));
+  const AppSettings defaults = app_settings_get_defaults();
+  assert(app_settings_apply(&defaults));
+  app_settings_init();
+  assert(!app_settings_get_compact_menus());
+  uint8_t restored[sizeof(old)];
+  assert(durable_store_read(50, 3, restored, sizeof(restored)));
+  assert(!memcmp(old, restored, sizeof(old)));
 }
 
 static void test_calendar(void) {
@@ -138,7 +178,7 @@ static void test_recoverable_settings(void) {
   app_settings_init();
   assert(app_settings_set_text_size(APP_TEXT_SIZE_EXTRA_LARGE));
   assert(app_settings_set_appearance(APP_APPEARANCE_LIGHT));
-  storage_corrupt(51); // Newest bank is corrupt; recover previous settings.
+  storage_corrupt(53); // Newest bank is corrupt; recover previous settings.
   app_settings_init();
   assert(app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
   assert(app_settings_get_appearance() == APP_APPEARANCE_DARK);
@@ -253,6 +293,7 @@ static void test_restore_defaults(void) {
     before.navigation_highlight = APP_NAVIGATION_VIOLET;
     before.text_size = APP_TEXT_SIZE_EXTRA_LARGE;
     before.continue_first = true;
+    before.compact_menus = true;
     before.noon_reminder_enabled = true;
     before.noon_reminder_duration = APP_NOON_REMINDER_DURATION_30_SECONDS;
     before.remember_place = false;
@@ -287,6 +328,7 @@ int main(void) {
   extern void run_phone_tests(void);
   test_settings();
   test_navigation_migration();
+  test_compact_menus();
   test_calendar();
   test_recoverable_settings();
   test_reading_position();

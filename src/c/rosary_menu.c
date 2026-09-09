@@ -64,20 +64,35 @@ static const char *const s_rosary_labels[] = {
     "All Mysteries",
     "Litany of Loreto",
 };
+static char s_today_detail[40];
+static void update_today(void) {
+  const time_t now = time(NULL);
+  const struct tm *local = localtime(&now);
+  if (!local) { s_today_detail[0] = '\0'; return; }
+  const RosaryMysterySet *set = rosary_mystery_set_for_weekday(local->tm_wday);
+  snprintf(s_today_detail, sizeof(s_today_detail), "%s · %s", set->name,
+           rosary_weekday_abbreviation(local->tm_wday));
+}
 static int16_t rosary_height(MenuLayer *layer, MenuIndex *index,
                              void *context) {
+  if (index->row == ROSARY_MENU_ITEM_TODAY)
+    return accessible_menu_detail_height(layer, s_rosary_labels[0], s_today_detail, UI_SYMBOL_NONE);
+  if (index->row == ROSARY_MENU_ITEM_ALL)
+    return accessible_menu_submenu_height(layer, s_rosary_labels[index->row]);
   return accessible_menu_wrapped_row_height(layer, s_rosary_labels[index->row]);
 }
 static int16_t mystery_height(MenuLayer *layer, MenuIndex *index,
                               void *context) {
   const RosaryMysterySet *set = rosary_mystery_set_get(index->row);
-  char label[MYSTERY_TITLE_BUFFER_SIZE];
-  snprintf(label, sizeof(label), "%s · %s", set->name, set->weekday_label);
-  return accessible_menu_wrapped_row_height(layer, label);
+  return accessible_menu_detail_height(layer, set->name, set->weekday_label, UI_SYMBOL_NONE);
 }
 static void rosary_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                                  MenuIndex *cell_index, void *context) {
-  accessible_menu_draw_row(ctx, cell_layer, s_rosary_labels[cell_index->row]);
+  if (cell_index->row == ROSARY_MENU_ITEM_TODAY)
+    accessible_menu_draw_detail(ctx, cell_layer, s_rosary_labels[0], s_today_detail, UI_SYMBOL_NONE);
+  else if (cell_index->row == ROSARY_MENU_ITEM_ALL)
+    accessible_menu_draw_submenu(ctx, cell_layer, s_rosary_labels[cell_index->row]);
+  else accessible_menu_draw_row(ctx, cell_layer, s_rosary_labels[cell_index->row]);
 }
 
 static void rosary_menu_select_click(MenuLayer *menu_layer,
@@ -111,10 +126,7 @@ static uint16_t all_mysteries_get_num_rows(MenuLayer *menu_layer,
 static void all_mysteries_draw_row(GContext *ctx, const Layer *cell_layer,
                                    MenuIndex *cell_index, void *context) {
   const RosaryMysterySet *set = rosary_mystery_set_get(cell_index->row);
-  char row_label[MYSTERY_TITLE_BUFFER_SIZE];
-  snprintf(row_label, sizeof(row_label), "%s · %s", set->name,
-           set->weekday_label);
-  accessible_menu_draw_row(ctx, cell_layer, row_label);
+  accessible_menu_draw_detail(ctx, cell_layer, set->name, set->weekday_label, UI_SYMBOL_NONE);
 }
 
 static void all_mysteries_select_click(MenuLayer *menu_layer,
@@ -129,8 +141,8 @@ static void menu_window_load(Window *window, MenuLayer **menu_layer,
                              MenuLayerDrawRowCallback draw_row,
                              MenuLayerSelectCallback select_click) {
   Layer *window_layer = window_get_root_layer(window);
-  *menu_layer = menu_layer_create(layer_get_bounds(window_layer));
-  menu_layer_set_callbacks(
+  *menu_layer = accessible_menu_create(layer_get_bounds(window_layer));
+  accessible_menu_set_callbacks(
       *menu_layer, (void *)header,
       (MenuLayerCallbacks){
           .get_num_rows = get_rows,
@@ -143,17 +155,18 @@ static void menu_window_load(Window *window, MenuLayer **menu_layer,
       });
   accessible_menu_apply_colors(*menu_layer);
   menu_layer_set_click_config_onto_window(*menu_layer, window);
-  layer_add_child(window_layer, menu_layer_get_layer(*menu_layer));
+  accessible_menu_add_to_layer(window_layer, *menu_layer);
 }
 
 static void rosary_window_load(Window *window) {
+  update_today();
   menu_window_load(window, &s_rosary_menu_layer, "Holy Rosary",
                    rosary_menu_get_num_rows, rosary_menu_draw_row,
                    rosary_menu_select_click);
 }
 
 static void rosary_window_unload(Window *window) {
-  menu_layer_destroy(s_rosary_menu_layer);
+  accessible_menu_destroy(s_rosary_menu_layer);
   s_rosary_menu_layer = NULL;
 }
 
@@ -164,14 +177,23 @@ static void all_mysteries_window_load(Window *window) {
 }
 
 static void all_mysteries_window_unload(Window *window) {
-  menu_layer_destroy(s_all_mysteries_menu_layer);
+  accessible_menu_destroy(s_all_mysteries_menu_layer);
   s_all_mysteries_menu_layer = NULL;
 }
+
+static void day_changed(struct tm *tick, TimeUnits units) { rosary_menu_refresh(); }
+static void rosary_appear(Window *window) {
+  rosary_menu_refresh();
+  tick_timer_service_subscribe(DAY_UNIT, day_changed);
+}
+static void rosary_disappear(Window *window) { tick_timer_service_unsubscribe(); }
 
 void rosary_menu_init(void) {
   s_rosary_window = window_create();
   window_set_window_handlers(s_rosary_window, (WindowHandlers){
       .load = rosary_window_load,
+      .appear = rosary_appear,
+      .disappear = rosary_disappear,
       .unload = rosary_window_unload,
   });
 
@@ -191,10 +213,12 @@ void rosary_menu_deinit(void) {
 }
 
 void rosary_menu_show(void) {
+  rosary_menu_refresh();
   window_stack_push(s_rosary_window, true);
 }
 
 void rosary_menu_refresh(void) {
+  update_today();
   MenuLayer *menu_layers[] = {
       s_rosary_menu_layer,
       s_all_mysteries_menu_layer,

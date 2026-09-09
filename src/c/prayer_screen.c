@@ -122,6 +122,9 @@ static GFont paragraph_font(const PrayerParagraph *paragraph) {
     case PRAYER_PARAGRAPH_NOTE:
       return fonts_get_system_font(FONT_KEY_GOTHIC_14);
     default:
+      if (strstr(paragraph->text, "✠"))
+        return app_fonts_blessing(
+            app_settings_get_text_size() == APP_TEXT_SIZE_EXTRA_LARGE);
       return get_body_font();
   }
 }

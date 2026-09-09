@@ -7,7 +7,7 @@ struct NavigationMenu {
   Window *window;
   MenuLayer *layer;
   const char *title;
-  const char *hint;
+  bool (*opens_menu)(uint16_t row, void *context);
   uint16_t (*count)(void *context);
   const char *(*label)(uint16_t row, void *context);
   void (*select)(uint16_t row, void *context);

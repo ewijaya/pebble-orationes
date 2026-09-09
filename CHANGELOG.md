@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.12.0 — 2026-09-09
+
+- Continue First is now the first watch Settings row, with its placement explained.
+  Continue emphasizes the full saved prayer name above the supporting label.
+- A thin divider separates home shortcuts from navigation. Chevrons identify
+  submenu destinations, and a narrow position indicator tracks long lists,
+  including wraparound navigation. Wrapped labels reserve space for both.
+- Short menu headers share a compact 32-pixel minimum; longer titles expand.
+  Header text is positioned to preserve descenders such as g, y, and p.
+- Today's Mysteries previews the Rosary set and local weekday. All Mysteries
+  separates bold names from smaller weekday details.
+- A readable first-use notice explains “Hold Select for options”. Settings →
+  Menu Help keeps the instruction available after dismissal.
+- Optional Compact Menus uses 48-pixel minimum rows with full-size text and
+  measured expansion. The spacious 54-pixel layout remains the default.
+  This preference is watch-local, survives upgrades and relaunch, and resets
+  through watch Restore Defaults. Phone settings preserve it.
+- Fix the missing Preces blessing cross (✠) in Large text using a small bundled
+  font for the blessing paragraph. Extra Large retains its existing font.
+- Expand regression checks for menu layout, header clearance, settings migration,
+  interrupted writes, compact persistence, and blessing-font coverage.
+
+Prayer wording, Rosary weekday mappings, default shortcuts, and store artwork
+are unchanged. Existing Continue First and appearance preferences are preserved.
+
 ## v0.9.0 — 2026-09-07
 
 - Add Come, Holy Spirit and Litany of Humility in All Prayers → Daily Prayer, with individual watch and phone shortcuts.

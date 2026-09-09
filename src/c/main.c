@@ -84,40 +84,53 @@ static uint16_t menu_get_num_rows(MenuLayer *menu_layer, uint16_t section_index,
   return configured_entry_count() + MAIN_MENU_FIXED_ITEMS + (has_continue() ? 2 : 0);
 }
 
+static bool entry_opens_menu(const MainMenuEntry *entry) {
+  return entry->destination == MAIN_MENU_DESTINATION_COLLECTION ||
+         entry == main_menu_catalog_get(MAIN_MENU_ENTRY_HOLY_ROSARY);
+}
+
 static void menu_draw_row(GContext *ctx, const Layer *cell_layer,
                           MenuIndex *cell_index, void *context) {
   uint16_t row = cell_index->row;
   const uint16_t entry_count = configured_entry_count();
   const bool resume = has_continue();
   if (resume && row == continue_row()) {
-    accessible_menu_draw_detail(ctx, cell_layer, "Continue",
-                                saved_prayer_name(), UI_SYMBOL_BOOKMARK);
+    accessible_menu_draw_detail(ctx, cell_layer, saved_prayer_name(),
+                                "Continue", UI_SYMBOL_BOOKMARK);
     return;
   }
   if (shortcut_row(row) < entry_count) {
     const MainMenuEntry *entry =
         main_menu_catalog_get(configured_entry_for_row(shortcut_row(row)));
     if (entry) {
-      accessible_menu_draw_row(ctx, cell_layer, entry->name);
+      if (entry_opens_menu(entry))
+        accessible_menu_draw_submenu(ctx, cell_layer, entry->name);
+      else accessible_menu_draw_row(ctx, cell_layer, entry->name);
       return;
     }
   }
 
   row -= entry_count + (resume ? 1 : 0);
-  accessible_menu_draw_row(ctx, cell_layer,
+  accessible_menu_draw_submenu(ctx, cell_layer,
       resume && row == 0 ? "Recent Prayers" : row == (resume ? 1 : 0) ? "All Prayers" : "Settings");
+  if (row == 0) accessible_menu_draw_divider(ctx, cell_layer);
 }
 
 static int16_t menu_get_cell_height(MenuLayer *menu_layer,
                                     MenuIndex *cell_index, void *context) {
   if (has_continue() && cell_index->row == continue_row())
     return accessible_menu_detail_height(
-        menu_layer, "Continue", saved_prayer_name(), UI_SYMBOL_BOOKMARK);
+        menu_layer, saved_prayer_name(), "Continue", UI_SYMBOL_BOOKMARK);
   const MainMenuEntryId entry_id = configured_entry_for_row(shortcut_row(cell_index->row));
-  return entry_id != MAIN_MENU_ENTRY_NONE
-             ? accessible_menu_wrapped_row_height(
-                   menu_layer, main_menu_catalog_get(entry_id)->name)
-             : ACCESSIBLE_MENU_ROW_HEIGHT;
+  if (entry_id != MAIN_MENU_ENTRY_NONE) {
+    const MainMenuEntry *entry = main_menu_catalog_get(entry_id);
+    return entry_opens_menu(entry)
+        ? accessible_menu_submenu_height(menu_layer, entry->name)
+        : accessible_menu_wrapped_row_height(menu_layer, entry->name);
+  }
+  uint16_t row = cell_index->row - configured_entry_count() - (has_continue() ? 1 : 0);
+  return accessible_menu_submenu_height(menu_layer, has_continue() && row == 0
+      ? "Recent Prayers" : row == (has_continue() ? 1 : 0) ? "All Prayers" : "Settings");
 }
 
 static void menu_select_click(MenuLayer *menu_layer, MenuIndex *cell_index,
@@ -203,8 +216,8 @@ static void menu_window_load(Window *window) {
   layer_set_update_proc(s_brand_layer, draw_brand);
   layer_add_child(window_layer, s_brand_layer);
   s_menu_layer =
-      menu_layer_create(GRect(0, 32, bounds.size.w, bounds.size.h - 32));
-  menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
+      accessible_menu_create(GRect(0, 32, bounds.size.w, bounds.size.h - 32));
+  accessible_menu_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks){
       .get_num_rows = menu_get_num_rows,
       .get_cell_height = menu_get_cell_height,
       .draw_row = menu_draw_row,
@@ -212,13 +225,13 @@ static void menu_window_load(Window *window) {
   });
   accessible_menu_apply_colors(s_menu_layer);
   window_set_click_config_provider(window, menu_click_config_provider);
-  layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+  accessible_menu_add_to_layer(window_layer, s_menu_layer);
 }
 
 static void menu_window_unload(Window *window) {
   layer_destroy(s_brand_layer);
   s_brand_layer = NULL;
-  menu_layer_destroy(s_menu_layer);
+  accessible_menu_destroy(s_menu_layer);
   s_menu_layer = NULL;
 }
 
