@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Continue First protocol/UI checks. Changes only Emery emulator settings."""
+"""Continue First and Compact Menus protocol/UI checks. Changes only Emery emulator settings."""
 import json
 from pathlib import Path
 from queue import Empty, Queue
@@ -83,7 +83,7 @@ try:
             restart()
             values = {f'MainMenuSlot{i}': 0 for i in range(1, 8)}
             data = settings(**dict(values, TextSize=size, Appearance=dark,
-                                   RememberPlace=0, ContinueFirst=0,
+                                   RememberPlace=0, ContinueFirst=0, CompactMenus=0,
                                    NoonReminderEnabled=0, NoonReminderDuration=1,
                                    AccentColor=0, NavigationHighlight=0))
             assert data[keys['ContinueFirst']] == 0
@@ -106,6 +106,23 @@ try:
             data = settings()  # Empty batch returns persisted values without changing them.
             assert data[keys['ContinueFirst']] == 1
             assert data[keys['TextSize']] == size and data[keys['Appearance']] == dark
+            click('up'); click('select'); click('down')
+            click('select')  # Compact toggle closes Settings and sends snapshot.
+            wait_for(lambda data: data.get(keys['CompactMenus']) == 1)
+            capture(f'{size}-{dark}-compact-watch-on')
+            restart()
+            assert settings()[keys['CompactMenus']] == 1
+            click('up'); click('select')
+            data = settings(CompactMenus=0)
+            assert data[keys['CompactMenus']] == 0
+            capture(f'{size}-{dark}-compact-phone-off')
+            data = settings(CompactMenus=1)
+            assert data[keys['CompactMenus']] == 1
+            capture(f'{size}-{dark}-compact-phone-on')
+            data = settings(status=1, CompactMenus=2, Appearance=1-dark)
+            assert data[keys['CompactMenus']] == 1 and data[keys['Appearance']] == dark
+            click('back'); restart()
+            assert settings()[keys['CompactMenus']] == 1
             print(f'{size=}, {dark=}: phone/watch toggle, durable ACK, invalid batch, Back, relaunch passed', flush=True)
 finally:
     service.shutdown()

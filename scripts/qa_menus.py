@@ -47,8 +47,8 @@ def settings(**values):
 
 
 def restart():
-    pebble.send_packet(AppRunState(data=AppRunStateStop(uuid=app_uuid))); time.sleep(.4)
-    pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid))); time.sleep(.8)
+    pebble.send_packet(AppRunState(data=AppRunStateStop(uuid=app_uuid))); time.sleep(.6)
+    pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid))); time.sleep(1.2)
 
 
 def click(button, repeat=1, duration=.1):
@@ -99,13 +99,36 @@ try:
     click('down', 3); capture('all-mysteries-last'); click('back'); click('back')
     open_settings(); assert_header_clearance(capture('settings-promoted-continue')); click('down'); click('select')
     restart(); compact = capture('home-compact')
-    # Same font/color, six fewer pixels per short row, persisted after relaunch.
-    assert spacious.getpixel((1, 83)) != compact.getpixel((1, 83))
+    # Same font/color, 18 fewer pixels per short row, persisted after relaunch.
+    selected = (170, 255, 0)
+    assert all(compact.getpixel((1, y)) == selected for y in range(32, 68))
+    assert compact.getpixel((1, 68)) != selected
+    assert all(spacious.getpixel((1, y)) == selected for y in range(32, 86))
+    assert spacious.getpixel((1, 86)) != selected
+    # Verify full-size glyphs, including Rosary's descender, survive compaction.
+    for row in range(3):
+        def ink(image, height):
+            cell = image.crop((8, 32 + row * height, 160, 32 + (row + 1) * height))
+            background = selected if row == 0 else (0, 0, 0)
+            mask = Image.new('1', cell.size)
+            mask.putdata([pixel != background for pixel in cell.getdata()])
+            return mask.crop(mask.getbbox())
+        before, after = ink(spacious, 54), ink(compact, 36)
+        assert before.size == after.size and before.tobytes() == after.tobytes()
+    # Five complete short rows fit below the header (5 * 36 = 180 of 196 px).
+    assert compact.getpixel((1, 212)) == (0, 0, 0)
     restart(); assert capture('compact-relaunched').tobytes() == compact.tobytes()
     for dark in (0, 1):
         for size in (0, 1):
             settings(Appearance=dark, TextSize=size)
-            capture(f'compact-{dark}-{size}')
+            restart(); capture(f'compact-{dark}-{size}')
+            open_settings(); assert_header_clearance(capture(f'settings-compact-{dark}-{size}'))
+            click('back')
+    open_settings(); assert_header_clearance(capture('settings-compact'))
+    click('down', 2); capture('settings-inline-text-size')
+    click('select'); capture('settings-inline-size-picker'); click('back'); click('back')
+    restart(); click('down'); click('select'); capture('rosary-compact')
+    click('down'); click('select'); capture('all-mysteries-compact'); click('back'); click('back')
     settings(Appearance=1, TextSize=0, RememberPlace=1)
     restart(); click('select'); click('down', 5); click('back')
     click('down', 5); capture('continue-name')
@@ -125,7 +148,7 @@ try:
     capture('library-hint-dismissed')
     open_settings(); click('down', 9); click('select'); capture('menu-help')
     time.sleep(2); assert capture('menu-help-still-visible').tobytes() == capture('menu-help').tobytes()
-    click('select'); capture('menu-help-dismissed')
+    click('select'); capture('help-navigation'); click('back'); click('back'); capture('menu-help-dismissed')
     settings(RememberPlace=0, MainMenuSlot1=37, ContinueFirst=1)
     settings(RememberPlace=1)
     restart(); click('select'); click('back'); restart()
@@ -133,8 +156,11 @@ try:
     settings(Appearance=0, TextSize=1)
     capture('continue-long-name-light-extra')
     # Return the emulator to its spacious defaults after exercising compact.
-    restart(); click('up'); click('select'); click('down', 10); click('select'); restart()
-    capture('restored-spacious')
+    open_settings(); capture('reset-settings-open'); click('down', 10)
+    capture('reset-control'); click('select'); restart()
+    # Reading during QA changes Recent Prayers and therefore the indicator.
+    viewport = (0, 0, 194, 228)
+    assert capture('restored-spacious').crop(viewport).tobytes() == spacious.crop(viewport).tobytes()
     print('Menu wrap, indicator endpoints, compact persistence, themes/sizes, Continue, Rosary, pin options and Help exercised.', flush=True)
 finally:
     service.shutdown(); pebble.transport.ws.close()

@@ -70,8 +70,8 @@ void ui_notice_deinit(void) {
   s_window = NULL;
 }
 
-void ui_notice_show_help(void) {
-  ui_notice_show("Menu Help", "Hold Select for options\n\nSelect: dismiss");
+void ui_notice_show_pinning_hint(void) {
+  ui_notice_show("Prayer Options", "All Prayers lists:\nHold Select, then\nrelease for options.\n\nSelect: dismiss");
   if (s_timer) {
     app_timer_cancel(s_timer);
     s_timer = NULL;

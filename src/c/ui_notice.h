@@ -3,4 +3,4 @@ void ui_notice_init(void);
 void ui_notice_show(const char *title, const char *detail);
 void ui_notice_deinit(void);
 
-void ui_notice_show_help(void);
+void ui_notice_show_pinning_hint(void);

@@ -62,7 +62,7 @@ def capture(name):
     return image
 
 defaults = dict(Appearance=1, AccentColor=0, NavigationHighlight=5,
-                TextSize=0, RememberPlace=1, ContinueFirst=0,
+                TextSize=0, RememberPlace=1, ContinueFirst=0, CompactMenus=0,
                 NoonReminderEnabled=0, NoonReminderDuration=1,
                 **{f'MainMenuSlot{i}': i if i <= 5 else 0 for i in range(1,8)})
 
@@ -75,7 +75,7 @@ try:
         restart()
         settings(**dict({f'MainMenuSlot{i}': 1 if i == 1 else 0 for i in range(1,8)},
                         Appearance=0, AccentColor=2, NavigationHighlight=3, TextSize=size,
-                        RememberPlace=0, ContinueFirst=1, NoonReminderEnabled=1,
+                        RememberPlace=0, ContinueFirst=1, CompactMenus=1, NoonReminderEnabled=1,
                         NoonReminderDuration=2))
         click('up'); click('select'); click('down', 11)
         footer = capture(f'{size}-version-footer')
@@ -93,7 +93,7 @@ try:
         assert {(0,170,170), (170,255,0), (0,0,0), (255,255,255)} <= colors
         # Full draft payload sent by Clay's Restore Defaults + Save Settings.
         settings(Appearance=0, AccentColor=1, NavigationHighlight=2, TextSize=1,
-                 RememberPlace=0, ContinueFirst=1, NoonReminderEnabled=1,
+                 RememberPlace=0, ContinueFirst=1, CompactMenus=1, NoonReminderEnabled=1,
                  NoonReminderDuration=0, MainMenuSlot1=40)
         check_defaults(settings(**defaults))
         restart(); check_defaults(settings())

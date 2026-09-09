@@ -15,6 +15,26 @@ enum {
   HEADER_TEXT_Y = -3,
 };
 
+static int16_t row_padding(void) {
+  return app_settings_get_compact_menus() ? 4 : 12;
+}
+static int16_t row_text_y(int16_t height, int16_t text_height) {
+  // Compact cells account for Gothic's low glyph bearings, including descenders.
+  return (height - text_height) / 2 +
+         (app_settings_get_compact_menus() ? -5 : TEXT_VERTICAL_ADJUSTMENT);
+}
+static GSize value_text_size(const char *text, GFont font) {
+  return graphics_text_layout_get_content_size(
+      text, font, GRect(0, 0, 1000, 300), GTextOverflowModeWordWrap,
+      GTextAlignmentLeft);
+}
+static bool value_fits_inline(int16_t width, const char *title, const char *value) {
+  if (!app_settings_get_compact_menus()) return false;
+  const GSize label = value_text_size(title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  const GSize detail = value_text_size(value, fonts_get_system_font(FONT_KEY_GOTHIC_24));
+  return label.w + detail.w + ROW_VALUE_GAP <= width - 2 * ROW_HORIZONTAL_MARGIN;
+}
+
 static void draw_centered_text(GContext *ctx, const Layer *cell_layer,
                                const char *text, GColor background,
                                GColor foreground) {
@@ -26,8 +46,7 @@ static void draw_centered_text(GContext *ctx, const Layer *cell_layer,
   const GSize text_size = graphics_text_layout_get_content_size(
       text, font, measurement_bounds, GTextOverflowModeWordWrap,
       GTextAlignmentLeft);
-  const int16_t text_y =
-      ((bounds.size.h - text_size.h) / 2) + TEXT_VERTICAL_ADJUSTMENT;
+  const int16_t text_y = row_text_y(bounds.size.h, text_size.h);
 
   graphics_context_set_fill_color(ctx, background);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
@@ -59,7 +78,7 @@ int16_t accessible_menu_wrapped_row_height(MenuLayer *menu_layer,
   const GSize size = graphics_text_layout_get_content_size(
       text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
       GRect(0, 0, width, 300), GTextOverflowModeWordWrap, GTextAlignmentLeft);
-  const int16_t padded_height = size.h + 12;
+  const int16_t padded_height = size.h + row_padding();
   return padded_height > accessible_menu_min_row_height()
              ? padded_height : accessible_menu_min_row_height();
 }
@@ -106,45 +125,39 @@ void accessible_menu_draw_row(GContext *ctx, const Layer *cell_layer,
                               : app_theme_foreground_color());
 }
 
-void accessible_menu_draw_row_with_value(GContext *ctx,
-                                         const Layer *cell_layer,
-                                         const char *text,
-                                         const char *value) {
-  const bool selected = menu_cell_layer_is_highlighted(cell_layer);
-  const GColor background =
-      selected ? app_theme_selected_background_color()
-               : app_theme_background_color();
-  const GColor foreground =
-      selected ? app_theme_selected_foreground_color()
-               : app_theme_foreground_color();
-  const GRect bounds = layer_get_bounds(cell_layer);
-  const GFont label_font =
-      fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
-  const GFont value_font =
-      fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
-  const GSize value_size = graphics_text_layout_get_content_size(
-      value, value_font, GRect(0, 0, bounds.size.w, bounds.size.h),
-      GTextOverflowModeTrailingEllipsis, GTextAlignmentRight);
-  const int16_t value_width = value_size.w;
-  const int16_t label_width =
-      bounds.size.w - (2 * ROW_HORIZONTAL_MARGIN) - ROW_VALUE_GAP -
-      value_width;
-  const int16_t label_y =
-      ((bounds.size.h - 34) / 2) + TEXT_VERTICAL_ADJUSTMENT;
-  const int16_t value_y =
-      ((bounds.size.h - value_size.h) / 2) + TEXT_VERTICAL_ADJUSTMENT;
-
-  graphics_context_set_fill_color(ctx, background);
+int16_t accessible_menu_value_height(MenuLayer *menu, const char *text,
+                                     const char *value) {
+  const int16_t width = layer_get_bounds(menu_layer_get_layer(menu)).size.w;
+  if (!value_fits_inline(width, text, value))
+    return accessible_menu_detail_height(menu, text, value, UI_SYMBOL_NONE);
+  return accessible_menu_min_row_height();
+}
+void accessible_menu_draw_row_with_value(GContext *ctx, const Layer *cell,
+                                         const char *text, const char *value) {
+  const GRect bounds = layer_get_bounds(cell);
+  if (!value_fits_inline(bounds.size.w, text, value)) {
+    accessible_menu_draw_detail(ctx, cell, text, value, UI_SYMBOL_NONE);
+    return;
+  }
+  const bool selected = menu_cell_layer_is_highlighted(cell);
+  const GFont label_font = fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+  const GFont value_font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
+  const GSize label_size = value_text_size(text, label_font);
+  const GSize value_size = value_text_size(value, value_font);
+  const int16_t label_y = row_text_y(bounds.size.h, label_size.h);
+  const int16_t value_y = label_y + label_size.h - value_size.h;
+  graphics_context_set_fill_color(ctx, selected ? app_theme_selected_background_color()
+                                               : app_theme_background_color());
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-  graphics_context_set_text_color(ctx, foreground);
+  graphics_context_set_text_color(ctx, selected ? app_theme_selected_foreground_color()
+                                               : app_theme_foreground_color());
   graphics_draw_text(ctx, text, label_font,
-                     GRect(ROW_HORIZONTAL_MARGIN, label_y, label_width, 34),
-                     GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
-  graphics_draw_text(
-      ctx, value, value_font,
-      GRect(bounds.size.w - ROW_HORIZONTAL_MARGIN - value_width, value_y,
-            value_width, value_size.h),
-      GTextOverflowModeTrailingEllipsis, GTextAlignmentRight, NULL);
+      GRect(ROW_HORIZONTAL_MARGIN, label_y, label_size.w, label_size.h),
+      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
+  graphics_draw_text(ctx, value, value_font,
+      GRect(bounds.size.w - ROW_HORIZONTAL_MARGIN - value_size.w, value_y,
+            value_size.w, value_size.h),
+      GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 }
 
 static int16_t measured(const char *text, GFont font, int16_t width) {
@@ -157,7 +170,7 @@ int16_t accessible_menu_detail_height(MenuLayer *menu, const char *title,
                                       const char *detail, UiSymbol icon) {
   int16_t width = layer_get_bounds(menu_layer_get_layer(menu)).size.w - 16 -
                   (icon ? 28 : 0);
-  return 12 +
+  return (app_settings_get_compact_menus() ? 6 : 12) +
          measured(title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
                   width) +
          measured(detail, fonts_get_system_font(FONT_KEY_GOTHIC_24), width);
@@ -179,16 +192,17 @@ void accessible_menu_draw_detail(GContext *ctx, const Layer *cell,
   GFont title_font = fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
         detail_font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
   int16_t h = measured(title, title_font, w);
+  const int16_t top = app_settings_get_compact_menus() ? 0 : 3;
   graphics_context_set_text_color(ctx, fg);
-  graphics_draw_text(ctx, title, title_font, GRect(x, 3, w, h),
+  graphics_draw_text(ctx, title, title_font, GRect(x, top, w, h),
                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
   graphics_draw_text(ctx, detail, detail_font,
-                     GRect(x, 3 + h, w, b.size.h - 6 - h),
+                     GRect(x, top + h, w, b.size.h - 2 * top - h),
                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
 }
 int16_t accessible_menu_icon_height(MenuLayer *menu, const char *text) {
   int16_t h =
-      12 + measured(text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
+      row_padding() + measured(text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),
                     layer_get_bounds(menu_layer_get_layer(menu)).size.w - 44);
   return h > accessible_menu_min_row_height() ? h : accessible_menu_min_row_height();
 }
@@ -207,12 +221,12 @@ void accessible_menu_draw_icon_row(GContext *ctx, const Layer *cell,
   int16_t h = measured(text, font, b.size.w - 44);
   graphics_context_set_text_color(ctx, fg);
   graphics_draw_text(ctx, text, font,
-                     GRect(36, (b.size.h - h) / 2 - 1, b.size.w - 44, h),
+                     GRect(36, row_text_y(b.size.h, h), b.size.w - 44, h),
                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
 }
 
 int16_t accessible_menu_min_row_height(void) {
-  return app_settings_get_compact_menus() ? 48 : ACCESSIBLE_MENU_ROW_HEIGHT;
+  return app_settings_get_compact_menus() ? 36 : ACCESSIBLE_MENU_ROW_HEIGHT;
 }
 
 // Each indicator belongs to its menu and is freed with it. The gutter sits
@@ -287,7 +301,7 @@ void accessible_menu_selection_changed(MenuLayer *menu, MenuIndex index,
 int16_t accessible_menu_submenu_height(MenuLayer *menu, const char *text) {
   const int16_t width = layer_get_bounds(menu_layer_get_layer(menu)).size.w -
                         16 - CHEVRON_SPACE;
-  int16_t height = measured(text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), width) + 12;
+  int16_t height = measured(text, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), width) + row_padding();
   return height > accessible_menu_min_row_height() ? height : accessible_menu_min_row_height();
 }
 void accessible_menu_draw_submenu(GContext *ctx, const Layer *cell, const char *text) {
@@ -300,7 +314,7 @@ void accessible_menu_draw_submenu(GContext *ctx, const Layer *cell, const char *
   const GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
   const int16_t height = measured(text, font, width);
   graphics_context_set_text_color(ctx, fg);
-  graphics_draw_text(ctx, text, font, GRect(8, (bounds.size.h - height) / 2 - 1, width, height),
+  graphics_draw_text(ctx, text, font, GRect(8, row_text_y(bounds.size.h, height), width, height),
                      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
   const int16_t x = bounds.size.w - 12, y = bounds.size.h / 2;
   graphics_context_set_stroke_color(ctx, fg);

@@ -49,7 +49,7 @@ static void select_category(uint16_t row, void *context) {
   navigation_menu_show(&s_entries);
   // Separate onboarding key: showing help never changes prayer/settings records.
   if (!persist_read_bool(PINNING_HINT_SEEN_KEY)) {
-    ui_notice_show_help();
+    ui_notice_show_pinning_hint();
     persist_write_bool(PINNING_HINT_SEEN_KEY, true);
   }
 }

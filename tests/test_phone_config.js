@@ -10,8 +10,8 @@ assert.equal(config[0].defaultValue, 'Orationes v' + require('../package.json').
 assert.equal(config[config.length - 1].id, 'app-version');
 assert.equal(config[config.length - 1].defaultValue, config[0].defaultValue);
 // AppMessage keys are append-only: existing installed companions keep their IDs.
-assert.deepEqual(require('../package.json').pebble.messageKeys.slice(-2),
-  ['NavigationHighlight', 'ContinueFirst']);
+assert.deepEqual(require('../package.json').pebble.messageKeys.slice(-3),
+  ['NavigationHighlight', 'ContinueFirst', 'CompactMenus']);
 var keys = {};
 require('../package.json').pebble.messageKeys.forEach(function(name, index) {
   keys[name] = 10000 + index;
@@ -87,6 +87,7 @@ assert.equal(response.NavigationHighlight.value, 5);
 response.NavigationHighlight.value = 3;
 assert.strictEqual(response.ContinueFirst.value, false);
 response.ContinueFirst.value = true;
+response.CompactMenus.value = true;
 response.MainMenuSlot3.value = 23; // Reported failure: Slot 3 -> Aspirations.
 var phone = start();
 phone.emit('webviewclosed', {response: encodeURIComponent(JSON.stringify(response))});
@@ -96,6 +97,7 @@ assert.equal(sent[keys.NavigationHighlight], 3);
 assert.equal(sent[keys.MainMenuSlot3], 23);
 assert.equal(sent[keys.RememberPlace], 1);
 assert.equal(sent[keys.ContinueFirst], 1);
+assert.equal(sent[keys.CompactMenus], 1);
 assert(1 + Object.keys(sent).length * 11 <= 256, 'Full settings must fit the watch inbox');
 assert(Object.keys(sent).every(function(key) { return typeof sent[key] === 'number'; }));
 assert(stored['orationes-pending-settings']);
@@ -103,10 +105,12 @@ assert(stored['orationes-pending-settings']);
 // Replacing a pending save exercises cancellation as well as scheduling.
 response.NavigationHighlight.value = 4;
 response.ContinueFirst.value = false;
+response.CompactMenus.value = false;
 phone.emit('webviewclosed', {response: JSON.stringify(response)});
 assert.equal(phone.messages.length, 3);
 var latest = phone.messages[2];
 assert.equal(latest[keys.ContinueFirst], 0);
+assert.equal(latest[keys.CompactMenus], 0);
 assert.equal(Object.keys(phone.context.timers).length, 1);
 phone.emit('appmessage', {payload: {SettingsAck: sent[keys.SettingsTransaction], SettingsStatus: 0}});
 assert(stored['orationes-pending-settings']);
@@ -115,22 +119,42 @@ assert(stored['orationes-pending-settings']);
 phone = start();
 assert.equal(phone.messages[0][keys.NavigationHighlight], 4);
 assert.equal(phone.messages[0][keys.ContinueFirst], 0);
+assert.equal(phone.messages[0][keys.CompactMenus], 0);
 var ack = {};
 ack[keys.SettingsAck] = latest[keys.SettingsTransaction];
 ack[keys.SettingsStatus] = 0;
 ack[keys.NavigationHighlight] = 4;
 ack[keys.ContinueFirst] = 0;
+ack[keys.CompactMenus] = 0;
 phone.emit('appmessage', {payload: ack});
 assert(!stored['orationes-pending-settings']);
 assert.equal(Object.keys(phone.context.timers).length, 0);
 assert.equal(JSON.parse(stored['clay-settings']).NavigationHighlight, 4);
 assert.equal(JSON.parse(stored['clay-settings']).ContinueFirst, 0);
-phone.emit('appmessage', {payload: {ContinueFirst: 1}});
+phone.emit('appmessage', {payload: {ContinueFirst: 1, CompactMenus: 1}});
+assert.equal(JSON.parse(stored['clay-settings']).CompactMenus, 1);
 assert.equal(JSON.parse(stored['clay-settings']).ContinueFirst, 1);
 phone.emit('showConfiguration');
+assert.equal(phone.urls.length, 0, 'Wait for a current watch snapshot');
+assert.equal(phone.messages[phone.messages.length - 1][keys.SettingsRequest], 1);
+phone.emit('appmessage', {payload: {TextSize: 0, CompactMenus: 0, ContinueFirst: 1}});
+assert.equal(phone.urls.length, 1);
+assert.equal(JSON.parse(stored['clay-settings']).CompactMenus, 0);
+assert.equal(Object.keys(phone.context.timers).length, 0);
 var page = decodeURIComponent(phone.urls[0]);
 assert(page.includes('Orationes v' + require('../package.json').version));
 assert(page.includes('ContinueFirst'));
+assert(page.includes('CompactMenus'));
+assert(page.includes('Fit more menu choices'));
 assert(page.includes('Resume saved prayers wherever you open them.'));
+// A disconnected watch opens a clearly marked cached page after the timeout.
+phone.emit('showConfiguration');
+var timer = Object.keys(phone.context.timers)[0];
+phone.context.timers[timer]();
+assert.equal(phone.urls.length, 2);
+assert(decodeURIComponent(phone.urls[1]).includes('Showing cached settings'));
+phone.emit('appmessage', {payload: {TextSize: 1, CompactMenus: 1}});
+assert.equal(phone.urls.length, 2, 'A late reply must not reopen the page');
+assert.equal(JSON.parse(stored['clay-settings']).CompactMenus, 1);
 assert.deepEqual(phone.logs, []);
 console.log('Clay save, mobile timers, restart, and watch confirmation integration passed');

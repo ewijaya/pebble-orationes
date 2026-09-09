@@ -49,9 +49,19 @@ Pebble.addEventListener('ready', function() {
   requestWatchSettings();
 });
 
-Pebble.addEventListener('showConfiguration', function() {
-  clay.config[1].defaultValue = sync.status();
+var configurationTimer = null;
+function openConfiguration(fresh) {
+  if (configurationTimer === null) return;
+  clearTimeout(configurationTimer);
+  configurationTimer = null;
+  clay.config[1].defaultValue = fresh ? sync.status()
+    : 'The watch did not reply. Showing cached settings. Open Orationes on the watch, then reopen this page to refresh.';
   Pebble.openURL(clay.generateUrl());
+}
+Pebble.addEventListener('showConfiguration', function() {
+  if (configurationTimer !== null) clearTimeout(configurationTimer);
+  configurationTimer = setTimeout(function() { openConfiguration(false); }, 2000);
+  requestWatchSettings();
 });
 
 Pebble.addEventListener('webviewclosed', function(event) {
@@ -78,5 +88,9 @@ Pebble.addEventListener('appmessage', function(event) {
   var snapshot = snapshotForClay(sync.draft() || event.payload || {});
   if (Object.keys(snapshot).length > 0) {
     clay.setSettings(snapshot);
+  }
+  // A full watch snapshot answers the request; partial notifications do not.
+  if (typeof snapshotForClay(event.payload || {}).TextSize !== 'undefined') {
+    openConfiguration(true);
   }
 });

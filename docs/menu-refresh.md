@@ -39,3 +39,78 @@ The compact header renderer now draws Gothic 28 Bold at y = -3, accounting for t
 Large-mode Preces uses a bundled DejaVu Sans Condensed Bold 28 subset for the blessing paragraph containing U+2720 (✠), which the system Gothic font cannot render. Extra Large already contains that glyph. The fallback covers the entire paragraph and is used for both measurement and drawing; all prayer bytes remain unchanged. The resource subset is checked against the source paragraph by the host suite, and each character was verified against the TTF's character map. Font handles remain cached for the app lifetime to preserve layout-cache behavior.
 
 Focused screenshots are retained in `build/qa-glyph-fixes/`. The blessing cross and final Preces responses were inspected in Large and Extra Large. Resources remain within the 43,000-byte repository budget. These checks use the Emery emulator; the user's physical-watch photo established the original missing-glyph defect.
+
+
+## Stronger Compact Menus — v0.12.1
+
+The v0.12.1 layout lowers compact short rows from 48 to 36 pixels, versus
+54 with Compact Menus Off. The default home shortcuts fit five complete rows
+below the 32-pixel header instead of three. Gothic 28 Bold labels and Gothic 24
+supporting text retain their existing sizes.
+
+In compact Settings, a label and value share one line only when their measured
+widths fit with a six-pixel gap. Longer pairs, including Continue First and its
+placement explanation, retain separate lines. Wrapped label rows use four pixels
+of padding instead of twelve; title/detail rows use six instead of twelve.
+Continue prayer names and Rosary weekday details remain fully visible. Text
+placement accounts for Gothic descenders. Headers and prayer reading layout are
+unchanged, and Compact Menus Off retains the spacious rendering.
+
+This reuses the existing preference and storage format. The follow-up below
+adds Clay synchronization. The v0.12.1 candidate is separate from
+the frozen v0.12.0 artifact. See README Install for verified public availability.
+
+Validation on 2026-09-09:
+
+- Clean Emery build and host regression suite passed; prayer content hashes are unchanged.
+- Resources: 42,485 bytes; RAM: 62,399 bytes; heap: 68,673 bytes; PBW: 795,751 bytes. All repository budgets pass. The existing SDK RWX linker warning remains.
+- Emery menu QA passed: 54/36-pixel geometry, identical glyph masks for the first three home labels, relaunch persistence, both appearances and text sizes, inline Settings, Rosary details, long names, Continue, long-Select options, Help, and restoration of the spacious viewport. Screenshots are in `build/qa-menus/`.
+- The emulator initially rejected binary transfers; installation succeeded with fresh emulator storage. The previous state was preserved separately.
+- Physical PT2 touch accuracy and wrist-distance comfort for 36-pixel rows still need testing.
+
+
+## Shared Compact Menus and general Help — v0.12.1
+
+Compact Menus is now a Clay toggle as well as a watch setting. Its AppMessage
+key is appended after ContinueFirst, preserving all installed key IDs. Full watch
+snapshots include its value; phone saves validate and persist it with the other
+settings before acknowledging success. A native toggle sends the updated
+snapshot immediately. Older payloads that omit the field preserve it. Both
+watch reset and Clay Restore Defaults + Save Settings now turn it off. Existing
+watch choices are retained on upgrade, using the same storage schema.
+
+Opening Clay now requests a fresh watch snapshot and waits up to two seconds
+before showing the form. A timeout opens the cached values with an explicit
+notice; a late reply updates the cache without reopening the page. Pending phone
+edits retain the existing transaction behavior.
+
+To sync, open Orationes on the connected watch. In MyApps, open its Settings,
+make changes and tap Save Settings. Close and reopen the phone Settings page to
+see subsequent watch changes. The Clay UI is bundled with the PBW; installing
+the new build is required to expose the new toggle.
+
+Settings → Help replaces the single Menu Help notice with selectable topics:
+Navigation, Reading, Resume Prayers, Pin Shortcuts, Menu Layout, Phone Settings,
+Holy Rosary, and Noon Reminder. Up/Down scrolls a topic; Select or Back returns
+to the topics. The shared compact header preserves descenders. Body text uses
+Gothic 24 Bold in Large and Gothic 28 Bold in Extra Large, with measured content
+height and native scrolling. Phone appearance/text-size changes refresh open Help.
+Help owns separate windows and never enters prayer history or writes bookmarks.
+
+The first-use hint remains dismissible and now explicitly says “All Prayers
+lists” and instructs the user to hold Select, then release. The full Pin Shortcuts
+topic explains selecting a category and prayer, opening options, and choosing a
+main-menu slot. The gesture remains scoped to the All Prayers entry lists.
+
+
+Development validation before the v0.12.1 candidate, 2026-09-09:
+
+- Host content-integrity, settings persistence/atomicity, and actual Clay parser tests pass. The Clay tests cover the new toggle, fresh configuration requests, two-second cached fallback, late replies, queued saves, and reset.
+- `scripts/qa_help.py` passed all eight topics in Dark/Large and Light/Extra Large, including bottom/top clamps, Select/Back, topic wrap, and live phone theme/text-size refresh. Screenshot comparisons confirm headers stay fixed while scrolling.
+- `scripts/qa_phone.py` passed native and phone Compact Menus toggles, snapshots, invalid batches, relaunch and Back in all four appearance/text-size combinations. `scripts/qa_defaults.py` passed both reset paths including Compact Menus Off.
+- Emulator screenshots are retained in `build/qa-help/`, `build/qa-phone/`, and `build/qa-defaults/`. These do not establish physical PT2 touch comfort or the appearance of the user's mobile WebView. Browser preview was unavailable in this session.
+- Prayer, Rosary, Litany and calendar content are unchanged. Existing message key IDs and settings storage schema are preserved; the new key is append-only. No release or App Store artifact was changed.
+
+- `scripts/qa_menus.py` exercised the menu regression paths through its final reset. That last comparison initially failed after a missed startup button sequence. Capturing each reset step and repeating it restored a viewport identical to the spacious baseline; the test now uses the same longer restart waits as reset QA.
+- Final development bundle: 800,464 bytes; resources: 42,485 bytes; RAM: 64,889 bytes; free heap: 66,183 bytes; load/virtual sizes: 63,228/64,892 bytes. All repository budgets pass. Clean C build and final JS packaging succeeded with only the established SDK RWX linker warning.
+- The final PBW installed successfully on fresh Emery storage. The revised first-use hint stayed visible until Select, did not repeat after dismissal, and long Select opened the pin options. Compact sync and relaunch passed on that final bundle. Previous emulator storage was preserved before this onboarding check.

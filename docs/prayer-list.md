@@ -2,7 +2,7 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.12.0**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
+This directory describes the library in **v0.12.1**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
 configuring a shortcut. Select a prayer to open it directly; hold Select and
@@ -12,9 +12,9 @@ prayers. While reading, Select offers **Start again** and **Jump to section** wh
 available. **Settings → Continue First**, on the watch or in Clay on the phone,
 optionally puts Continue above shortcuts. With **Remember Place On**, opening a
 prayer from any menu resumes its saved position, or starts at the beginning if
-none exists. With it Off, prayers always start at the beginning. Version 0.12.0
-does not add, remove, or change any prayer wording. Its Large-mode font fallback
-restores the existing blessing cross in Preces.
+none exists. With it Off, prayers always start at the beginning. Version 0.12.1
+does not add, remove, or change any prayer wording. The Large-mode font fallback
+from v0.12.0 continues to render the existing blessing cross in Preces.
 The [reading refresh](reading-refresh.md) does not add, remove, or rewrite prayers
 in this directory. Disabling **Remember Place** clears the saved places.
 
@@ -27,8 +27,9 @@ The default shortcuts are **Preces, Holy Rosary, Regina Caeli, Angelus, and Memo
 **Restore Defaults** in watch or phone Settings restores these shortcuts and all
 shared preferences, including Dark appearance, Ocean title accent, and Lime
 navigation highlight. Saved prayer positions are kept. In phone Settings, tap
-**Save Settings** to apply the reset. Watch Restore Defaults also turns off
-the watch-local Compact Menus option; phone changes preserve that preference.
+**Save Settings** to apply the reset. Both reset paths turn off
+Compact Menus, which is now available and synchronized on watch and phone.
+Settings → Help provides general instructions, including the full pinning steps.
 
 ## Ready on your watch
 

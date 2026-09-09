@@ -45,3 +45,6 @@ void accessible_menu_draw_divider(GContext *ctx, const Layer *cell);
 
 void accessible_menu_add_to_layer(Layer *parent, MenuLayer *menu);
 void accessible_menu_set_callbacks(MenuLayer *menu, void *context, MenuLayerCallbacks callbacks);
+
+int16_t accessible_menu_value_height(MenuLayer *menu, const char *text,
+                                     const char *value);

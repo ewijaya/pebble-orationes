@@ -4,6 +4,7 @@
 #include "app_settings.h"
 #include "app_theme.h"
 #include "app_fonts.h"
+#include "app_help.h"
 #include "litany.h"
 #include "main_menu_catalog.h"
 #include "noon_reminder.h"
@@ -271,6 +272,7 @@ static void settings_changed_handler(void) {
   rosary_menu_refresh();
   prayer_collection_menu_refresh();
   prayer_library_refresh();
+  app_help_refresh();
 }
 
 static void shortcut_saved_handler(uint8_t slot_index) {
@@ -308,6 +310,7 @@ static bool init(void) {
 
   app_settings_init();
   ui_notice_init();
+  app_help_init();
   prayer_screen_init();
   placeholder_screen_init();
   rosary_menu_init();
@@ -336,6 +339,7 @@ static bool init(void) {
 }
 
 static void deinit(void) {
+  app_help_deinit();
   ui_notice_deinit();
   phone_settings_deinit();
   noon_reminder_deinit();

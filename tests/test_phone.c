@@ -42,6 +42,7 @@ void run_phone_tests(void) {
   phone_settings_init(changed);
   phone_settings_send_current();
   assert(reply(MESSAGE_KEY_ContinueFirst) == 0);
+  assert(reply(MESSAGE_KEY_CompactMenus) == 0);
   assert(reply(MESSAGE_KEY_Appearance) == APP_APPEARANCE_DARK);
   assert(reply(MESSAGE_KEY_AccentColor) == APP_ACCENT_COLOR_OCEAN);
   assert(reply(MESSAGE_KEY_NavigationHighlight) == APP_NAVIGATION_LIME);
@@ -103,11 +104,14 @@ void run_phone_tests(void) {
         dict_write_uint8(&incoming, MESSAGE_KEY_TextSize, size);
         dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, theme);
         dict_write_uint8(&incoming, MESSAGE_KEY_ContinueFirst, enabled);
+        dict_write_uint8(&incoming, MESSAGE_KEY_CompactMenus, enabled);
         s_receiver(&incoming, NULL);
         assert(reply(MESSAGE_KEY_SettingsAck) == 30 && reply(MESSAGE_KEY_SettingsStatus) == 0);
         assert(reply(MESSAGE_KEY_ContinueFirst) == enabled);
+        assert(reply(MESSAGE_KEY_CompactMenus) == enabled);
         app_settings_init();
         assert(app_settings_get_continue_first() == enabled);
+        assert(app_settings_get_compact_menus() == enabled);
         assert(app_settings_get_text_size() == size);
         assert(app_settings_get_appearance() == theme);
         assert(app_settings_get_navigation_highlight() == APP_NAVIGATION_VIOLET);
@@ -145,5 +149,34 @@ void run_phone_tests(void) {
   s_receiver(&incoming, NULL);
   assert(reply(MESSAGE_KEY_SettingsStatus) == 1); // Reminder scheduling failure is atomic too.
   assert(app_settings_get_continue_first() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  // Compact Menus participates in snapshots, atomic validation and persistence.
+  assert(app_settings_set_compact_menus(false));
+  phone_settings_send_current();
+  assert(reply(MESSAGE_KEY_CompactMenus) == 0);
+  assert(app_settings_set_compact_menus(true));
+  incoming.count = 0;
+  dict_write_uint8(&incoming, MESSAGE_KEY_SettingsRequest, 1);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_CompactMenus) == 1);
+  incoming.count = 0; // Old companions omit CompactMenus; retain watch value.
+  dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_LIGHT);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_CompactMenus) == 1);
+  for (unsigned i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+    incoming.count = 0;
+    dict_write_uint32(&incoming, MESSAGE_KEY_CompactMenus, invalid[i]);
+    dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_DARK);
+    s_receiver(&incoming, NULL);
+    assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
+    assert(app_settings_get_compact_menus() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
+  }
+  incoming.count = 0;
+  dict_write_uint8(&incoming, MESSAGE_KEY_CompactMenus, 0);
+  dict_write_uint8(&incoming, MESSAGE_KEY_Appearance, APP_APPEARANCE_DARK);
+  storage_fail_next_write(6);
+  s_receiver(&incoming, NULL);
+  assert(reply(MESSAGE_KEY_SettingsStatus) == 1);
+  app_settings_init();
+  assert(app_settings_get_compact_menus() && app_settings_get_appearance() == APP_APPEARANCE_LIGHT);
   phone_settings_deinit();
 }

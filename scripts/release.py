@@ -84,6 +84,8 @@ def prepare(args):
             'Canonical content, build output, and candidates must not be tracked.')
     commit = run('git', 'rev-parse', 'HEAD', capture=True).strip()
     run(sys.executable, 'scripts/check_release.py', '--screenshots')
+    run(sys.executable, 'scripts/qa_help.py')
+    run(sys.executable, 'scripts/qa_phone.py')
     run(sys.executable, 'scripts/qa_menus.py')
     run(sys.executable, 'scripts/qa_reading.py', '--full')
     run(sys.executable, 'scripts/qa_reading.py', '--resume', '--full', '--entries', '1', '6', '25', '40')
@@ -94,7 +96,7 @@ def prepare(args):
     folder.mkdir(parents=True)
     artifact = folder / 'pebble-orationes.pbw'
     shutil.copy2(ROOT / 'build/pebble-orationes.pbw', artifact)
-    for name in ('regression-screenshots', 'qa-menus', 'qa-reading', 'qa-defaults'):
+    for name in ('regression-screenshots', 'qa-help', 'qa-phone', 'qa-menus', 'qa-reading', 'qa-defaults'):
         shutil.copytree(ROOT / 'build' / name, folder / name)
     state = {'version': version, 'commit': commit, 'artifact': inspect_pbw(artifact, version),
              'destinations': [d for d in ('github', 'appstore') if d in args.destination], 'notes': notes,

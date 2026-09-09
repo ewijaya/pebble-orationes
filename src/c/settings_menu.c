@@ -9,6 +9,7 @@
 #include "noon_reminder.h"
 #include "phone_settings.h"
 #include "ui_notice.h"
+#include "app_help.h"
 
 enum {
   SETTINGS_MENU_ITEM_CONTINUE_FIRST,
@@ -61,7 +62,7 @@ static const char *const s_settings_labels[] = {
     "Title Accent",   "Navigation Highlight",
     "Noon Reminder",  "Prayer Shortcuts",
     "Remember Place",
-    "Menu Help",
+    "Help",
     "Restore Defaults",
     "Orationes",
 };
@@ -98,7 +99,7 @@ static const char *settings_value(uint16_t row) {
     value = app_settings_get_compact_menus() ? "On" : "Off";
     break;
   case SETTINGS_MENU_ITEM_HELP:
-    value = "Hold Select for options";
+    value = "Using Orationes";
     break;
   case SETTINGS_MENU_ITEM_CONTINUE_FIRST:
     value = app_settings_get_continue_first() ? "On · Resume at top" : "Off · Resume below";
@@ -114,15 +115,14 @@ static const char *settings_value(uint16_t row) {
 }
 static void settings_draw_row(GContext *ctx, const Layer *cell_layer,
                               MenuIndex *cell_index, void *context) {
-  accessible_menu_draw_detail(ctx, cell_layer,
+  accessible_menu_draw_row_with_value(ctx, cell_layer,
                               s_settings_labels[cell_index->row],
-                              settings_value(cell_index->row), UI_SYMBOL_NONE);
+                              settings_value(cell_index->row));
 }
 static int16_t settings_height(MenuLayer *layer, MenuIndex *index,
                                void *context) {
-  return accessible_menu_detail_height(layer, s_settings_labels[index->row],
-                                       settings_value(index->row),
-                                       UI_SYMBOL_NONE);
+  return accessible_menu_value_height(layer, s_settings_labels[index->row],
+                                      settings_value(index->row));
 }
 static void appearance_saved(void) {
   window_stack_remove(s_settings_window, true);
@@ -151,11 +151,13 @@ static void settings_select_click(MenuLayer *menu_layer,
       phone_settings_send_current();
     }
   } else if (cell_index->row == SETTINGS_MENU_ITEM_COMPACT_MENUS) {
-    if (app_settings_set_compact_menus(!app_settings_get_compact_menus()))
+    if (app_settings_set_compact_menus(!app_settings_get_compact_menus())) {
+      phone_settings_send_current();
       window_stack_remove(s_settings_window, true);
+    }
     else ui_notice_show("Save failed", "Please try again.");
   } else if (cell_index->row == SETTINGS_MENU_ITEM_HELP) {
-    ui_notice_show_help();
+    app_help_show();
   } else if (cell_index->row == SETTINGS_MENU_ITEM_RESTORE_DEFAULTS) {
     const AppSettings defaults = app_settings_get_defaults();
     if (noon_reminder_apply_settings(&defaults)) {

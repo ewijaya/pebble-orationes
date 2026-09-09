@@ -55,6 +55,11 @@ module.exports = [
         defaultValue: defaults.ContinueFirst
       },
       {
+        type: 'toggle', messageKey: 'CompactMenus', label: 'Compact Menus',
+        description: 'Fit more menu choices with tighter spacing and the same text size. Turn off for spacious rows.',
+        defaultValue: defaults.CompactMenus
+      },
+      {
         type: 'select',
         messageKey: 'Appearance',
         label: 'Appearance',
