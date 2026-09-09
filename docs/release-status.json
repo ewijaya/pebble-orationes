@@ -1,17 +1,17 @@
 {
-  "version": "0.11.0",
-  "commit": "0283790366ee886f19fded588c8232685119e64f",
+  "version": "0.12.0",
+  "commit": "41d4d53dd1b44b32da0df1f84a87b63d0192b6dc",
   "artifact": {
-    "sha256": "e5bc79ec63aba7d29d6697832f82b2289dbbb7d11220fff8ee74cf41192d22b2",
-    "bytes": 790492
+    "sha256": "26e4da2d56f72bd53caf41b7d48959f77f40142c408afd83fb9b84ae8cf4bbcc",
+    "bytes": 795192
   },
   "metrics": {
-    "resources": 40318,
-    "ram": 59601,
-    "heap": 71471,
-    "pbw": 790492,
-    "load": 58300,
-    "virtual": 59604
+    "resources": 42485,
+    "ram": 61839,
+    "heap": 69233,
+    "pbw": 795192,
+    "load": 60232,
+    "virtual": 61840
   },
   "status": {
     "github": "verified",
