@@ -55,7 +55,7 @@ def restart():
     pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid)))
     wait_running(True)
     time.sleep(.8)
-def click(button, repeat=1, duration=100):
+def click(button, repeat=1, duration=150):
     for i in range(repeat):
         if i: time.sleep(.15)
         send_data_to_qemu(pebble.transport, QemuButton(state=EmuButtonCommand.BUTTON_MAP[button]))
@@ -63,7 +63,7 @@ def click(button, repeat=1, duration=100):
         send_data_to_qemu(pebble.transport, QemuButton(state=0))
     # Reader Select waits for the SDK's double-click timeout before opening
     # options. A screenshot request itself need not wait for that callback.
-    time.sleep(.85 if button == 'select' else .35)
+    time.sleep(.85 if button == 'select' else .5)
 def settings(**values):
     service = AppMessageService(pebble)
     acknowledged = Event()

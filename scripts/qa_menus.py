@@ -51,11 +51,12 @@ def restart():
     pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid))); time.sleep(1.2)
 
 
-def click(button, repeat=1, duration=.1):
+def click(button, repeat=1, duration=.15):
     for _ in range(repeat):
         send_data_to_qemu(pebble.transport, QemuButton(state=EmuButtonCommand.BUTTON_MAP[button]))
         time.sleep(duration)
-        send_data_to_qemu(pebble.transport, QemuButton(state=0)); time.sleep(.35)
+        # Allow QEMU to process release and finish menu animation before the next press.
+        send_data_to_qemu(pebble.transport, QemuButton(state=0)); time.sleep(.5)
     if button == 'select': time.sleep(.4)
 
 
