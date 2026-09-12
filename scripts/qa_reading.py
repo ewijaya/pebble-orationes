@@ -55,7 +55,11 @@ def restart():
     pebble.send_packet(AppRunState(data=AppRunStateStart(uuid=app_uuid)))
     wait_running(True)
     time.sleep(.8)
-def click(button, repeat=1, duration=150):
+def click(button, repeat=1, duration=None):
+    # Keep deliberate double-clicks quick, but give isolated presses more time
+    # to reach QEMU on hosts where short presses can be missed.
+    if duration is None:
+        duration = 100 if repeat == 2 and button == 'select' else 250
     for i in range(repeat):
         if i: time.sleep(.15)
         send_data_to_qemu(pebble.transport, QemuButton(state=EmuButtonCommand.BUTTON_MAP[button]))
@@ -63,7 +67,7 @@ def click(button, repeat=1, duration=150):
         send_data_to_qemu(pebble.transport, QemuButton(state=0))
     # Reader Select waits for the SDK's double-click timeout before opening
     # options. A screenshot request itself need not wait for that callback.
-    time.sleep(.85 if button == 'select' else .5)
+    time.sleep(1.2 if button == 'select' else .6)
 def settings(**values):
     service = AppMessageService(pebble)
     acknowledged = Event()
@@ -174,6 +178,10 @@ for entry in ([] if args.flows_only else args.entries):
         click('select'); capture(label + '-options')
         click('down'); click('select'); capture(label + '-sections')
         click('up'); click('select'); jumped = capture(label + '-jump-last')
+        # The last section scrolls the reader title away; the left margin then
+        # contains only body background, without a menu's selected-row fill.
+        background = (0, 0, 0) if dark else (255, 255, 255)
+        assert all(jumped.getpixel((0, y)) == background for y in range(jumped.height)), label + ': section picker did not return to reader'
         assert not same(top, jumped), label + ': jump did not move'
         click('down', duration=6000); bottom = capture(label + '-bottom')
         click('down', duration=1500)
