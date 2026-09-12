@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.2 — 2026-09-12
+
+- Put Start again first and select it initially in Reading Options for every prayer.
+- Keep Jump to section second where available, with the existing button controls.
+- Update reader regression checks for the new order.
+
+Prayer wording and saved-settings formats are unchanged.
+
 ## v0.12.0 — 2026-09-09
 
 - Continue First is now the first watch Settings row, with its placement explained.

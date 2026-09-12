@@ -498,10 +498,10 @@ static void select_section(uint16_t row, void *context) {
 }
 static uint16_t option_count(void *context) { return section_count(NULL) > 1 ? 2 : 1; }
 static const char *option_label(uint16_t row, void *context) {
-  return section_count(NULL) > 1 && row == 0 ? "Jump to section" : "Start again";
+  return row == 0 ? "Start again" : "Jump to section";
 }
 static void select_option(uint16_t row, void *context) {
-  if (section_count(NULL) > 1 && row == 0) navigation_menu_show(&s_sections);
+  if (section_count(NULL) > 1 && row == 1) navigation_menu_show(&s_sections);
   else {
     ReadingPosition top = {0};
     restore_position(&top);

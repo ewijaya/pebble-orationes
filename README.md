@@ -14,7 +14,7 @@ Orationes is a personal native Pebble C app built specifically for Pebble Time 2
 
 ## What's included
 
-This checkout documents v0.12.1. See [Install](#install) for verified public availability.
+This checkout documents v0.12.2. See [Install](#install) for verified public availability.
 
 - **Preces** — complete Latin text in a large-print, scrollable view.
 - **Holy Rosary** — Today's Mysteries, All Mysteries, and the Litany of Loreto. The watch chooses Joyful (Mon/Sat), Sorrowful (Tue/Fri), Glorious (Wed/Sun), or Luminous (Thu) mysteries from its local weekday.
@@ -37,6 +37,8 @@ New installations start with **Dark** appearance, **Ocean** title accent, and **
 In **All Prayers**, select a prayer to open it directly; hold Select and release for Open/Pin options. A readable first-use hint explains the hold gesture; **Settings → Help → Pin Shortcuts** explains the full steps after dismissal. Help also covers navigation, reading, resuming, menu layout, phone settings, Rosary, and reminders, with selectable topics and scrollable instructions. While reading, Select opens **Reading Options**, with **Start again** and **Jump to section** where sections are available. Responses and stanzas have clearer spacing without changing prayer wording. Settings recover from interrupted writes, and phone changes wait for confirmation from the watch before being marked saved.
 
 Menus use compact headers, chevrons for submenu destinations, a thin divider before home navigation, and a position indicator on long lists. **Today's Mysteries** previews the current set and weekday; **All Mysteries** separates names from weekday details. **Compact Menus** uses 36-pixel short rows instead of the spacious 54-pixel default, retaining full-size text and measured expansion for long names. Settings labels and values share a line when they fit. The option is available on both the watch and Clay, syncs in both directions, and is turned off by either Restore Defaults. Opening Clay requests fresh watch settings; a two-second timeout clearly labels cached values. Open Orationes on the watch and reopen phone Settings to refresh. See the [menu refresh and validation](docs/menu-refresh.md).
+
+**New in v0.12.2:** **Start again** is first and initially selected in Reading Options throughout the app, followed by **Jump to section** where available. Press Select, wait for the menu to open, then press Select again to return to the prayer's beginning. A quick double-click still exits to the watchface. See the [release notes](docs/releases/0.12.2.md). This change requires the v0.12.2 PBW.
 
 **New in v0.12.1:** stronger compact menus, shared Clay/watch Compact Menus settings, fresh settings snapshots when opening Clay, and general Help with eight selectable topics. See the [release notes](docs/releases/0.12.1.md). These changes require the v0.12.1 PBW.
 

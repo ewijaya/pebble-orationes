@@ -121,8 +121,8 @@ if args.resume:
             assert same_anchor(middle, capture(label + '-shortcut')), label + ': shortcut lost bookmark'
             click('select', repeat=2); restart(); click('select')
             assert same_anchor(middle, capture(label + '-relaunched')), label + ': relaunch lost bookmark'
-            # The final Reading Options row is Start again (also for one-row menus).
-            click('select'); click('up'); click('select')
+            # Start again is the initially selected row, including one-row menus.
+            click('select'); click('select')
             assert same(top, capture(label + '-start-again')), label + ': explicit restart failed'
             click('back'); click('select')
             assert same(top, capture(label + '-restart-saved')), label + ': explicit restart was not saved'
@@ -172,13 +172,13 @@ for entry in ([] if args.flows_only else args.entries):
         start(entry, size, dark)
         click('select'); top = capture(label + '-top')
         click('select'); capture(label + '-options')
-        click('select'); capture(label + '-sections')
+        click('down'); click('select'); capture(label + '-sections')
         click('up'); click('select'); jumped = capture(label + '-jump-last')
         assert not same(top, jumped), label + ': jump did not move'
         click('down', duration=6000); bottom = capture(label + '-bottom')
         click('down', duration=1500)
         assert same(bottom, capture(label + '-clamp')), label + ': bottom not stable'
-        click('select'); click('down'); click('select')
+        click('select'); click('select')
         assert same(top, capture(label + '-start-again')), label + ': restart failed'
         click('up'); assert same(top, capture(label + '-top-clamp'))
         click('down', repeat=7); middle = capture(label + '-middle')

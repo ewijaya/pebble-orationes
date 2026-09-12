@@ -161,7 +161,9 @@ Rosary menu, Continue, Recent Prayers, and opening the noon-reminder prayer.
 When On, an existing bookmark is restored; when Off or no bookmark exists, the
 prayer starts at the top. Continue remains a shortcut to the last saved prayer.
 The shared `prayer_navigation_open` API no longer accepts a caller-specific
-resume flag. Select while reading offers Start again and Jump to section when available.
+resume flag. Select while reading offers Start again as the first, initially selected
+row, followed by Jump to section when available. Pause for Reading Options to open
+before pressing Select again to restart; a quick double-Select still exits to the watchface.
 Remember Place is on by default and can be turned off on the watch or phone; turning
 it off clears both old and new saved positions. Up to eight distinct supported
 prayers are remembered; a ninth evicts the oldest. Rosary mystery lists are not
