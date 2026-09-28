@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.13.0 — 2026-09-28
 
 - Add Meal Prayers under All Prayers → Daily Prayer and as a shortcut: Blessing
   Before Meals with its midday and evening additions, then Grace After Meals.
