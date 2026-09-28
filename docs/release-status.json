@@ -1,15 +1,15 @@
 {
-  "version": "0.12.2",
-  "commit": "aee47cc4e0178dcc9b4c45ab37ed8725ad72635b",
+  "version": "0.12.3",
+  "commit": "df2ad2aee9dce56a789bdddb43e87a08931812a8",
   "artifact": {
-    "sha256": "d4767be7c6cec1f46ca26734051677c417f068bbc816c7640eb8337fc32f6d75",
-    "bytes": 800436
+    "sha256": "fd9f9b872ec6777fe3bce581354f111d4e1d166158765faa8bd52dc275b837ab",
+    "bytes": 800688
   },
   "metrics": {
     "resources": 42485,
     "ram": 64869,
     "heap": 66203,
-    "pbw": 800436,
+    "pbw": 800688,
     "load": 63208,
     "virtual": 64872
   },
