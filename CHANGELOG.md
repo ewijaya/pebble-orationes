@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.12.3 — 2026-09-28
+
+- Stop requesting a full watch settings snapshot every time Orationes launches.
+  Opening phone Settings still requests current values, with the existing
+  two-second fallback to clearly labelled cached values.
+- Unconfirmed phone saves are still resent at launch.
+- Extend the Clay integration test to assert that launch sends no request.
+
+Watch behavior, prayer wording, and saved-settings formats are unchanged.
+
 ## v0.12.2 — 2026-09-12
 
 - Put Start again first and select it initially in Reading Options for every prayer.

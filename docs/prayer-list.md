@@ -2,7 +2,7 @@
 
 Includes Latin Preces, prayers before and after mental prayer, aspirations for everyday life, and prayers for offering your work to God.
 
-This directory describes the library in **v0.12.2**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
+This directory describes the library in **v0.12.3**. It lists what is included rather than reproducing the prayer texts. See [Install](../README.md#install) for verified public availability. [Back to README](../README.md)
 
 **All Prayers** is available for browsing this library without first
 configuring a shortcut. Select a prayer to open it directly; hold Select and
@@ -12,7 +12,7 @@ prayers. While reading, Select offers **Start again** first and **Jump to sectio
 available. **Settings → Continue First**, on the watch or in Clay on the phone,
 optionally puts Continue above shortcuts. With **Remember Place On**, opening a
 prayer from any menu resumes its saved position, or starts at the beginning if
-none exists. With it Off, prayers always start at the beginning. Version 0.12.2
+none exists. With it Off, prayers always start at the beginning. Version 0.12.3
 does not add, remove, or change any prayer wording. The Large-mode font fallback
 from v0.12.0 continues to render the existing blessing cross in Preces.
 The [reading refresh](reading-refresh.md) does not add, remove, or rewrite prayers
