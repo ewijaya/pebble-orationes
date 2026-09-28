@@ -1,6 +1,8 @@
 ---
 name: orationes-publish-release
 description: End-to-end Orationes release — bump the version and sync README, GitHub, the RePebble Developer Dashboard, the public App Store, and mobile My Apps. Use only when the user asks to release everywhere.
+disable-model-invocation: true
+argument-hint: "[version]"
 ---
 
 # Publish Orationes everywhere
@@ -19,9 +21,9 @@ screenshot replacement, or other listing edits.
 
 Before acting, read these files in full; their safety rules still apply:
 
-- `.agents/skills/orationes-release/SKILL.md` — the `release.py` workflow
-- `.agents/skills/orationes-appstore/SKILL.md` — listing rules
-- `.agents/skills/orationes-build-audit/SKILL.md` — build checks
+- `.claude/skills/orationes-release/SKILL.md` — the `release.py` workflow
+- `.claude/skills/orationes-appstore/SKILL.md` — listing rules
+- `.claude/skills/orationes-build-audit/SKILL.md` — build checks
 - `docs/releasing.md`
 
 ## 1. Establish the release

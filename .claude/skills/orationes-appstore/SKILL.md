@@ -1,6 +1,7 @@
 ---
 name: orationes-appstore
 description: Manages the existing Orationes Pebble App Store listing — release uploads, listing description, screenshots, and public verification — only when the user explicitly requests an App Store change.
+disable-model-invocation: true
 ---
 
 # Orationes Pebble App Store

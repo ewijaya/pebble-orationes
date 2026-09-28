@@ -1,6 +1,8 @@
 ---
 name: orationes-release
 description: Prepares, publishes, and verifies one tested Orationes version with scripts/release.py when the user explicitly asks to bump, tag, release, or publish. Not for ordinary builds.
+disable-model-invocation: true
+argument-hint: "[version] [github|appstore]"
 ---
 
 # Orationes release
@@ -74,7 +76,7 @@ before its annotated tag, publishes GitHub before the store, uploads
 `.release/VERSION/pebble-orationes.pbw`, syncs the reviewed description, and
 preserves unrelated listing metadata. Do not substitute the mutable `build/`
 PBW or run a top-level `pebble publish` (it rebuilds). For store specifics,
-read `.agents/skills/orationes-appstore/SKILL.md`. Never expose auth tokens.
+read `.claude/skills/orationes-appstore/SKILL.md`. Never expose auth tokens.
 
 ## Verify, sync, and recover
 
