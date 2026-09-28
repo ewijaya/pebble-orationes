@@ -44,9 +44,10 @@ function snapshotForClay(payload) {
   return settings;
 }
 
+// Launch sends only unconfirmed settings. Opening Settings requests a fresh
+// snapshot, so an idle launch costs no extra Bluetooth round trip.
 Pebble.addEventListener('ready', function() {
   sync.start();
-  requestWatchSettings();
 });
 
 var configurationTimer = null;
