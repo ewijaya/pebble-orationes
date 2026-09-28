@@ -99,6 +99,11 @@
           "file": "data/litany-of-humility.bin"
         },
         {
+          "type": "raw",
+          "name": "MEAL_PRAYERS_TEXT",
+          "file": "data/meal-prayers.bin"
+        },
+        {
           "type": "font",
           "name": "FONT_BLESSING_28",
           "file": "fonts/DejaVuSansCondensed-Bold.ttf",

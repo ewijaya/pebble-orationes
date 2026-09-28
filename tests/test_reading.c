@@ -36,6 +36,13 @@ static void check_document(MainMenuEntryId entry, const PrayerTranslation *trans
   if (entry == MAIN_MENU_ENTRY_COME_HOLY_SPIRIT) assert(sections == 10);
   if (entry == MAIN_MENU_ENTRY_LITANY_OF_HUMILITY) assert(sections == 4);
   if (entry == MAIN_MENU_ENTRY_LITANY_OF_LORETO) assert(sections == 6);
+  if (entry == MAIN_MENU_ENTRY_MEAL_PRAYERS) {
+    // Blessing, its midday and evening additions, then Grace.
+    assert(sections == 4);
+    for (uint16_t i = 0; i < document.count; ++i)
+      assert((document.paragraphs[i].style == PRAYER_PARAGRAPH_RESPONSE) ==
+             !strncmp(document.paragraphs[i].text, "R. ", 3));
+  }
   prayer_document_free(&document);
 }
 void run_reading_tests(void) {

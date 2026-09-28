@@ -84,6 +84,8 @@ bool prayer_document_section(MainMenuEntryId entry, const PrayerParagraph *parag
     return !strcmp(text, "God the Father of heaven.") || !strcmp(text, "Holy Mary.") ||
            !strcmp(text, "Queen of angels.") || begins(text, "V. Lamb of God who") ||
            !strcmp(text, "Other Intentions");
+  if (entry == MAIN_MENU_ENTRY_MEAL_PRAYERS)
+    return text[0] == '(' || !strcmp(text, "GRACE AFTER MEALS");
   if (entry == MAIN_MENU_ENTRY_PRECES)
     return begins(text, "V. Ad ") || begins(text, "V. Orémus ") ||
            !strcmp(text, "Orémus.") || !strcmp(text, "Omnes dicunt:") ||

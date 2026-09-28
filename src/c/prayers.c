@@ -69,6 +69,25 @@ static const char s_litany_of_humility_english[] =
     "That others may be praised and I unnoticed,\n"
     "That others may be preferred to me in everything,\n"
     "That others become holier than I, provided that I may become as holy as I should.";
+
+// Transcribed from the text supplied on 2026-09-28. Its versicle and response
+// symbols are written as V./R., matching the other prayers and the watch fonts.
+static const char s_meal_prayers_english[] =
+    "BLESSING BEFORE MEALS\n"
+    "V. Bless us, O Lord, and these your gifts which we are about to receive from your bounty, through Christ our Lord.\n"
+    "R. Amen\n\n"
+    "(Add for midday)\n"
+    "V. May the King of everlasting glory make us partakers of the heavenly table.\n"
+    "R. Amen.\n\n"
+    "(Add for evening)\n"
+    "V. May the King of everlasting glory lead us to the banquet of life eternal.\n"
+    "R. Amen.\n\n"
+    "GRACE AFTER MEALS\n"
+    "V. We give you thanks, almighty God, for all your benefits, who live and reign for ever and ever.\n"
+    "R. Amen.\n\n"
+    "V. May the Lord grant us his peace.\n"
+    "R. And life everlasting.\n"
+    "V. Amen.";
 #endif
 
 static PrayerParagraph s_litany_of_humility_paragraphs[] = {
@@ -91,6 +110,9 @@ static PrayerParagraph s_litany_of_humility_paragraphs[] = {
 static PrayerTranslation s_come_holy_spirit_translations[] = {
     {.language = PRAYER_LANGUAGE_ENGLISH, .text = NULL},
 };
+static PrayerTranslation s_meal_prayers_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = NULL},
+};
 static PrayerTranslation s_litany_of_humility_translations[] = {
     {
         .language = PRAYER_LANGUAGE_ENGLISH,
@@ -102,6 +124,9 @@ static PrayerTranslation s_litany_of_humility_translations[] = {
 #else
 static const PrayerTranslation s_come_holy_spirit_translations[] = {
     {.language = PRAYER_LANGUAGE_ENGLISH, .text = s_come_holy_spirit_english},
+};
+static const PrayerTranslation s_meal_prayers_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = s_meal_prayers_english},
 };
 static const PrayerTranslation s_litany_of_humility_translations[] = {
     {
@@ -659,6 +684,13 @@ static const Prayer s_prayers[] = {
         .translations = s_litany_of_humility_translations,
         .translation_count = 1,
     },
+    {
+        .name = "Meal Prayers",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_meal_prayers_translations,
+        .translation_count = 1,
+    },
 };
 
 uint16_t prayers_count(void) {
@@ -701,6 +733,8 @@ const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
            COME_HOLY_SPIRIT_RESOURCE_BYTES, NULL},
           {s_litany_of_humility_translations, RESOURCE_ID_LITANY_OF_HUMILITY_TEXT,
            LITANY_OF_HUMILITY_RESOURCE_BYTES, &s_litany_of_humility_paragraphs[1]},
+          {s_meal_prayers_translations, RESOURCE_ID_MEAL_PRAYERS_TEXT,
+           MEAL_PRAYERS_RESOURCE_BYTES, NULL},
       };
       for (uint8_t i = 0; i < sizeof(resources) / sizeof(resources[0]); ++i) {
         if (translation != resources[i].translation || translation->text) continue;

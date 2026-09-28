@@ -21,7 +21,7 @@ This checkout documents v0.12.3. See [Install](#install) for verified public ava
 - **Regina Caeli** — English text in a scrollable view.
 - **Angelus** — English text in a scrollable view, with each Hail Mary abbreviated as `Hail Mary ...`.
 - **Memorare** — English text in a scrollable view.
-- **Come, Holy Spirit** and **Litany of Humility** — English texts under All Prayers → Daily Prayer, also available as individual shortcuts.
+- **Come, Holy Spirit**, **Litany of Humility**, and **Meal Prayers** — English texts under All Prayers → Daily Prayer, also available as individual shortcuts. Meal Prayers holds the Blessing Before Meals, with its midday and evening additions, and Grace After Meals; Jump to section moves between them.
 - **More Prayers** *(optional)* — prayers for Mental Prayer, Visit & Communion, Before Work, and Night Examination.
 - **Confession** *(optional)* — an examination of conscience, Act of Contrition, and prayers before and after Confession.
 - **Prayer library** — Psalm 50 (51), Psalm 2, Acceptance of Death, Prayer for Vocations, Blessed Be Your Purity, and the Canticle of the Three Children.

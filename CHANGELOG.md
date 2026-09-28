@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Add Meal Prayers under All Prayers → Daily Prayer and as a shortcut: Blessing
+  Before Meals with its midday and evening additions, then Grace After Meals.
+  Jump to section offers the Blessing, each addition, and Grace.
+- Package the new text as a generated resource; the resource budget rises from
+  43,000 to 44,000 bytes.
+
+Existing prayer wording, shortcut IDs, and saved-settings formats are unchanged.
+
 ## v0.12.3 — 2026-09-28
 
 - Stop requesting a full watch settings snapshot every time Orationes launches.

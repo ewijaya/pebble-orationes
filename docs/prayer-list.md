@@ -52,11 +52,12 @@ These English entries can be opened through the **More Prayers** collection or a
 | Before Work | Prayer asking God's guidance and assistance in our actions and work. |
 | Night Examination | A brief examination of conscience, sorrow, and a resolution for tomorrow, with a closing instruction to pray three Hail Marys. |
 
-Two additional English prayers are available under **All Prayers → Daily Prayer**
+Three additional English prayers are available under **All Prayers → Daily Prayer**
 and as individual shortcuts:
 
 - **Come, Holy Spirit** — the supplied text beginning “Come, Holy Spirit, come!” and ending “Give them joys that never end.”
 - **Litany of Humility** — a small-print “Cardinal Merry del Val · after Mass” attribution, followed by the prayer beginning “O Jesus! meek and humble of heart, Hear me”. Responses appear once, as in the source screenshot.
+- **Meal Prayers** — the supplied Blessing Before Meals, with its “(Add for midday)” and “(Add for evening)” versicles, followed by Grace After Meals ending “R. And life everlasting.” and “V. Amen.”. The supplied ℣/℟ symbols appear as V./R., as in the other prayers. Jump to section offers the Blessing, each addition, and Grace.
 
 ## Marian prayers and Rosary
 

@@ -173,6 +173,10 @@ module.exports = {
     {
       "label": "Litany of Humility",
       "value": "40"
+    },
+    {
+      "label": "Meal Prayers",
+      "value": "41"
     }
   ]
 };
