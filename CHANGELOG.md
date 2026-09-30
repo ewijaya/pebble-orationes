@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add Adoro Te Devote under All Prayers → Daily Prayer and as a shortcut, in the
+  supplied English translation. Jump to section offers each of its seven stanzas.
+- Package the new text as a generated resource; the resource budget rises from
+  44,000 to 45,000 bytes.
+
+Existing prayer wording, shortcut IDs, and saved-settings formats are unchanged.
+
 ## v0.13.0 — 2026-09-28
 
 - Add Meal Prayers under All Prayers → Daily Prayer and as a shortcut: Blessing

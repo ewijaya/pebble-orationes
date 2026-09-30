@@ -96,8 +96,9 @@ resource budget was 32,000 bytes for v0.9.0. In v0.10.0, Aspirations also loads 
 a generated raw resource, with paragraph text, style, and spacing checked against
 the compiled C data. The resource budget was 43,000 bytes for v0.10.0. Meal Prayers
 uses the same generated-resource mechanism and adds 552 bytes including its NUL
-terminator, so the resource budget is now 44,000 bytes; the executable and heap
-limits are unchanged.
+terminator, so the resource budget was 44,000 bytes for v0.13.0. Adoro Te Devote
+adds 1,057 bytes the same way, so the resource budget is now 45,000 bytes; the
+executable and heap limits are unchanged.
 This keeps the text outside Pebble's 16-bit loaded/virtual image limit while
 preserving offline use.
 Link-time optimization retains `__pbl_app_info` explicitly; the bundle gate checks

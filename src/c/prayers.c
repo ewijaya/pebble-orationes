@@ -88,6 +88,39 @@ static const char s_meal_prayers_english[] =
     "V. May the Lord grant us his peace.\n"
     "R. And life everlasting.\n"
     "V. Amen.";
+
+// Transcribed from the text supplied on 2026-09-30; its title is the entry name.
+static const char s_adoro_te_devote_english[] =
+    "I devoutly adore You, O hidden God,\n"
+    "truly hidden beneath these appearances.\n"
+    "My whole heart submits to You\n"
+    "and in contemplating You\n"
+    "it surrenders itself completely.\n\n"
+    "Sight, touch, taste are all deceived\n"
+    "in their judgment of You,\n"
+    "but hearing suffices firmly to believe.\n"
+    "I believe all that the Son of God has spoken:\n"
+    "there is nothing truer than this word of Truth.\n\n"
+    "On the Cross only the Divinity was hidden,\n"
+    "but here the Humanity is also hidden.\n"
+    "I believe and confess both\n"
+    "and I ask for what the repentant thief asked.\n\n"
+    "I do not see the wounds as Thomas did,\n"
+    "but I confess that You are my God.\n"
+    "Make me believe more and more in You,\n"
+    "hope in You, and love You.\n\n"
+    "O Memorial of our Lord's death!\n"
+    "Living Bread that gives life to man,\n"
+    "grant my soul to live on You\n"
+    "and always to savor Your sweetness.\n\n"
+    "Lord Jesus, good Pelican,\n"
+    "wash me clean with Your Blood,\n"
+    "one drop of which can free\n"
+    "the entire world of all its sins.\n\n"
+    "Jesus, whom now I see hidden,\n"
+    "I ask You to fulfill what I so desire:\n"
+    "that on seeing You face to face,\n"
+    "I may be happy in seeing Your glory. Amen.";
 #endif
 
 static PrayerParagraph s_litany_of_humility_paragraphs[] = {
@@ -113,6 +146,9 @@ static PrayerTranslation s_come_holy_spirit_translations[] = {
 static PrayerTranslation s_meal_prayers_translations[] = {
     {.language = PRAYER_LANGUAGE_ENGLISH, .text = NULL},
 };
+static PrayerTranslation s_adoro_te_devote_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = NULL},
+};
 static PrayerTranslation s_litany_of_humility_translations[] = {
     {
         .language = PRAYER_LANGUAGE_ENGLISH,
@@ -127,6 +163,9 @@ static const PrayerTranslation s_come_holy_spirit_translations[] = {
 };
 static const PrayerTranslation s_meal_prayers_translations[] = {
     {.language = PRAYER_LANGUAGE_ENGLISH, .text = s_meal_prayers_english},
+};
+static const PrayerTranslation s_adoro_te_devote_translations[] = {
+    {.language = PRAYER_LANGUAGE_ENGLISH, .text = s_adoro_te_devote_english},
 };
 static const PrayerTranslation s_litany_of_humility_translations[] = {
     {
@@ -691,6 +730,13 @@ static const Prayer s_prayers[] = {
         .translations = s_meal_prayers_translations,
         .translation_count = 1,
     },
+    {
+        .name = "Adoro Te Devote",
+        .destination = PRAYER_DESTINATION_TEXT,
+        .default_language = PRAYER_LANGUAGE_ENGLISH,
+        .translations = s_adoro_te_devote_translations,
+        .translation_count = 1,
+    },
 };
 
 uint16_t prayers_count(void) {
@@ -735,6 +781,8 @@ const PrayerTranslation *prayer_get_translation(const Prayer *prayer,
            LITANY_OF_HUMILITY_RESOURCE_BYTES, &s_litany_of_humility_paragraphs[1]},
           {s_meal_prayers_translations, RESOURCE_ID_MEAL_PRAYERS_TEXT,
            MEAL_PRAYERS_RESOURCE_BYTES, NULL},
+          {s_adoro_te_devote_translations, RESOURCE_ID_ADORO_TE_DEVOTE_TEXT,
+           ADORO_TE_DEVOTE_RESOURCE_BYTES, NULL},
       };
       for (uint8_t i = 0; i < sizeof(resources) / sizeof(resources[0]); ++i) {
         if (translation != resources[i].translation || translation->text) continue;

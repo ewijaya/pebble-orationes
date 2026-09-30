@@ -36,6 +36,7 @@ static void check_document(MainMenuEntryId entry, const PrayerTranslation *trans
   if (entry == MAIN_MENU_ENTRY_COME_HOLY_SPIRIT) assert(sections == 10);
   if (entry == MAIN_MENU_ENTRY_LITANY_OF_HUMILITY) assert(sections == 4);
   if (entry == MAIN_MENU_ENTRY_LITANY_OF_LORETO) assert(sections == 6);
+  if (entry == MAIN_MENU_ENTRY_ADORO_TE_DEVOTE) assert(sections == 7);  // One per stanza.
   if (entry == MAIN_MENU_ENTRY_MEAL_PRAYERS) {
     // Blessing, its midday and evening additions, then Grace.
     assert(sections == 4);

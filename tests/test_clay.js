@@ -42,11 +42,12 @@ items['restore-defaults'].click();
 catalog.defaults.forEach(function(value, index) { assert.equal(Number(items['MainMenuSlot' + (index + 1)].get()), value); });
 items.MainMenuSlot1.set('2');
 assert.equal(Number(items.MainMenuSlot2.get()), 1); // Previous values reset with defaults.
-assert.equal(catalog.options.length, 42);
-assert.deepStrictEqual(catalog.options.slice(-3), [
+assert.equal(catalog.options.length, 43);
+assert.deepStrictEqual(catalog.options.slice(-4), [
   {label: 'Come, Holy Spirit', value: '39'},
   {label: 'Litany of Humility', value: '40'},
-  {label: 'Meal Prayers', value: '41'}
+  {label: 'Meal Prayers', value: '41'},
+  {label: 'Adoro Te Devote', value: '42'}
 ]);
 items.MainMenuSlot6.set('39');
 items.MainMenuSlot7.set('40');

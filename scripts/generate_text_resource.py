@@ -20,6 +20,8 @@ for symbol, filename, header, macro in [
      'additional_prayer_resources', 'LITANY_OF_HUMILITY'),
     ('s_meal_prayers_english', 'meal-prayers',
      'additional_prayer_resources', 'MEAL_PRAYERS'),
+    ('s_adoro_te_devote_english', 'adoro-te-devote',
+     'additional_prayer_resources', 'ADORO_TE_DEVOTE'),
 ]:
     match = re.search(r'static const char ' + symbol + r'\[\] =\s*((?:"(?:[^"\\]|\\.)*"\s*)+);', source, re.S)
     assert match, f'Missing canonical literal: {symbol}'

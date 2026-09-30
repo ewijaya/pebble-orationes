@@ -104,6 +104,11 @@
           "file": "data/meal-prayers.bin"
         },
         {
+          "type": "raw",
+          "name": "ADORO_TE_DEVOTE_TEXT",
+          "file": "data/adoro-te-devote.bin"
+        },
+        {
           "type": "font",
           "name": "FONT_BLESSING_28",
           "file": "fonts/DejaVuSansCondensed-Bold.ttf",

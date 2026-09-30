@@ -435,6 +435,16 @@
       "target": "PRAYER_ID_MEAL_PRAYERS",
       "item": 0,
       "category": 0
+    },
+    {
+      "id": 42,
+      "symbol": "MAIN_MENU_ENTRY_ADORO_TE_DEVOTE",
+      "name": "Adoro Te Devote",
+      "phone_name": "Adoro Te Devote",
+      "destination": "MAIN_MENU_DESTINATION_PRAYER",
+      "target": "PRAYER_ID_ADORO_TE_DEVOTE",
+      "item": 0,
+      "category": 0
     }
   ]
 }

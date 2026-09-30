@@ -177,6 +177,10 @@ module.exports = {
     {
       "label": "Meal Prayers",
       "value": "41"
+    },
+    {
+      "label": "Adoro Te Devote",
+      "value": "42"
     }
   ]
 };

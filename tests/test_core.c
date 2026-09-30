@@ -269,6 +269,7 @@ static void test_packaged_prayers(void) {
       {PRAYER_ID_COME_HOLY_SPIRIT, "resources/data/come-holy-spirit.bin"},
       {PRAYER_ID_LITANY_OF_HUMILITY, "resources/data/litany-of-humility.bin"},
       {PRAYER_ID_MEAL_PRAYERS, "resources/data/meal-prayers.bin"},
+      {PRAYER_ID_ADORO_TE_DEVOTE, "resources/data/adoro-te-devote.bin"},
   };
   for (unsigned r = 0; r < sizeof(resources) / sizeof(resources[0]); ++r) {
     const Prayer *prayer = prayers_get_by_id(resources[r].id);
