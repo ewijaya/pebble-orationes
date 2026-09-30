@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.14.0 — 2026-09-30
 
 - Add Adoro Te Devote under All Prayers → Daily Prayer and as a shortcut, in the
   supplied English translation. Jump to section offers each of its seven stanzas.
